@@ -36,12 +36,24 @@ input[type="range"] {
 }
 
 .season-buttons button {
+  width: 60px;
+  height: 60px;
   margin: 0.2rem;
-  padding: 0.5rem;
+  padding: 0;
   border: 1px solid #ccc;
   border-radius: 50%;
   background-color: white;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;  /* Make the emojis bigger */
+}
+
+.season-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;  /* Consistent spacing between buttons */
 }
 
 .season-buttons button.active {
@@ -52,21 +64,79 @@ input[type="range"] {
   position: relative;
   width: 80px;
   height: 80px;
-  border: 2px solid #ccc;
+  border: 2px solid #e5e7eb;  /* Light gray border */
   border-radius: 50%;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
+  cursor: pointer;
+  background: #f9fafb;  /* Very light background */
 }
 
 .circle-fill {
   position: absolute;
-  bottom: 0;
+  left: 0;
+  top: 0;
   width: 100%;
-  background-color: #a3e635;
-  transition: height 0.3s;
+  height: 100%;
+  fill: none;
+  stroke: #a3e635;
+  stroke-width: 4px;
+  transform-origin: center;
+  z-index: 1;
+}
+
+.circle input[type="range"] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  transform: rotate(-90deg);  /* Rotate to make it vertical */
+  z-index: 2;
+}
+
+.circle input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: -10px;  /* Adjust thumb position */
+}
+
+.circle input[type="range"]::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  height: 100%;
+}
+
+.circle span {
+  position: relative;
+  z-index: 2;
+  color: #374151;
+  font-weight: bold;
+}
+
+.circle-thumb {
+  position: absolute;
+  width: 16px;  /* Reduced from 24px */
+  height: 16px;  /* Reduced from 24px */
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 3;
+  left: calc(50% - 8px);  /* Adjusted to half of new width */
+  top: 50%;
+  transform-origin: center center;
 }
 
 button {
@@ -145,4 +215,194 @@ button:hover {
 .form-group input[type="checkbox"] {
   width: auto;
   margin-right: 0.5rem;
+}
+
+/* Style the range input container */
+.size-slider {
+  background: #e5e7eb;
+  padding: 0;
+  border-radius: 20px;  /* Slightly smaller radius */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px auto;  /* Center the slider */
+  position: relative;
+  height: 36px;  /* Thinner height */
+  overflow: hidden;
+  max-width: 280px;  /* Limit width to match season buttons */
+}
+
+/* Style the range input */
+.size-slider input[type="range"] {
+  position: absolute;
+  left: 20px;  /* Add padding here instead */
+  right: 20px;
+  top: 0;
+  width: calc(100% - 40px);  /* Account for padding */
+  height: 100%;
+  -webkit-appearance: none;
+  appearance: none;  /* Remove default appearance */
+  background: none;
+  outline: none;  /* Remove focus outline */
+  border: none;
+  margin: 0;
+  z-index: 2;
+}
+
+/* Add the green background track */
+.size-slider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: #a3e635;
+  border-radius: 30px;
+  clip-path: inset(0 var(--clip-percent) 0 0);
+  transition: clip-path 0.1s ease;
+}
+
+/* Style the range input thumb */
+.size-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Hide the default track in all browsers */
+.size-slider input[type="range"]::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+}
+
+.size-slider input[type="range"]::-moz-range-track {
+  background: none;
+  border: none;
+}
+
+.size-slider input[type="range"]::-ms-track {
+  background: none;
+  border: none;
+  color: transparent;
+}
+
+/* Style the value display */
+.size-slider span {
+  position: absolute;
+  right: 20px;
+  min-width: 40px;
+  text-align: right;
+  font-weight: bold;
+  color: #374151;
+  z-index: 2;
+}
+
+/* Helper function to calculate circular fill */
+const getCircularFillPath = (percentage: number) => {
+  const angle = (percentage / 100) * 2 * Math.PI;
+  const radius = 40;  // Half of circle width
+  const x = radius + radius * Math.cos(angle - Math.PI/2);
+  const y = radius + radius * Math.sin(angle - Math.PI/2);
+  return `M${radius},${radius} L${radius},0 A${radius},${radius} 0 ${percentage > 50 ? 1 : 0},1 ${x},${y} Z`;
+};
+
+/* Add new styles for the circles container */
+.circles-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem 0;
+  flex-direction: row;  /* Ensure horizontal layout */
+}
+
+.circles-container .form-group {
+  flex: 0 1 auto;
+  text-align: center;
+  margin-bottom: 0;
+  min-width: 120px;  /* Give enough space for the labels */
+}
+
+.circle {
+  margin: 0 auto;
+}
+
+/* Style the battery button to match the circles height */
+.circles-container button {
+  margin-top: 1.5rem;  /* Align with circles */
+  min-width: 80px;
+  height: 40px;
+}
+
+/* Adjust the buttons layout */
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 3rem;  /* Increase space between circles and buttons */
+}
+
+.button-group button {
+  min-width: 80px;
+}
+
+/* Style for the battery button */
+.battery-button {
+  min-width: 80px;  /* Wider to accommodate text */
+  height: 48px;
+  padding: 0 1.5rem;
+  border: 1px solid #ccc;
+  border-radius: 24px;  /* Half of height for pill shape */
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;  /* Space between icon and text */
+  color: #9ca3af;
+}
+
+.battery-button.active {
+  background-color: #a3e635;
+  border-color: #a3e635;
+  color: white;
+}
+
+/* Style for the confirm button */
+.button-group button[type="submit"] {
+  min-width: 100px;
+  height: 48px;
+  padding: 0 1.5rem;
+  border-radius: 24px;
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 500;
+  border: none;
+}
+
+.button-group button[type="submit"]:hover {
+  background-color: #2563eb;
+}
+
+.circles-row {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin: 2rem 0;
+}
+
+.circle-container {
+  text-align: center;
+}
+
+.circle-container label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
 } 
