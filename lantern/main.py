@@ -3,17 +3,15 @@
 """
 main.py
 
-This module is the driver of the simulation for both webapp and commandline entry points.
-Loads the prepared dataframes from cache (or calls into the data loader to fetch it),
-prepares the data according to the user-specified parameters, and finally calls the
-simulation.
+This module is the driver of the simulation for both web app and commandline entry points.
+Loads the prepared dataframes from cached DataFrame, prepares the data according to the
+user-specified parameters, and finally calls the simulation.
 """
 
 import os
 import random
 from .constants import PKL_DIR, PKL_LOAD_FILE, PKL_PV_FILE
 from .ec_dataset import ECDataset
-from .data_loader import load_pkls
 from .models import SimulationResult
 from enum import Enum
 from typing import Callable
@@ -24,11 +22,9 @@ import pickle
 def fetch_pkl(filename: str) -> pd.DataFrame:
     is_cached: bool = os.path.exists(os.path.join(PKL_DIR, PKL_LOAD_FILE))
     if not is_cached:
-        load_pkls()
-    assert os.path.exists(os.path.join(PKL_DIR, PKL_LOAD_FILE))
+        raise FileNotFoundError(f"Input DataFrame '{filename}' not found in directory '{PKL_DIR}'.")
     with open(filename, "rb") as f:
         return pickle.load(f)
-
 
 class Season(Enum):
     SUMMER = "sum"

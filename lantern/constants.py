@@ -55,7 +55,7 @@ COLOR_PALETTE: str = "deep"
 
 # subdirectories
 OUT_DIR: str = "out"
-PKL_DIR: str = "cache"
+PKL_DIR: str = "dataframes"
 PKL_LOAD_FILE: str = "load.pkl"
 PKL_PV_FILE: str = "pv.pkl"
 
