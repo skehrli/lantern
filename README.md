@@ -1,4 +1,5 @@
 Simulation tool for a synthetic Energy Community Dataset.
+Can be run inside terminal or as webapp.
 
 # Usage
 ### Install Dependencies
@@ -13,4 +14,3 @@ make run
 ```
 make site
 ```
-Hosted on http://localhost:8000.
