@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "p2pcode"
+version = "0.1.0"
+description = "Client code for ec-data-analysis"
+authors = ["Sascha Kehrli <skehrli@ethz.ch>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10.1"
+ec-data-analysis = "^0.9.1"
+numpy = "^2.1.1"
+pandas = "^2.2.2"
+black = "^24.8.0"
+scipy = "^1.14.1"
+pandas-stubs = "^2.2.2.240909"
+scipy-stubs = "^1.4.1a3"
+requests = "^2.32.3"
+duckdb = "^1.2.0"
+types-seaborn = "^0.13.2.20250111"
+types-requests = "^2.32.0.20241016"
+types-networkx = "^3.4.2.20241227"
+fastapi = "^0.115.11"
+uvicorn = "^0.34.0"
+plotly = "^6.0.0"
+pydantic = "^2.10.6"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.11.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
