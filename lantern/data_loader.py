@@ -62,7 +62,7 @@ API_BASE: str = "https://www.renewables.ninja/api/"
 
 
 class DataLoader:
-    # We have a database with three tables. prod, gen and joined (with both).
+    # We have a database with three tables. prod, gen, and joined (with both).
     # If we have n < 1400 gen profiles, then only n load profiles are matched to a gen profile.
     # Could simply duplicate the gen profiles to create the others.
     _conn: duckdb.DuckDBPyConnection
@@ -139,19 +139,42 @@ class DataLoader:
 
         conn: duckdb.DuckDBPyConnection = duckdb.connect(DB_NAME)
 
-        user_input = (
-            input(
-                "Create the load table fresh (due to new data files or new query) (y/n)? "
+        # ask for loading database fresh from csv files. Only works if csv files exist (which they don't on the github version)
+        isProduction: bool = not (os.path.exists(GEN_DATA_DIR) and os.path.exists(LOAD_DATA_DIR))
+        if not isProduction:
+            user_input: str
+            user_input = (
+                input(
+                    "Create the load table fresh (due to new data files or new query) (y/n)? "
+                )
+                .strip()
+                .lower()
             )
-            .strip()
-            .lower()
-        )
-        if user_input == "y":
-            conn.execute(
-                f"""
-                DROP TABLE IF EXISTS {LOAD_TABLE_NAME};
-            """
+            if user_input == "y":
+                conn.execute(
+                    f"""
+                    DROP TABLE IF EXISTS {LOAD_TABLE_NAME};
+                """
+                )
+            user_input = input("Generate additional pv data (y/N)?").strip().lower()
+            if user_input == "y":
+                print("Generating pv_data...")
+                self._generate_pv_data()
+                print("Finished generating pv_data.")
+
+            user_input = (
+                input(
+                    "Create the generation table fresh (due to new data files or new query) (y/n)? "
+                )
+                .strip()
+                .lower()
             )
+            if user_input == "y":
+                conn.execute(
+                    f"""
+                    DROP TABLE IF EXISTS {GEN_TABLE_NAME};
+                """
+                )
 
         conn.execute(
             f"""
@@ -162,26 +185,6 @@ class DataLoader:
             );
         """
         )
-
-        user_input = input("Generate additional pv data (y/N)?").strip().lower()
-        if user_input == "y":
-            print("Generating pv_data...")
-            self._generate_pv_data()
-            print("Finished generating pv_data.")
-
-        user_input = (
-            input(
-                "Create the generation table fresh (due to new data files or new query) (y/n)? "
-            )
-            .strip()
-            .lower()
-        )
-        if user_input == "y":
-            conn.execute(
-                f"""
-                DROP TABLE IF EXISTS {GEN_TABLE_NAME};
-            """
-            )
 
         conn.execute(
             f"""
