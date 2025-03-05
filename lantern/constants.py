@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
+"""
+constants.py
+
+Holds constants used in the entire project, which are "meta-parameters" for the developer.
+"""
+
 from typing import TypeAlias
-import pandas as pd
 import seaborn as sns
-from typing import Callable
 
 NetworkAlloc: TypeAlias = dict[str, dict[str, float]]
 
