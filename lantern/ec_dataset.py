@@ -7,16 +7,16 @@ This module contains the ECDataset class, which is used to manage and manipulate
 datasets for energy communities.
 """
 
-from .models import SimulationResult, EnergyMetrics, CostMetrics
+from .models import SimulationResult, EnergyMetrics, CostMetrics, MarketMetrics, TradingNetwork
 from .battery import Battery
-from .constants import BATTERY_SIZE, P2P_PRICE, GRID_BUY_PRICE, GRID_SELL_PRICE
+from .constants import BATTERY_SIZE, P2P_PRICE, GRID_BUY_PRICE, GRID_SELL_PRICE, NetworkAlloc
 from .market_solution import MarketSolution
-from .plot_utils import PlotUtils
 from scipy.signal import find_peaks
 import pandas as pd
 import numpy as np
+import networkx as nx
 import numpy.typing as npt
-from typing import List, Optional, Self
+from typing import List, Optional, Self, Any
 from functools import cached_property
 
 
@@ -92,25 +92,103 @@ class ECDataset:
             )
         return self._evaluate()
 
+    def getTradingNetwork(self: Self) -> tuple[nx.DiGraph, dict[Any, np.ndarray]]:
+        network: NetworkAlloc = MarketSolution.overall_trading_network
+        gridPurchaseVolume: float = self.getGridPurchaseVolume()
+        gridFeedInVolume: float = self.getGridFeedInVolume()
+
+        G: nx.DiGraph = nx.DiGraph()
+        pos: dict[Any, tuple[float, float]]
+
+        # Add edges to the graph from the dictionary
+        for u, neighbors in network.items():
+            for v, weight in neighbors.items():
+                G.add_edge(u, v, weight=weight)
+
+        # Layout for positioning nodes: If graph is planar, lay out accordingly.
+        # Else, do arf, which works well for large graphs.
+        try:
+            pos = nx.planar_layout(G)
+        except nx.NetworkXException:
+            pos = nx.arf_layout(G)
+
+        # Add "grid" to network
+        G.add_node("grid_in", node_color="lightgreen", node_size=3000)
+        G.add_node("grid_out", node_color="lightgreen", node_size=3000)
+
+        leftmost_node: int = min(pos, key=lambda x: pos[x][0]) if len(pos) > 0 else -1
+        rightmost_node: int = max(pos, key=lambda x: pos[x][0]) if len(pos) > 0 else -1
+
+        G.add_edge("grid_in", leftmost_node, weight=gridPurchaseVolume)
+        G.add_edge(rightmost_node, "grid_out", weight=gridFeedInVolume)
+
+        # Get the coordinates of the leftmost and rightmost nodes
+        leftmost_x, leftmost_y = pos[leftmost_node] if leftmost_node != -1 else 0, 0
+        rightmost_x, rightmost_y = pos[rightmost_node] if rightmost_node != -1 else 0, 0
+
+        # Define some horizontal distance to shift the grid nodes
+        grid_spacing = 2  # Distance to shift grid nodes left and right
+
+        # Reposition the grid nodes:
+        # grid_in should be to the left of the leftmost node
+        pos["grid_in"] = (leftmost_x - grid_spacing, leftmost_y)
+
+        # grid_out should be to the right of the rightmost node
+        pos["grid_out"] = (rightmost_x + grid_spacing, rightmost_y)
+
+        return G, pos
+        # # Normalize edge weights for visualization and scale inversely with # vertices for visibility
+        # weights: list[float] = [w["weight"] for _, _, w in G.edges(data=True)]
+        # max_weight: float = max(weights) if weights else 1  # Avoid div by 0
+        # scaled_widths: list[float] = [
+        #     (np.log(w + 1) / np.log(max_weight + 1)) * 100 / len(G) for w in weights
+        # ]
+
+
+        # edge_colors: list[tuple[float, float, float, float]]
+        # edge_colors = [(0.5, 0.5, 0.5, 0.7) for _ in G.edges()]
+
+        # # Draw graph with variable edge widths
+        # plt.figure(figsize=(8, 6))
+        # nx.draw(
+        #     G,
+        #     pos,
+        #     with_labels=True,
+        #     node_color="skyblue",
+        #     edge_color=edge_colors,
+        #     node_size=2000,
+        #     font_size=12,
+        #     font_weight="bold",
+        #     width=scaled_widths,
+        #     arrows=False,
+        # )
+
+        # plt.title("Trading Network")
+        # plt.show()
+
+
     def _evaluate(self: Self) -> SimulationResult:
-        PlotUtils.visualizeTradingNetwork(
-            MarketSolution.overall_trading_network,
-            self.getGridPurchaseVolume(),
-            self.getGridFeedInVolume(),
-        )
+        G, loc = self.getTradingNetwork()
         return SimulationResult(
             energy_metrics=EnergyMetrics(
                 total_production=float(self.getProductionVolume),
                 total_consumption=float(self.getConsumptionVolume),
+                total_grid_import=float(self.getGridPurchaseVolume()),
+                total_grid_export=float(self.getGridFeedInVolume()),
+            ),
+            market_metrics=MarketMetrics(
+                trading_volume=float(self.getTradingVolume),
+                ratio_fulfilled_demand=float(self.getTradingVolume / self.getDemandVolume) if self.getDemandVolume != 0 else 0,
+                ratio_sold_supply=float(self.getTradingVolume / self.getSupplyVolumeImprecise) if self.getSupplyVolumeImprecise != 0 else 0,
             ),
             cost_metrics=CostMetrics(
-                total_cost_with_lec=float(sum(self.computePricePerMember(True)) / 100),
-                total_cost_without_lec=float(
+                cost_with_lec=float(sum(self.computePricePerMember(True)) / 100),
+                cost_without_lec=float(
                     sum(self.computePricePerMember(False)) / 100
                 ),
             ),
+            trading_network=TradingNetwork.from_networkx(G, loc),
         )
-        # self.printKeyStats()
         # PlotUtils.visualizeEnergyConsumptionBreakdown(
         #     self.getSelfConsumptionVolume,
         #     self.getTradingVolume,
