@@ -47,6 +47,40 @@ const BatteryIcon = () => (
   </svg>
 );
 
+// Add this new component for the cost comparison bars
+const CostComparison = ({ withLec, withoutLec }: { withLec: number, withoutLec: number }) => {
+  const maxValue = Math.max(withLec, withoutLec);
+  const withLecPercent = (withLec / maxValue) * 100;
+  const withoutLecPercent = (withoutLec / maxValue) * 100;
+
+  return (
+    <div className="cost-comparison">
+      <div className="bar-container">
+        <div className="bar-label">With LEC</div>
+        <div className="bar-wrapper">
+          <div 
+            className="bar lec-bar" 
+            style={{ width: `${withLecPercent}%` }}
+          >
+            <span>{withLec.toFixed(2)} CHF</span>
+          </div>
+        </div>
+      </div>
+      <div className="bar-container">
+        <div className="bar-label">Without LEC</div>
+        <div className="bar-wrapper">
+          <div 
+            className="bar no-lec-bar" 
+            style={{ width: `${withoutLecPercent}%` }}
+          >
+            <span>{withoutLec.toFixed(2)} CHF</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -154,20 +188,25 @@ function App() {
   };
 
   const getCircularPath = (percentage: number) => {
-    const radius = 36;  // Slightly smaller radius to account for stroke width
-    const center = 40;  // Center point (half of viewBox)
-    const startAngle = -Math.PI/2;
+    const radius = 36;  // Radius for the path
+    const center = 40;  // Center point
+    const startAngle = -Math.PI/2;  // Start from top
     const angle = startAngle + (percentage / 100) * 2 * Math.PI;
     const x = center + radius * Math.cos(angle);
     const y = center + radius * Math.sin(angle);
-    // Start from top center (center, center-radius)
     return `M${center},${center-radius} A${radius},${radius} 0 ${percentage > 50 ? 1 : 0},1 ${x},${y}`;
+  };
+
+  const getThumbPosition = (percentage: number) => {
+    const radius = 36;  // Same radius as the path
+    const angle = (percentage / 100) * 2 * Math.PI - Math.PI/2;  // Start from top
+    const x = radius * Math.cos(angle);
+    const y = radius * Math.sin(angle);
+    return `translate(${x}px, ${y}px)`;
   };
 
   return (
     <div className="container">
-      <h1>Energy Community Simulator</h1>
-      
       {error && (
         <div className="error">
           Error: {error}
@@ -217,7 +256,7 @@ function App() {
               </svg>
               <div className="circle-thumb"
                 style={{
-                  transform: `rotate(${params.sd_percentage * 3.6}deg) translateY(-36px)`
+                  transform: getThumbPosition(params.sd_percentage)
                 }}
               />
               <span>{params.sd_percentage}%</span>
@@ -232,7 +271,7 @@ function App() {
               </svg>
               <div className="circle-thumb"
                 style={{
-                  transform: `rotate(${params.pv_percentage * 3.6}deg) translateY(-36px)`
+                  transform: getThumbPosition(params.pv_percentage)
                 }}
               />
               <span>{params.pv_percentage}%</span>
@@ -258,9 +297,10 @@ function App() {
           <h2>Results</h2>
           
           <h3>Cost Metrics</h3>
-          <p><span>Cost With LEC:</span> <span>{formatNumber(result.cost_metrics.cost_with_lec)} CHF</span></p>
-          <p><span>Cost Without LEC:</span> <span>{formatNumber(result.cost_metrics.cost_without_lec)} CHF</span></p>
-          <p><span>Cost Savings:</span> <span>{formatNumber((1 - result.cost_metrics.cost_with_lec / result.cost_metrics.cost_without_lec) * 100)}%</span></p>
+          <CostComparison 
+            withLec={result.cost_metrics.cost_with_lec} 
+            withoutLec={result.cost_metrics.cost_without_lec}
+          />
           
           <h3>Energy Metrics</h3>
           <p><span>Total Production:</span> <span>{formatNumber(result.energy_metrics.total_production)} kWh</span></p>

@@ -25,9 +25,6 @@ class SimulationParams(BaseModel):
 
 @app.post("/api/simulate")
 async def simulate(params: SimulationParams, request: Request):
-    # Log the incoming request data
-    print("Received request data:", await request.json())
-    
     try:
         result = run_simulation(
             community_size=params.community_size,
@@ -36,9 +33,7 @@ async def simulate(params: SimulationParams, request: Request):
             sd_percentage=params.sd_percentage,
             with_battery=params.with_battery,
         )
-        # Add proper Python logging instead
-        print("Response data:", result)  # For debugging
-        
+
         # Convert Pydantic model to dict and return as JSON
         return JSONResponse(content=result.model_dump())
     except Exception as e:

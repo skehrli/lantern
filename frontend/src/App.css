@@ -128,14 +128,15 @@ input[type="range"] {
 
 .circle-thumb {
   position: absolute;
-  width: 16px;  /* Reduced from 24px */
-  height: 16px;  /* Reduced from 24px */
+  width: 16px;
+  height: 16px;
   background: white;
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 3;
-  left: calc(50% - 8px);  /* Adjusted to half of new width */
-  top: 50%;
+  left: 50%;  /* Center the thumb */
+  top: 50%;   /* Center the thumb */
+  margin: -8px;  /* Offset by half the thumb size */
   transform-origin: center center;
 }
 
@@ -405,4 +406,51 @@ const getCircularFillPath = (percentage: number) => {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: bold;
+}
+
+.cost-comparison {
+  margin: 2rem 0;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 12px;
+}
+
+.bar-container {
+  margin: 1rem 0;
+}
+
+.bar-label {
+  text-align: left;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.bar-wrapper {
+  background: #e5e7eb;
+  border-radius: 24px;
+  height: 48px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  transition: width 0.3s ease;
+}
+
+.bar span {
+  color: white;
+  font-weight: 500;
+}
+
+.lec-bar {
+  background-color: #a3e635;
+}
+
+.no-lec-bar {
+  background-color: #9ca3af;
 } 
