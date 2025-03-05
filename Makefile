@@ -23,6 +23,7 @@ load:
 site:
 	$(POETRY) run uvicorn lantern.app:app --reload &
 	sleep 2
+	[ -d "./frontend/node_modules" ] || (cd ./frontend && npm install)
 	cd ./frontend && npm run dev &
 	sleep 1
 	xdg-open http://localhost:5173 || open http://localhost:5173 || start http://localhost:5173
