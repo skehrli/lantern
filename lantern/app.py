@@ -21,6 +21,7 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
+
 @app.post("/simulate")
 async def simulate(params: SimulationParams) -> SimulationResult:
     try:
@@ -29,14 +30,16 @@ async def simulate(params: SimulationParams) -> SimulationResult:
             season=params.season,
             pv_percentage=params.pv_percentage,
             sd_percentage=params.sd_percentage,
-            with_battery=params.with_battery
+            with_battery=params.with_battery,
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @app.get("/")
 async def root():
-    return HTMLResponse("""
+    return HTMLResponse(
+        """
         <!DOCTYPE html>
         <html>
             <head>
@@ -47,4 +50,5 @@ async def root():
                 <div id="app"></div>
                 <script src="/static/js/app.js"></script>
             </body> </html>
-    """)
+    """
+    )

@@ -9,12 +9,7 @@ datasets for energy communities.
 
 from .models import SimulationResult, EnergyMetrics, CostMetrics
 from .battery import Battery
-from .constants import (
-    BATTERY_SIZE,
-    P2P_PRICE,
-    GRID_BUY_PRICE,
-    GRID_SELL_PRICE
-)
+from .constants import BATTERY_SIZE, P2P_PRICE, GRID_BUY_PRICE, GRID_SELL_PRICE
 from .market_solution import MarketSolution
 from .plot_utils import PlotUtils
 from scipy.signal import find_peaks
@@ -106,12 +101,14 @@ class ECDataset:
         return SimulationResult(
             energy_metrics=EnergyMetrics(
                 total_production=float(self.getProductionVolume),
-                total_consumption=float(self.getConsumptionVolume)
+                total_consumption=float(self.getConsumptionVolume),
             ),
             cost_metrics=CostMetrics(
                 total_cost_with_lec=float(sum(self.computePricePerMember(True)) / 100),
-                total_cost_without_lec=float(sum(self.computePricePerMember(False)) / 100)
-            )
+                total_cost_without_lec=float(
+                    sum(self.computePricePerMember(False)) / 100
+                ),
+            ),
         )
         # self.printKeyStats()
         # PlotUtils.visualizeEnergyConsumptionBreakdown(

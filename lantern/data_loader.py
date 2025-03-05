@@ -142,7 +142,9 @@ class DataLoader:
         conn: duckdb.DuckDBPyConnection = duckdb.connect(DB_NAME)
 
         # ask for loading database fresh from csv files. Only works if csv files exist (which they don't on the github version)
-        isProduction: bool = not (os.path.exists(GEN_DATA_DIR) and os.path.exists(LOAD_DATA_DIR))
+        isProduction: bool = not (
+            os.path.exists(GEN_DATA_DIR) and os.path.exists(LOAD_DATA_DIR)
+        )
         if not isProduction:
             user_input: str
             user_input = (
@@ -234,9 +236,11 @@ class DataLoader:
             need_rejoin = True
             print("Loading load data into DuckDB...")
 
-            conn.execute("""
+            conn.execute(
+                """
                 DROP TABLE IF EXISTS individual_household_load_table;
-            """)
+            """
+            )
             conn.execute(
                 f"""
                 CREATE TABLE individual_household_load_table (
@@ -244,7 +248,8 @@ class DataLoader:
                     {LOAD_DF_COL_NAME} FLOAT,
                     household_id INTEGER
                 );
-            """)
+            """
+            )
 
             for idx, file in enumerate(os.listdir(LOAD_DATA_DIR)):
                 if file.endswith(".csv"):
@@ -272,10 +277,13 @@ class DataLoader:
                 FROM individual_household_load_table
                 GROUP BY {TIMESTAMP_DF_COL_NAME}, {ID_DF_COL_NAME}
                 ORDER BY {TIMESTAMP_DF_COL_NAME}, {ID_DF_COL_NAME};
-            """)
-            conn.execute("""
+            """
+            )
+            conn.execute(
+                """
                 DROP TABLE IF EXISTS individual_household_load_table;
-            """)
+            """
+            )
 
             print("Finished loading data into DuckDB.")
         else:
@@ -379,9 +387,7 @@ class DataLoader:
 
         # Step 2: Extract all measurements for those sampled IDs
         # Construct SQL query to select all measurements for the sampled IDs
-        ids = ", ".join(
-            [f"'{id}'" for id in sampled_ids_list]
-        )
+        ids = ", ".join([f"'{id}'" for id in sampled_ids_list])
 
         query = f"""
             SELECT *
@@ -412,6 +418,7 @@ class DataLoader:
             index=ID_DF_COL_NAME, columns=TIMESTAMP_DF_COL_NAME, values=LOAD_DF_COL_NAME
         )
 
+
 def load_pkls() -> None:
     data_loader: DataLoader = DataLoader()
 
@@ -422,6 +429,7 @@ def load_pkls() -> None:
 
     data_loader.save_to_pickle(pv_data, os.path.join(PKL_DIR, PKL_PV_FILE))
     data_loader.save_to_pickle(load_data, os.path.join(PKL_DIR, PKL_LOAD_FILE))
+
 
 if __name__ == "__main__":
     load_pkls()

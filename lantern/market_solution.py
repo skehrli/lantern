@@ -1,17 +1,31 @@
 #!/usr/bin/env python3
 
-from .constants import EPS, SOURCE, NetworkAlloc, TARGET, UNBOUNDED
+"""
+market_solution.py
+
+This module holds the MarketSolution class, which models the LEC market in a single
+timestep.
+
+It constructs a graph, given the load and PV amount of all members for a
+timestep, and computes an optimal market allocation (who sells how much to whom).
+
+It provides the methods `getQtySoldForMember` and `getQtyPurchasedForMember` to access
+the result of the allocation, as well as `plotFlowGraph` to visualize the per-timestep
+network.
+
+The network that we're interested in in the end is however an overlay of ALL timesteps.
+It is accumulated in the static field `overall_trading_network`.
+"""
+
+from .constants import SOURCE, NetworkAlloc, TARGET, UNBOUNDED
 import pandas as pd
 import networkx as nx
-from typing import Optional, List, Self
+from typing import List, Self
 import matplotlib.pyplot as plt
-from functools import cached_property
 
 
 class MarketSolution:
-    # this is the static trading network accumulated over all
-    # timesteps and thus all MarketSolution instances
-    # It is a 2d dictionary [str -> str -> float]
+    # Static field documenting the accumulated trading network over all timesteps
     overall_trading_network: NetworkAlloc = {}
 
     def __init__(self: Self, supply: pd.Series, demand: pd.Series) -> None:
@@ -23,28 +37,7 @@ class MarketSolution:
         self.N_fair = self._construct_fair_network(supply, demand)
         self.tradingVolume, self.sellMap = nx.maximum_flow(self.N_fair, SOURCE, TARGET)
         self.tradingVolume = min(self.tradingVolume, self.supplyVolume)
-        self.add_flow_to_total_network(self.sellMap)
-
-    def add_flow_to_total_network(self: Self, sellMap: NetworkAlloc) -> None:
-        """Overlay the edges from the sellMap (max flow) into the overall_trading_network."""
-        u: str
-        v: str
-        flow: float
-        v_dict: dict[str, float]
-
-        for u, v_dict in sellMap.items():
-            if u == SOURCE or u == TARGET:
-                continue
-            for v, flow in v_dict.items():
-                if v == SOURCE or v == TARGET:
-                    continue
-                if flow > 0:
-                    if u not in MarketSolution.overall_trading_network:
-                        MarketSolution.overall_trading_network[u] = {}
-                    if v not in MarketSolution.overall_trading_network[u]:
-                        MarketSolution.overall_trading_network[u][v] = flow
-                    else:
-                        MarketSolution.overall_trading_network[u][v] += flow
+        self._add_flow_to_total_network(self.sellMap)
 
     def getQtySoldForMember(self: Self, member: int) -> float:
         node: str = self._get_node(member)
@@ -102,23 +95,26 @@ class MarketSolution:
         plt.axis("off")
         plt.show()
 
-    def _get_node(self: Self, n: int) -> str:
-        """
-        Defines mapping from index in list to node name. Currently just casts to string.
-        Checks the invariant that no node has the same name as SOURCE or TARGET
+    def _add_flow_to_total_network(self: Self, sellMap: NetworkAlloc) -> None:
+        """Overlay the edges from the sellMap (max flow) into the overall_trading_network."""
+        u: str
+        v: str
+        flow: float
+        v_dict: dict[str, float]
 
-        Parameters:
-        n (int): An index in list
-
-        Returns:
-        str: The corresponding node name. Currently just the string representation of that integer.
-
-        Raises:
-        AssertionError: If the converted string is equal to SOURCE or TARGET.
-        """
-        node = str(n)
-        assert node != SOURCE and node != TARGET
-        return node
+        for u, v_dict in sellMap.items():
+            if u == SOURCE or u == TARGET:
+                continue
+            for v, flow in v_dict.items():
+                if v == SOURCE or v == TARGET:
+                    continue
+                if flow > 0:
+                    if u not in MarketSolution.overall_trading_network:
+                        MarketSolution.overall_trading_network[u] = {}
+                    if v not in MarketSolution.overall_trading_network[u]:
+                        MarketSolution.overall_trading_network[u][v] = flow
+                    else:
+                        MarketSolution.overall_trading_network[u][v] += flow
 
     def _construct_fair_network(
         self: Self, supply: pd.Series, demand: pd.Series
@@ -184,6 +180,24 @@ class MarketSolution:
             for consumer in consumers
         )
         return network
+
+    def _get_node(self: Self, n: int) -> str:
+        """
+        Defines mapping from index in list to node name. Currently just casts to string.
+        Checks the invariant that no node has the same name as SOURCE or TARGET
+
+        Parameters:
+        n (int): An index in list
+
+        Returns:
+        str: The corresponding node name. Currently just the string representation of that integer.
+
+        Raises:
+        AssertionError: If the converted string is equal to SOURCE or TARGET.
+        """
+        node = str(n)
+        assert node != SOURCE and node != TARGET
+        return node
 
     def _get_layer(self: Self, node: str, graph: nx.DiGraph) -> int:
         """

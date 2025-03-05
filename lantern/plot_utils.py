@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 
+"""
+plot_utils.py
+
+Provides collection of plotting and visualization methods.
+"""
+
 import os
 import seaborn as sns
-from matplotlib.colors import ListedColormap
 import matplotlib.pyplot as plt
 from typing import List, Any
 import pandas as pd
@@ -328,30 +333,6 @@ class PlotUtils:
             os.path.join(OUT_DIR, f"load_profile.png"), dpi=300, bbox_inches="tight"
         )
         plt.show()
-
-        # x: list[int] = sorted(interval_count.keys())
-        # y: list[float] = [interval_sum[i]/interval_count[i] for i in x]
-
-        # x_filtered: list[int] = [i for i in x if i < window_zoom]
-        # y_filtered: list[float] = [interval_sum[i]/interval_count[i] for i in x_filtered]
-
-        # output_df: pd.DataFrame = pd.DataFrame({'hour': [i for i in x], 'avg load (kWh)': y})
-        # output_df.to_csv(os.path.join(OUT_DIR, f'load_profile_{SEASON}.csv'), index=False)
-
-        # plt.figure(figsize=(10,6))
-        # if window_zoom == -1:
-        #     # don't zoom, show entire season
-        #     plt.plot(x, y, color='blue')
-        #     plt.xlabel('Hour in Season')
-        # else:
-        #     # zoom to a 'window_zoom'-hour window
-        #     plt.plot(x_filtered, y_filtered, color='blue')
-        #     plt.xlabel('Hour in Season')
-        # plt.ylabel('Average Load (kW)')
-        # plt.title(f'Load Profile {SEASON}')
-        # plt.grid(True)
-        # # plt.legend()
-        # plt.close()
 
     @staticmethod
     def createEnergyBreakdownDonutChart(title: str, values: List[float]) -> None:
