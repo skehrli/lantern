@@ -9,19 +9,19 @@ init:
 	$(POETRY) install
 
 format:
-	$(POETRY) run black ./src/*.py
+	$(POETRY) run black ./lantern/*.py
 
 typecheck:
-	$(POETRY) run mypy ./src/*.py
+	$(POETRY) run mypy ./lantern/*.py
 
 run:
-	$(POETRY) run python -m src.main
+	$(POETRY) run python -m lantern.main
 
 load:
-	$(POETRY) run python -m src.data_loader
+	$(POETRY) run python -m lantern.data_loader
 
 site:
-	$(POETRY) run uvicorn src.app:app --reload
+	$(POETRY) run uvicorn lantern.app:app --reload
 
 # target to install dependencies
 install:

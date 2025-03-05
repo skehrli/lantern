@@ -1,14 +1,13 @@
 [tool.poetry]
-name = "p2pcode"
+name = "lantern"
 version = "0.1.0"
-description = "Client code for ec-data-analysis"
+description = "LEC simulation tool"
 authors = ["Sascha Kehrli <skehrli@ethz.ch>"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10.1"
-ec-data-analysis = "^0.9.1"
 numpy = "^2.1.1"
 pandas = "^2.2.2"
 black = "^24.8.0"
@@ -24,6 +23,8 @@ fastapi = "^0.115.11"
 uvicorn = "^0.34.0"
 plotly = "^6.0.0"
 pydantic = "^2.10.6"
+seaborn = "^0.13.2"
+networkx = "^3.4.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.2"
