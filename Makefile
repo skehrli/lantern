@@ -21,7 +21,11 @@ load:
 	$(POETRY) run python -m lantern.data_loader
 
 site:
-	$(POETRY) run uvicorn lantern.app:app --reload
+	$(POETRY) run uvicorn lantern.app:app --reload &
+	sleep 2
+	cd ./frontend && npm run dev &
+	sleep 1
+	xdg-open http://localhost:5173 || open http://localhost:5173 || start http://localhost:5173
 
 # target to install dependencies
 install:
