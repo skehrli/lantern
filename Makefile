@@ -5,6 +5,9 @@ POETRY = poetry
 
 all: format typecheck run
 
+init:
+	$(POETRY) install
+
 format:
 	$(POETRY) run black ./src/*.py
 
