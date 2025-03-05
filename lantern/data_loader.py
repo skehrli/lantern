@@ -25,12 +25,8 @@ from io import StringIO
 import os
 import duckdb
 import pickle
-import numpy as np
-from numpy import floating
 import pandas as pd
-from typing import Any
 from pandas._libs import NaTType
-import seaborn as sns
 from .constants import PKL_LOAD_FILE, PKL_PV_FILE, PKL_DIR, APT_BLOCK_SIZE, PV_CAPACITY
 
 NUM_IDS_SAMPLED: int = 100
@@ -88,7 +84,7 @@ class DataLoader:
             "date_from": "2024-01-01",
             "date_to": "2024-12-31",
             "dataset": "merra2",
-            "capacity": {PV_CAPACITY},
+            "capacity": PV_CAPACITY,
             "system_loss": 0.1,
             "tracking": 0,
             "tilt": 50 + tlt_noise,
@@ -208,7 +204,7 @@ class DataLoader:
         """
         )
 
-        # Check if data already exists before inserting
+        # Check if data already exists before inserting by counting rows in table
         load_row_count: int
         gen_row_count: int
 
@@ -244,7 +240,7 @@ class DataLoader:
                     household_id INTEGER
                 );
             """)
-            # Process each file separately
+
             for idx, file in enumerate(os.listdir(LOAD_DATA_DIR)):
                 if file.endswith(".csv"):
                     file_path = os.path.join(LOAD_DATA_DIR, file)
@@ -301,24 +297,6 @@ class DataLoader:
                             EXTRACT(YEAR FROM {GEN_TIMESTAMP_CSV_COL_NAME}) = 2024;
                     """
                     )
-                    # conn.execute(f"""
-                    #     INSERT INTO {GEN_TABLE_NAME}
-                    #     SELECT
-                    #         -- Replace the year 2015 with 2024 in the timestamp, and shift to UTC+1
-                    #         MAKE_TIMESTAMP(2024, EXTRACT(MONTH FROM {GEN_TIMESTAMP_CSV_COL_NAME}),
-                    #                        EXTRACT(DAY FROM {GEN_TIMESTAMP_CSV_COL_NAME}),
-                    #                        EXTRACT(HOUR FROM {GEN_TIMESTAMP_CSV_COL_NAME}),
-                    #                        EXTRACT(MINUTE FROM {GEN_TIMESTAMP_CSV_COL_NAME}),
-                    #                        EXTRACT(SECOND FROM {GEN_TIMESTAMP_CSV_COL_NAME}))
-                    #         AT TIME ZONE 'UTC') AT TIME ZONE 'UTC+1' AS new_timestamp,
-
-                    #         -- The rest of the columns including the load and ID
-                    #         {GEN_CSV_COL_NAME}, {idx} AS file_id
-                    #     FROM
-                    #         read_csv_auto('{file_path}')
-                    #     WHERE
-                    #         EXTRACT(YEAR FROM {GEN_TIMESTAMP_CSV_COL_NAME}) = 2015;
-                    # """)
 
             print("Finished loading pv data into DuckDB.")
         else:
@@ -397,7 +375,7 @@ class DataLoader:
         # Construct SQL query to select all measurements for the sampled IDs
         ids = ", ".join(
             [f"'{id}'" for id in sampled_ids_list]
-        )  # Prepare for SQL IN clause
+        )
 
         query = f"""
             SELECT *
@@ -428,60 +406,16 @@ class DataLoader:
             index=ID_DF_COL_NAME, columns=TIMESTAMP_DF_COL_NAME, values=LOAD_DF_COL_NAME
         )
 
-
-def compute_distribution(
-    values_per_interval: dict[int, list[float]]
-) -> dict[int, tuple[floating[Any], floating[Any]]]:
-    interval_gaussian: dict[int, tuple[floating[Any], floating[Any]]] = {}
-
-    for interval, values in values_per_interval.items():
-        if len(values) > 1:  # Ensure there's enough data
-            mu, sigma = np.mean(values), np.std(
-                values, ddof=1
-            )  # Sample standard deviation
-        else:
-            mu, sigma = np.mean(values), np.float64(
-                0.0
-            )  # No variance with one data point
-        interval_gaussian[interval] = (mu, sigma)
-
-    return interval_gaussian  # Dictionary of {interval: (mean, std)}
-
-
-def clean_data(data: pd.DataFrame) -> dict[int, list[float]]:
-    interval_values: dict[int, list[float]] = {}
-
-    for load, interval in zip(data[TIMESTAMP_DF_COL_NAME], data["hour_in_year"]):
-        if load >= MAX_LOAD or load < MIN_LOAD:
-            continue
-        if interval not in interval_values:
-            interval_values[interval] = []
-        interval_values[interval].append(load)
-
-    return interval_values
-
-
 def load_pkls() -> None:
     data_loader: DataLoader = DataLoader()
 
     pv_data: pd.DataFrame = data_loader.get_pv_data()
     load_data: pd.DataFrame = data_loader.get_load_data()
 
+    os.makedirs(PKL_DIR, exist_ok=True)
+
     data_loader.save_to_pickle(pv_data, os.path.join(PKL_DIR, PKL_PV_FILE))
     data_loader.save_to_pickle(load_data, os.path.join(PKL_DIR, PKL_LOAD_FILE))
-
-    # now we have a dataframe with NUM_IDS_SAMPLED smart meters tracked over a year (both load
-    # and synthetic gen). We can easily group by ID, sort by timestamp and then output these
-    # profiles into csv files.
-
-    # remove outliers and sort data by interval {hour_of_year : [values in that hour]}
-    # values_per_interval: dict[int, list[float]] = clean_data(sample)
-
-    # compute mean and sd per interval {hour_of_year : (mean, sd) for that hour}
-    # distributions: dict[int, tuple[float, float]] = compute_distribution(values_per_interval)
-
-    # _plot_load_profile(distributions)
-
 
 if __name__ == "__main__":
     load_pkls()
