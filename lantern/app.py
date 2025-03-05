@@ -19,7 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="src/static"), name="static")
+app.mount("/static", StaticFiles(directory="lantern/static"), name="static")
 
 
 @app.post("/simulate")
