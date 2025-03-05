@@ -4,14 +4,16 @@
 data_loader.py
 
 This module prepares the dataset for the simulation. It reads csv files from LOAD_DATA_DIR and
-GEN_DATA_DIR respectively into a locally stored database, resolving things like timezones and
-averaging measurements per hour.
+GEN_DATA_DIR respectively into a locally stored database, resolving things like timezones,
+averaging measurements per hour, and aggregating per household data into residential buildings.
+
 Unifies the datasets into one table with {ID, TIMESTAMP, LOAD, GEN} as columns. It samples
 from this table (of about 1400 smart meters) NUM_IDS_SAMPLED smart meters and loads it into
 a pandas DataFrame, which then has NUM_IDS_SAMPLED * 8760 (# hours per year) entries.
 The dataframe is pivoted into two dataframes (columns are timestamps, ID is index), one for load
 and one for pv, and compressed into a pickle file each.
-It provides an API for the simulation driver main.py to fetch the pickle files.
+
+The module provides an API for the simulation driver main.py to fetch the pickle files.
 """
 
 import json
@@ -247,7 +249,7 @@ class DataLoader:
             for idx, file in enumerate(os.listdir(LOAD_DATA_DIR)):
                 if file.endswith(".csv"):
                     file_path = os.path.join(LOAD_DATA_DIR, file)
-                    print(f"Loading: {idx}")
+                    print(f"Loading Load CSV file: {idx}")
                     conn.execute(
                         f"""
                         INSERT INTO individual_household_load_table
@@ -277,17 +279,17 @@ class DataLoader:
 
             print("Finished loading data into DuckDB.")
         else:
-            print("DB already exists, skipping reload.")
+            print("Load table in DB already exists, skipping reload.")
 
         if gen_row_count == 0:  # Load data only if table is empty
             need_rejoin = True
-            print("Loading pv data into DuckDB...")
+            print("Loading PV data into DuckDB...")
 
             # Process each file separately
             for idx, file in enumerate(os.listdir(GEN_DATA_DIR)):
                 if file.endswith(".csv"):
                     file_path = os.path.join(GEN_DATA_DIR, file)
-                    print(f"Loading: {idx}")
+                    print(f"Loading PV CSV file: {idx}")
                     conn.execute(
                         f"""
                         INSERT INTO {GEN_TABLE_NAME}
@@ -301,9 +303,9 @@ class DataLoader:
                     """
                     )
 
-            print("Finished loading pv data into DuckDB.")
+            print("Finished loading PV data into DuckDB.")
         else:
-            print("DB already exists, skipping reload.")
+            print("PV table in DB already exists, skipping reload.")
 
         if need_rejoin:
             conn.execute(
@@ -350,9 +352,10 @@ class DataLoader:
         columns = conn.execute(f"PRAGMA table_info({JOINED_TABLE_NAME});").fetchall()
         column_count = len(columns)
 
-        print(
-            f"Table '{JOINED_TABLE_NAME}' has {row_count} rows and {column_count} columns."
-        )
+        if not isProduction:
+            print(
+                f"Table '{JOINED_TABLE_NAME}' has {row_count} rows and {column_count} columns."
+            )
 
         return conn
 
