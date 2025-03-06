@@ -87,8 +87,9 @@ def run_simulation(
         raise ValueError("Smart Device percentage must be between 0 and 100")
 
     # only keep community_size rows
-    num_rows: int = pv_data.shape[0]
-    sampled_rows: list[int] = random.sample(range(num_rows), community_size)
+    sampled_rows: list[int] = [i for i in range(community_size)]
+    # num_rows: int = pv_data.shape[0]
+    # sampled_rows: list[int] = random.sample(range(num_rows), community_size)
     pv_data = pv_data.iloc[sampled_rows]
     load_data = load_data.iloc[sampled_rows]
 
@@ -104,9 +105,10 @@ def run_simulation(
     num_members_without_pv: int = community_size - int(
         pv_percentage * community_size / 100
     )
-    members_without_pv: list[int] = random.sample(
-        range(community_size), num_members_without_pv
-    )
+    members_without_pv: list[int] = [i for i in range(num_members_without_pv)]
+    # members_without_pv: list[int] = random.sample(
+    #     range(community_size), num_members_without_pv
+    # )
     pv_data.loc[members_without_pv, :] = 0
 
     return ECDataset(pv_data.T, load_data.T, 1, sd_percentage, with_battery).simulate()
