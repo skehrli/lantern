@@ -254,11 +254,6 @@ function App() {
               <svg className="circle-fill" viewBox="0 0 80 80">
                 <path d={getCircularPath(params.sd_percentage)} />
               </svg>
-              <div className="circle-thumb"
-                style={{
-                  transform: getThumbPosition(params.sd_percentage)
-                }}
-              />
               <span>{params.sd_percentage}%</span>
             </div>
           </div>
@@ -269,11 +264,6 @@ function App() {
               <svg className="circle-fill" viewBox="0 0 80 80">
                 <path d={getCircularPath(params.pv_percentage)} />
               </svg>
-              <div className="circle-thumb"
-                style={{
-                  transform: getThumbPosition(params.pv_percentage)
-                }}
-              />
               <span>{params.pv_percentage}%</span>
             </div>
           </div>

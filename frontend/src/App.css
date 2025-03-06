@@ -86,6 +86,7 @@ input[type="range"] {
   stroke-width: 4px;
   transform-origin: center;
   z-index: 1;
+  stroke-linecap: round;  /* Add rounded endpoints to the stroke */
 }
 
 .circle input[type="range"] {
@@ -134,10 +135,12 @@ input[type="range"] {
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 3;
-  left: 50%;  /* Center the thumb */
-  top: 50%;   /* Center the thumb */
-  margin: -8px;  /* Offset by half the thumb size */
+  left: 50%;
+  top: 50%;
+  margin: -8px;
   transform-origin: center center;
+  opacity: 0;  /* Make it invisible */
+  /* Keep the pointer events active so it's still clickable */
 }
 
 button {
@@ -268,31 +271,29 @@ button:hover {
 .size-slider input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 24px;
-  height: 24px;
-  background: white;
+  width: 0;  /* Set width to 0 */
+  height: 0;  /* Set height to 0 */
+  background: transparent;  /* Make it transparent */
   border: none;
-  border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Hide the default track in all browsers */
-.size-slider input[type="range"]::-webkit-slider-runnable-track {
-  -webkit-appearance: none;
-  background: none;
+/* For Firefox */
+.size-slider input[type="range"]::-moz-range-thumb {
+  width: 0;
+  height: 0;
+  background: transparent;
   border: none;
+  cursor: pointer;
 }
 
-.size-slider input[type="range"]::-moz-range-track {
-  background: none;
+/* For IE/Edge */
+.size-slider input[type="range"]::-ms-thumb {
+  width: 0;
+  height: 0;
+  background: transparent;
   border: none;
-}
-
-.size-slider input[type="range"]::-ms-track {
-  background: none;
-  border: none;
-  color: transparent;
+  cursor: pointer;
 }
 
 /* Style the value display */
