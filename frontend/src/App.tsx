@@ -136,14 +136,12 @@ function App() {
     setError(null);
     console.log('Form submitted');
 
-    const formData = new FormData(e.currentTarget);
-    
     const submissionParams: SimulationParams = {
-      community_size: Number(formData.get('community_size')),
+      community_size: params.community_size,
       season: params.season,
       pv_percentage: params.pv_percentage,
-      sd_percentage: Number(formData.get('sd_percentage')),
-      with_battery: formData.get('with_battery') === 'on'
+      sd_percentage: params.sd_percentage,
+      with_battery: params.with_battery
     };
 
     console.log('Sending params:', submissionParams);
