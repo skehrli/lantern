@@ -1,7 +1,22 @@
-from fastapi import FastAPI, HTTPException, Request
+#!/usr/bin/env python3
+
+"""
+app.py
+
+Defines a FastAPI application to answer requests from React frontend (which provides
+user parameters), and calls the simulation code with them.
+
+Includes:
+- CORS middleware configuration to allow requests from a React frontend running at http://localhost:5173.
+- API endpoint (`/api/simulate`) that accepts POST requests with simulation parameters.
+
+Responses are returned as JSON, and errors are handled with appropriate HTTP status codes.
+"""
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from .models import SimulationParams, SimulationResult
+from .models import SimulationParams
 from .main import run_simulation
 from pydantic import BaseModel
 
@@ -24,7 +39,7 @@ class SimulationParams(BaseModel):
     with_battery: bool
 
 @app.post("/api/simulate")
-async def simulate(params: SimulationParams, request: Request):
+async def simulate(params: SimulationParams):
     try:
         result = run_simulation(
             community_size=params.community_size,

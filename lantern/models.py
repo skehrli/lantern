@@ -1,3 +1,13 @@
+#!/usr/bin/env python3
+
+"""
+models.py
+
+Defines pydantic classes to hold parameters and results of the simulation.
+Converts NetworkX graph into serializable datastructures.
+"""
+
+
 from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
 from typing import List, Any, Optional, Dict, Tuple, Union
