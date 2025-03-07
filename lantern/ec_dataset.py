@@ -9,7 +9,7 @@ datasets for energy communities.
 
 from .models import SimulationResult, EnergyMetrics, CostMetrics, MarketMetrics, TradingNetwork
 from .battery import Battery
-from .constants import BATTERY_SIZE, P2P_PRICE, GRID_BUY_PRICE, GRID_SELL_PRICE, NetworkAlloc
+from .constants import BATTERY_SIZE, P2P_PRICE, GRID_BUY_PRICE, GRID_SELL_PRICE, NetworkAlloc, APT_BLOCK_SIZE
 from .market_solution import MarketSolution
 from scipy.signal import find_peaks
 import pandas as pd
@@ -182,32 +182,13 @@ class ECDataset:
                 ratio_sold_supply=float(self.getTradingVolume / self.getSupplyVolumeImprecise) if self.getSupplyVolumeImprecise != 0 else 0,
             ),
             cost_metrics=CostMetrics(
-                cost_with_lec=float(sum(self.computePricePerMember(True)) / 100),
+                cost_with_lec=float(sum(self.computePricePerMember(True)) / (3.3 * self.numParticipants * APT_BLOCK_SIZE)),
                 cost_without_lec=float(
-                    sum(self.computePricePerMember(False)) / 100
+                    sum(self.computePricePerMember(False)) / (3.3 * self.numParticipants * APT_BLOCK_SIZE)
                 ),
             ),
             trading_network=TradingNetwork.from_networkx(G, loc),
         )
-        # PlotUtils.visualizeEnergyConsumptionBreakdown(
-        #     self.getSelfConsumptionVolume,
-        #     self.getTradingVolume,
-        #     self.getDischargeVolume(),
-        #     self.getGridPurchaseVolume(),
-        # )
-        # PlotUtils.visualizeEnergyProductionBreakdown(
-        #     self.getSelfConsumptionVolume,
-        #     self.getTradingVolume,
-        #     self.getChargeVolume(),
-        #     self.getGridFeedInVolume(),
-        # )
-        # PlotUtils.visualizeSellRatioDistribution(
-        #     self.getSellVolumePerMember, self.getSupplyPerMember
-        # )
-        # PlotUtils.visualizeBuyRatioDistribution(
-        #     self.getBuyVolumePerMember, self.getDemandPerMember
-        # )
-        # PlotUtils.visualizeSupplyDemandCurves(self.supply, self.demand)
 
     def computePricePerMember(self: Self, with_lec: bool) -> npt.NDArray[np.float64]:
         costPerMember: npt.NDArray[np.float64] = np.zeros(
@@ -298,7 +279,7 @@ class ECDataset:
         and ensuring that loads are not shifted outside 8 AM - 10 PM.
         """
         if smart_device_percentage == 0:
-            return  # Skip the entire process if no smart devices
+            return  # Skip if no smart devices
         
         df_shifted = self.consumption.copy()  # Create a copy to avoid modifying the original directly
         users = self.consumption.columns
