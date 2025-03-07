@@ -40,6 +40,9 @@ class SimulationParams(BaseModel):
 
 @app.post("/api/simulate")
 async def simulate(params: SimulationParams):
+    # Log the incoming parameters
+    print(f"Simulation request received with parameters: {params}")
+    
     try:
         result = run_simulation(
             community_size=params.community_size,
