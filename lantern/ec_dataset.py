@@ -297,7 +297,10 @@ class ECDataset:
         Attempts to reduce peak loads by shifting loads for a subset of users while increasing PV consumption,
         and ensuring that loads are not shifted outside 8 AM - 10 PM.
         """
-        df_shifted = self.consumption
+        if smart_device_percentage == 0:
+            return  # Skip the entire process if no smart devices
+        
+        df_shifted = self.consumption.copy()  # Create a copy to avoid modifying the original directly
         users = self.consumption.columns
         shiftable_users = np.random.choice(
             users, size=int(len(users) * smart_device_percentage / 100), replace=False
@@ -380,6 +383,10 @@ class ECDataset:
         self.consumption.drop(columns=["date"], inplace=True, errors="ignore")
 
         self.consumption = df_shifted
+        
+        # Recalculate supply and demand based on the new consumption values
+        self.supply = (self.production - self.consumption).clip(lower=0)
+        self.demand = (self.consumption - self.production).clip(lower=0)
 
     def getDischargeVolumePerMember(self: Self) -> Optional[np.ndarray]:
         return self._discharge_volume_per_member
