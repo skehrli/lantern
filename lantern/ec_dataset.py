@@ -81,10 +81,10 @@ class ECDataset:
         self.demand = (consumption - production).clip(lower=0)
 
     def simulate(self: Self) -> SimulationResult:
+        self._adjust_for_smart_devices(self._smart_device_percentage)
+
         if self._with_battery:
             self._adjust_for_batteries()
-
-        self._adjust_for_smart_devices(self._smart_device_percentage)
 
         for t in range(self.numTimesteps):
             self.marketSolutions.append(
