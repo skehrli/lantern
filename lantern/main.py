@@ -111,7 +111,28 @@ def run_simulation(
     # )
     pv_data.loc[members_without_pv, :] = 0
 
-    return ECDataset(pv_data.T, load_data.T, 1, sd_percentage, with_battery).simulate()
+    # average per month
+
+    pv_data_monthly = pd.DataFrame()
+    load_data_monthly = pd.DataFrame()
+    months = sorted(set(col.month for col in pv_data.columns))
+    for month in months:
+        pv_month_cols = [col for col in pv_data.columns if col.month == month]
+        load_month_cols = [col for col in load_data.columns if col.month == month]
+        # Group by hour of day and average
+        for hour in range(24):
+            # Get columns for this hour in this month
+            pv_hour_cols = [col for col in pv_month_cols if col.hour == hour]
+            load_hour_cols = [col for col in load_month_cols if col.hour == hour]
+
+            if pv_hour_cols and load_hour_cols:
+                timestamp = pd.Timestamp(2024, month, 15, hour)
+                pv_data_monthly[timestamp] = pv_data[pv_hour_cols].mean(axis=1)
+                load_data_monthly[timestamp] = load_data[load_hour_cols].mean(axis=1)
+
+    # use monthly averaged data for simulation
+    return ECDataset(pv_data_monthly.T, load_data_monthly.T, 1, sd_percentage, with_battery).simulate()
+    # return ECDataset(pv_data.T, load_data.T, 1, sd_percentage, with_battery).simulate()
 
 
 def get_valid_season() -> Season:
