@@ -49,34 +49,56 @@ const BatteryIcon = () => (
 
 // Add this new component for the cost comparison bars
 const CostComparison = ({ withLec, withoutLec }: { withLec: number, withoutLec: number }) => {
-  const maxValue = Math.max(withLec, withoutLec);
-  const withLecPercent = (withLec / maxValue) * 100;
-  const withoutLecPercent = (withoutLec / maxValue) * 100;
-
+  // Calculate savings percentage
+  const savings = withoutLec - withLec;
+  const savingsPercent = (savings / withoutLec) * 100;
+  
+  // For visual clarity, use a more moderate scaling factor
+  // This will make the difference visible but not exaggerated
+  const withLecWidth = (withLec / withoutLec) * 100 - 11;
+  
+  // Debug width of the bar
+  // console.log("Debug - withLec:", withLec, "withoutLec:", withoutLec);
+  // console.log("Debug - savings:", savings, "savingsPercent:", savingsPercent);
+  // console.log("Debug - withLecWidth:", withLecWidth);
+  
   return (
     <div className="cost-comparison">
+      {/* Add a debug display that's only visible during development */}
+      {/* {process.env.NODE_ENV === 'development' && (
+        <div className="debug-info" style={{ fontSize: '12px', color: '#666', marginBottom: '10px', fontFamily: 'monospace' }}>
+          Debug: withLec={withLec.toFixed(2)} withoutLec={withoutLec.toFixed(2)} savings={savings.toFixed(2)} ({savingsPercent.toFixed(2)}%) width={withLecWidth.toFixed(2)}%
+        </div>
+      )} */}
+      
       <div className="bar-container">
-        <div className="bar-label">With LEC</div>
+        <div className="bar-label">With Community</div>
         <div className="bar-wrapper">
           <div 
             className="bar lec-bar" 
-            style={{ width: `${withLecPercent}%` }}
+            style={{ width: `${withLecWidth}%` }}
           >
             <span>{withLec.toFixed(2)} CHF</span>
           </div>
         </div>
       </div>
       <div className="bar-container">
-        <div className="bar-label">Without LEC</div>
+        <div className="bar-label">Without Community</div>
         <div className="bar-wrapper">
           <div 
             className="bar no-lec-bar" 
-            style={{ width: `${withoutLecPercent}%` }}
+            style={{ width: '100%' }}
           >
             <span>{withoutLec.toFixed(2)} CHF</span>
           </div>
         </div>
       </div>
+      
+      {savings > 0 && (
+        <div className="savings-info">
+          <span>You save {savingsPercent.toFixed(1)}% with community</span>
+        </div>
+      )}
     </div>
   );
 };

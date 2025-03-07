@@ -454,4 +454,11 @@ const getCircularFillPath = (percentage: number) => {
 
 .no-lec-bar {
   background-color: #9ca3af;
+}
+
+.savings-info {
+  margin-top: 1rem;
+  text-align: right;
+  font-weight: 500;
+  color: #059669;
 } 
