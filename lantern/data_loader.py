@@ -5,7 +5,7 @@ data_loader.py
 
 This module prepares the dataset for the simulation. It reads csv files from LOAD_DATA_DIR and
 GEN_DATA_DIR respectively into a locally stored database, resolving things like timezones, and
-averaging measurements per hour, and aggregating per household data into residential buildings.
+averaging measurements per hour.
 
 Unifies the datasets into one table with {ID, TIMESTAMP, LOAD, GEN} as columns. It samples
 from this table (of about 1400 smart meters) NUM_IDS_SAMPLED smart meters and loads it into
@@ -29,7 +29,7 @@ import duckdb
 import pickle
 import pandas as pd
 from pandas._libs import NaTType
-from .constants import PKL_LOAD_FILE, PKL_PV_FILE, PKL_DIR, APT_BLOCK_SIZE, PV_CAPACITY
+from .constants import APT_BLOCK_SIZE, PKL_LOAD_FILE, PKL_PV_FILE, PKL_DIR, PV_CAPACITY
 
 NUM_IDS_SAMPLED: int = 100
 MAX_LOAD: float = 4  # clip data points higher than this
@@ -37,7 +37,6 @@ MIN_LOAD: float = 0.1  # clip data points lower than this
 DB_NAME: str = "data.db"
 LOAD_TABLE_NAME: str = "load_data"
 GEN_TABLE_NAME: str = "gen_data"
-JOINED_TABLE_NAME: str = "joined_data"
 TIMEZONE: str = "Europe/Zurich"
 YEAR: int = 2024
 YEAR_START: pd.Timestamp | NaTType = pd.Timestamp(YEAR, 1, 1).tz_localize(TIMEZONE)
@@ -64,15 +63,13 @@ API_BASE: str = "https://www.renewables.ninja/api/"
 
 
 class DataLoader:
-    # We have a database with three tables. prod, gen, and joined (with both).
-    # If we have n < 1400 gen profiles, then only n load profiles are matched to a gen profile.
-    # Could simply duplicate the gen profiles to create the others.
-    _conn: duckdb.DuckDBPyConnection
-    _sample: pd.DataFrame
+    # We have a database with two tables. prod and gen.
+    # _conn: duckdb.DuckDBPyConnection
+    # _sample: pd.DataFrame
 
     def __init__(self) -> None:
         self._conn = self._create_database()
-        self._sample: pd.DataFrame = self._sample_from_db(self._conn)
+        self._sample_load, self._sample_pv = self._sample_from_db(self._conn)
 
     def _get_randomized_args(self) -> dict[str, float | str | int]:
         lat_noise: float = random.uniform(-0.02, 0.02)
@@ -200,17 +197,6 @@ class DataLoader:
         """
         )
 
-        conn.execute(
-            f"""
-            CREATE TABLE IF NOT EXISTS {JOINED_TABLE_NAME} (
-                {TIMESTAMP_DF_COL_NAME} TIMESTAMP,
-                {LOAD_DF_COL_NAME} FLOAT,
-                {GEN_DF_COL_NAME} FLOAT,
-                {ID_DF_COL_NAME} INTEGER
-            );
-        """
-        )
-
         # Check if data already exists before inserting by counting rows in table
         load_row_count: int
         gen_row_count: int
@@ -230,10 +216,7 @@ class DataLoader:
         else:
             gen_row_count = 0
 
-        need_rejoin: bool = False
-
         if load_row_count == 0:  # Load data only if table is empty
-            need_rejoin = True
             print("Loading load data into DuckDB...")
 
             conn.execute(
@@ -243,54 +226,31 @@ class DataLoader:
             )
             conn.execute(
                 f"""
-                CREATE TABLE individual_household_load_table (
-                    {TIMESTAMP_DF_COL_NAME} TIMESTAMP,
-                    {LOAD_DF_COL_NAME} FLOAT,
-                    household_id INTEGER
-                );
+                DROP TABLE IF EXISTS joined_data;
             """
             )
-
             for idx, file in enumerate(os.listdir(LOAD_DATA_DIR)):
                 if file.endswith(".csv"):
                     file_path = os.path.join(LOAD_DATA_DIR, file)
                     print(f"Loading Load CSV file: {idx}")
                     conn.execute(
                         f"""
-                        INSERT INTO individual_household_load_table
+                        INSERT INTO {LOAD_TABLE_NAME}
                         SELECT
-                            DATE_TRUNC('hour', {LOAD_TIMESTAMP_CSV_COL_NAME}) AS {TIMESTAMP_DF_COL_NAME},
+                            DATE_TRUNC('hour', {LOAD_TIMESTAMP_CSV_COL_NAME} AT TIME ZONE '{TIMEZONE}') AS {TIMESTAMP_DF_COL_NAME},
                             SUM({LOAD_CSV_COL_NAME}) AS {LOAD_DF_COL_NAME},
-                            {idx} AS household_id
+                            {idx} AS {ID_DF_COL_NAME}
                         FROM read_csv_auto('{file_path}')
                         WHERE EXTRACT(YEAR FROM {LOAD_TIMESTAMP_CSV_COL_NAME}) = {YEAR}
-                        GROUP BY {TIMESTAMP_DF_COL_NAME};
+                        GROUP BY {TIMESTAMP_DF_COL_NAME}
+                        ORDER BY {TIMESTAMP_DF_COL_NAME};
                      """
                     )
-            conn.execute(
-                f"""
-                INSERT INTO {LOAD_TABLE_NAME}
-                SELECT
-                    {TIMESTAMP_DF_COL_NAME},
-                    SUM({LOAD_DF_COL_NAME}) AS {LOAD_DF_COL_NAME},
-                    FLOOR(household_id / {APT_BLOCK_SIZE}) AS {ID_DF_COL_NAME}
-                FROM individual_household_load_table
-                GROUP BY {TIMESTAMP_DF_COL_NAME}, {ID_DF_COL_NAME}
-                ORDER BY {TIMESTAMP_DF_COL_NAME}, {ID_DF_COL_NAME};
-            """
-            )
-            conn.execute(
-                """
-                DROP TABLE IF EXISTS individual_household_load_table;
-            """
-            )
-
             print("Finished loading data into DuckDB.")
         else:
             print("Load table in DB already exists, skipping reload.")
 
         if gen_row_count == 0:  # Load data only if table is empty
-            need_rejoin = True
             print("Loading PV data into DuckDB...")
 
             # Process each file separately
@@ -315,106 +275,74 @@ class DataLoader:
         else:
             print("PV table in DB already exists, skipping reload.")
 
-        if need_rejoin:
-            conn.execute(
-                f"""
-                DROP TABLE {JOINED_TABLE_NAME};
-            """
-            )
-            conn.execute(
-                f"""
-                CREATE TABLE {JOINED_TABLE_NAME} (
-                    {TIMESTAMP_DF_COL_NAME} TIMESTAMP,
-                    {LOAD_DF_COL_NAME} FLOAT,
-                    {GEN_DF_COL_NAME} FLOAT,
-                    {ID_DF_COL_NAME} INTEGER
-                );
-            """
-            )
-            conn.execute(
-                f"""
-                INSERT INTO {JOINED_TABLE_NAME} ({TIMESTAMP_DF_COL_NAME}, {LOAD_DF_COL_NAME}, {GEN_DF_COL_NAME}, {ID_DF_COL_NAME})
-                SELECT
-                    load.{TIMESTAMP_DF_COL_NAME},
-                    load.{LOAD_DF_COL_NAME},
-                    gen.{GEN_DF_COL_NAME},
-                    load.{ID_DF_COL_NAME}
-                FROM
-                    {LOAD_TABLE_NAME} AS load
-                JOIN
-                    {GEN_TABLE_NAME} AS gen
-                ON
-                    load.{TIMESTAMP_DF_COL_NAME} = gen.{TIMESTAMP_DF_COL_NAME}
-                AND
-                    load.{ID_DF_COL_NAME} = gen.{ID_DF_COL_NAME};
-            """
-            )
-
-        result = conn.execute(f"SELECT COUNT(*) FROM {JOINED_TABLE_NAME};").fetchone()
-        if result is not None:
-            row_count = result[0]
-        else:
-            row_count = 0
-
-        # Get the number of columns in the table
-        columns = conn.execute(f"PRAGMA table_info({JOINED_TABLE_NAME});").fetchall()
-        column_count = len(columns)
-
-        if not isProduction:
-            print(
-                f"Table '{JOINED_TABLE_NAME}' has {row_count} rows and {column_count} columns."
-            )
-
         return conn
 
-    def _sample_ids(self, conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
+    def _sample_ids(self, conn: duckdb.DuckDBPyConnection) -> tuple[pd.DataFrame, pd.DataFrame]:
         """
         Samples NUM_IDS_SAMPLED IDs from all IDs in the database and returns a DataFrame containing
         all measurements of these IDs.
         """
 
-        sampled_ids = conn.execute(
+        sampled_ids_load = conn.execute(
             f"""
             SELECT DISTINCT ID
-            FROM {JOINED_TABLE_NAME}
+            FROM {LOAD_TABLE_NAME}
+            ORDER BY RANDOM()
+            LIMIT {NUM_IDS_SAMPLED * APT_BLOCK_SIZE};
+        """
+        ).fetchall()
+
+        sampled_ids_gen = conn.execute(
+            f"""
+            SELECT DISTINCT ID
+            FROM {GEN_TABLE_NAME}
             ORDER BY RANDOM()
             LIMIT {NUM_IDS_SAMPLED};
         """
         ).fetchall()
 
         # Convert to a list of IDs for querying later
-        sampled_ids_list = [row[0] for row in sampled_ids]
+        sampled_ids_list_load = [row[0] for row in sampled_ids_load]
+        sampled_ids_list_gen = [row[0] for row in sampled_ids_gen]
 
         # Step 2: Extract all measurements for those sampled IDs
         # Construct SQL query to select all measurements for the sampled IDs
-        ids = ", ".join([f"'{id}'" for id in sampled_ids_list])
+        ids_load = ", ".join([f"'{id}'" for id in sampled_ids_list_load])
+        ids_gen = ", ".join([f"'{id}'" for id in sampled_ids_list_gen])
 
-        query = f"""
+        load_query = f"""
             SELECT *
-            FROM {JOINED_TABLE_NAME}
-            WHERE ID IN ({ids})
+            FROM {LOAD_TABLE_NAME}
+            WHERE ID IN ({ids_load})
         """
 
-        return conn.execute(query).fetchdf()
+        pv_query = f"""
+            SELECT *
+            FROM {GEN_TABLE_NAME}
+            WHERE ID IN ({ids_gen})
+        """
 
-    def _sample_from_db(self, conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
+        return conn.execute(load_query).fetchdf(), conn.execute(pv_query).fetchdf()
+
+    def _sample_from_db(self, conn: duckdb.DuckDBPyConnection) -> tuple[pd.DataFrame, pd.DataFrame]:
         print("Sampling measurements...")
-        df: pd.DataFrame = self._sample_ids(conn)
-        self._extract_timestamp_features(df)
+        dfs: tuple[pd.DataFrame, pd.DataFrame] = self._sample_ids(conn)
+        self._extract_timestamp_features(dfs[0])
+        self._extract_timestamp_features(dfs[1])
         print("Finished sampling measurements.")
-        return df.drop_duplicates(subset=[ID_DF_COL_NAME, TIMESTAMP_DF_COL_NAME])
+        return dfs[0], dfs[1].drop_duplicates(subset=[ID_DF_COL_NAME, TIMESTAMP_DF_COL_NAME])
 
     def save_to_pickle(self, df: pd.DataFrame, filename: str) -> None:
         with open(filename, "wb") as f:
             pickle.dump(df, f)
 
     def get_pv_data(self) -> pd.DataFrame:
-        return self._sample.pivot(
+        return self._sample_pv.pivot(
             index=ID_DF_COL_NAME, columns=TIMESTAMP_DF_COL_NAME, values=GEN_DF_COL_NAME
         )
 
     def get_load_data(self) -> pd.DataFrame:
-        return self._sample.pivot(
+        return self._sample_load.pivot(
             index=ID_DF_COL_NAME, columns=TIMESTAMP_DF_COL_NAME, values=LOAD_DF_COL_NAME
         )
 
