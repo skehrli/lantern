@@ -11,7 +11,6 @@ user-specified parameters, and finally calls the simulation.
 import os
 import random
 
-from lantern.data_loader import TIMESTAMP_DF_COL_NAME
 from .constants import APT_BLOCK_SIZE, PKL_DIR, PKL_LOAD_FILE, PKL_PV_FILE, RANDOM_SEED
 from .ec_dataset import ECDataset
 from .models import SimulationResult
