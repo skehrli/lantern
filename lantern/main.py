@@ -10,7 +10,9 @@ user-specified parameters, and finally calls the simulation.
 
 import os
 import random
-from .constants import PKL_DIR, PKL_LOAD_FILE, PKL_PV_FILE
+
+from lantern.data_loader import TIMESTAMP_DF_COL_NAME
+from .constants import APT_BLOCK_SIZE, PKL_DIR, PKL_LOAD_FILE, PKL_PV_FILE, RANDOM_SEED
 from .ec_dataset import ECDataset
 from .models import SimulationResult
 from enum import Enum
@@ -67,6 +69,9 @@ def run_simulation(
     Returns:
         ECDataset: The resulting dataset from the simulation
     """
+    # ensure pseudo-random choices deterministic
+    random.seed(RANDOM_SEED)
+
     # load dataframes
     pv_data: pd.DataFrame = fetch_pkl(os.path.join(PKL_DIR, PKL_PV_FILE))
     load_data: pd.DataFrame = fetch_pkl(os.path.join(PKL_DIR, PKL_LOAD_FILE))
@@ -86,12 +91,16 @@ def run_simulation(
     if not (0 <= sd_percentage <= 100):
         raise ValueError("Smart Device percentage must be between 0 and 100")
 
+    # treat december as month 0 to create continuity for winter
+    pv_data = pd.DataFrame(pv_data[sorted(pv_data.columns, key=lambda x: (x.month % 12, x.day, x.hour))])
+    load_data = pd.DataFrame(load_data[sorted(load_data.columns, key=lambda x: (x.month % 12, x.day, x.hour))])
+
     # only keep community_size rows
-    sampled_rows: list[int] = [i for i in range(community_size)]
-    # num_rows: int = pv_data.shape[0]
-    # sampled_rows: list[int] = random.sample(range(num_rows), community_size)
-    pv_data = pv_data.iloc[sampled_rows]
-    load_data = load_data.iloc[sampled_rows]
+    num_rows: int = pv_data.shape[0]
+    sampled_rows_load: list[int] = random.sample(range(num_rows * APT_BLOCK_SIZE), community_size * APT_BLOCK_SIZE)
+    sampled_rows_pv: list[int] = random.sample(range(num_rows), community_size)
+    load_data = load_data.iloc[sampled_rows_load]
+    pv_data = pv_data.iloc[sampled_rows_pv]
 
     # only keep datapoints in specified season
     pv_data = pv_data.loc[:, [in_season(season_enum, col) for col in pv_data.columns]]
@@ -105,34 +114,16 @@ def run_simulation(
     num_members_without_pv: int = community_size - int(
         pv_percentage * community_size / 100
     )
-    members_without_pv: list[int] = [i for i in range(num_members_without_pv)]
-    # members_without_pv: list[int] = random.sample(
-    #     range(community_size), num_members_without_pv
-    # )
+    members_without_pv: list[int] = random.sample(
+        range(community_size), num_members_without_pv
+    )
     pv_data.loc[members_without_pv, :] = 0
 
-    # average per month
+    common_cols = load_data.columns.intersection(pv_data.columns)
+    pv_data = pd.DataFrame(pv_data[common_cols])
+    load_data = pd.DataFrame(load_data[common_cols])
 
-    pv_data_monthly = pd.DataFrame()
-    load_data_monthly = pd.DataFrame()
-    months = sorted(set(col.month for col in pv_data.columns))
-    for month in months:
-        pv_month_cols = [col for col in pv_data.columns if col.month == month]
-        load_month_cols = [col for col in load_data.columns if col.month == month]
-        # Group by hour of day and average
-        for hour in range(24):
-            # Get columns for this hour in this month
-            pv_hour_cols = [col for col in pv_month_cols if col.hour == hour]
-            load_hour_cols = [col for col in load_month_cols if col.hour == hour]
-
-            if pv_hour_cols and load_hour_cols:
-                timestamp = pd.Timestamp(2024, month, 15, hour)
-                pv_data_monthly[timestamp] = pv_data[pv_hour_cols].mean(axis=1)
-                load_data_monthly[timestamp] = load_data[load_hour_cols].mean(axis=1)
-
-    # use monthly averaged data for simulation
-    return ECDataset(pv_data_monthly.T, load_data_monthly.T, 1, sd_percentage, with_battery).simulate()
-    # return ECDataset(pv_data.T, load_data.T, 1, sd_percentage, with_battery).simulate()
+    return ECDataset(pv_data.T, load_data.T, 1, sd_percentage, with_battery).simulate()
 
 
 def get_valid_season() -> Season:

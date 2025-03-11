@@ -9,7 +9,7 @@ datasets for energy communities.
 
 from .models import SimulationResult, EnergyMetrics, CostMetrics, MarketMetrics, TradingNetwork
 from .battery import Battery
-from .constants import BATTERY_SIZE, P2P_PRICE, GRID_BUY_PRICE, GRID_SELL_PRICE, NetworkAlloc, APT_BLOCK_SIZE
+from .constants import BATTERY_SIZE, P2P_PRICE, GRID_BUY_PRICE, GRID_SELL_PRICE, NetworkAlloc, APT_BLOCK_SIZE, RANDOM_SEED
 from .market_solution import MarketSolution
 from scipy.signal import find_peaks
 import pandas as pd
@@ -17,8 +17,152 @@ import numpy as np
 import networkx as nx
 import numpy.typing as npt
 from typing import List, Optional, Self, Any
-from functools import cached_property
 
+
+def adjust_for_smart_devices(smart_device_percentage: int, load: pd.DataFrame, pv: pd.DataFrame) -> pd.DataFrame:
+    """
+    Attempts to reduce peak loads by shifting loads for a subset of users while increasing PV consumption,
+    and ensuring that loads are not shifted outside 8 AM - 10 PM.
+    """
+    if smart_device_percentage == 0:
+        return load  # Skip if no smart devices
+
+    load_shifted = load.copy()
+    users = load_shifted.columns
+    shiftable_users = np.random.choice(
+        users, size=int(len(users) * smart_device_percentage / 100), replace=False
+    )
+
+    # Dishwasher and washing machine shifting amounts (daily and every 3 days)
+    shift_daily = 0.64  # kWh
+    shift_3day = 0.5  # kWh
+
+    # convert timestamps to date for grouping
+    load_shifted["date"] = load_shifted.index.date
+    pv_copy = pv.copy()
+    pv_copy["date"] = pv_copy.index.date
+    grouped_load = load_shifted.groupby("date")
+    grouped_generation = pv_copy.groupby("date")
+
+    for day, data in grouped_load:
+
+        # find peak hours of each day in allowed time range
+        N_peaks = 3  # number of peaks
+        total_demand = data.drop(columns=["date"], errors="ignore").sum(axis=1)
+
+        valid_hours = total_demand.between_time("08:00", "22:00")
+
+        peak_indices, _ = find_peaks(valid_hours, prominence=0.2, distance=N_peaks)
+        peak_hours = (
+            valid_hours.iloc[peak_indices].nlargest(3).index
+            if len(peak_indices) > 0
+            else valid_hours.nlargest(3).index
+        )
+
+        valley_hours = valid_hours.nsmallest(N_peaks).index  # lowest 3 hours
+
+        # Get PV generation for the same day
+        pv_data = grouped_generation.get_group(day).drop(
+            columns=["date"], errors="ignore"
+        )
+        pv_generation = pv_data.sum(axis=1)
+        # all 3 highest pv hours are probably from same "pv peak"
+        high_pv_hours = pv_generation.nlargest(
+            3
+        ).index  # assuming these are in the valid range of hours.
+
+        # shift daily load (dishwasher)
+        if len(peak_hours) > 0:
+            peak_hour = peak_hours[0]  # take the highest peak
+            for user in shiftable_users:
+                if (
+                    load_shifted.loc[peak_hour, user] >= shift_daily
+                ):  # user has enough load to shift
+                    # try to shift to high PV generation hours
+                    shift_target = (
+                        np.random.choice(high_pv_hours)
+                        if not high_pv_hours.empty
+                        else np.random.choice(valley_hours)
+                    )
+                    # shift the load
+                    load_shifted.loc[peak_hour, user] -= shift_daily
+                    load_shifted.loc[shift_target, user] += shift_daily
+
+        # shift every 3 days (washing machine)
+        if day.day % 3 == 0 and len(peak_hours) > 0:
+            peak_hour = (
+                peak_hours[1] if len(peak_hours) > 1 else peak_hours[0]
+            )  # try to use 2nd highest peak
+            for user in shiftable_users:
+                if load_shifted.loc[peak_hour, user] >= shift_3day:
+                    shift_target = (
+                        np.random.choice(high_pv_hours)
+                        if not high_pv_hours.empty
+                        else np.random.choice(valley_hours)
+                    )
+                    load_shifted.loc[peak_hour, user] -= shift_3day
+                    load_shifted.loc[shift_target, user] += shift_3day
+
+    return load_shifted.drop(columns="date")
+
+def adjust_for_batteries(supply: pd.DataFrame, demand: pd.DataFrame, timestepDuration: float) -> tuple[np.ndarray, np.ndarray]:
+    # assume everyone has pv (and battery), since ones without pv just have 0 in pv_data
+    numTimesteps: int; numParticipants: int
+    numTimesteps, numParticipants = supply.shape
+    batteries = np.array(
+        [
+            Battery(BATTERY_SIZE, timestepDuration)
+            for _ in range(numParticipants)
+        ]
+    )
+    charge_volume_per_member = np.zeros(numParticipants)
+    discharge_volume_per_member = np.zeros(numParticipants)
+    for t in range(numTimesteps):
+        for i in range(numParticipants):
+            if supply.iloc[t, i] > 0:
+                chargeAmount: float = batteries[i].charge(supply.iloc[t, i])
+                charge_volume_per_member[i] += chargeAmount
+                supply.iloc[t, i] -= chargeAmount
+            elif demand.iloc[t, i] > 0:
+                dischargeAmount: float = batteries[i].discharge(
+                    demand.iloc[t, i]
+                )
+                discharge_volume_per_member[i] += dischargeAmount
+                demand.iloc[t, i] -= dischargeAmount
+
+    return charge_volume_per_member, discharge_volume_per_member
+
+def aggregate_into_buildings(load: pd.DataFrame) -> pd.DataFrame:
+    load = load.T
+    if len(load) % APT_BLOCK_SIZE != 0:
+        print(len(load))
+        raise ValueError(f"The number of rows must be divisible by {APT_BLOCK_SIZE} for aggregation.")
+
+    shuffled_load = load.sample(frac=1, random_state=RANDOM_SEED).reset_index(drop=True)
+
+    num_buildings = len(shuffled_load) // 6
+    shuffled_load['Building_ID'] = np.repeat(np.arange(num_buildings), APT_BLOCK_SIZE)
+    return pd.DataFrame(shuffled_load.groupby('Building_ID').sum()).T
+
+def average_per_month(consumption: pd.DataFrame, production: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    consumption = consumption.T; production = production.T
+    pv_data_monthly = pd.DataFrame()
+    load_data_monthly = pd.DataFrame()
+    months = sorted(set(col.month for col in production.columns))
+    for month in months:
+        pv_month_cols = [col for col in production.columns if col.month == month]
+        load_month_cols = [col for col in consumption.columns if col.month == month]
+        # Group by hour of day and average
+        for hour in range(24):
+            # Get columns for this hour in this month
+            pv_hour_cols = [col for col in pv_month_cols if col.hour == hour]
+            load_hour_cols = [col for col in load_month_cols if col.hour == hour]
+
+            if pv_hour_cols and load_hour_cols:
+                timestamp = pd.Timestamp(2024, month, 15, hour)
+                pv_data_monthly[timestamp] = production[pv_hour_cols].mean(axis=1)
+                load_data_monthly[timestamp] = consumption[load_hour_cols].mean(axis=1)
+    return load_data_monthly.T, pv_data_monthly.T
 
 class ECDataset:
     def __init__(
@@ -62,9 +206,11 @@ class ECDataset:
         self._charge_volume_per_member: np.ndarray
         self._discharge_volume_per_member: np.ndarray
 
+        np.random.seed(RANDOM_SEED)
+
         assert (
-            production.shape == consumption.shape
-        ), f"production and consumption have unequal shapes {production.shape} and {consumption.shape}"
+            production.shape[0] == consumption.shape[0] and production.shape[1] * APT_BLOCK_SIZE == consumption.shape[1]
+        ), f"production and consumption have unexpected shapes {production.shape} and {consumption.shape}. Column difference {set(production.columns) - set(consumption.columns)}"
         self._smart_device_percentage: int = smart_device_percentage
         self._with_battery: bool = with_battery
         self.timestepDuration = timestepDuration
@@ -74,25 +220,71 @@ class ECDataset:
 
         # ensure columns are 0,1,..,numParticipants-1
         production.columns = range(self.numParticipants)
-        consumption.columns = range(self.numParticipants)
+        consumption.columns = range(self.numParticipants * APT_BLOCK_SIZE)
         self.production = production
         self.consumption = consumption
-        self.supply = (production - consumption).clip(lower=0)
-        self.demand = (consumption - production).clip(lower=0)
 
     def simulate(self: Self) -> SimulationResult:
-        self._adjust_for_smart_devices(self._smart_device_percentage)
+        numDaysInSim: float = self.numTimesteps * self.timestepDuration / 24
+
+        load: pd.DataFrame = self.consumption; pv: pd.DataFrame = self.production
+
+        load = adjust_for_smart_devices(self._smart_device_percentage, load, pv)
+
+        load = aggregate_into_buildings(load)
+        load, pv = average_per_month(load, pv)
+
+        self.numTimesteps, self.numParticipants = load.shape
+        supply: pd.DataFrame = (pv - load).clip(lower=0)
+        demand: pd.DataFrame = (load - pv).clip(lower=0)
+
+        charge_volume_per_member: np.ndarray = np.zeros(self.numParticipants)
+        discharge_volume_per_member: np.ndarray = np.zeros(self.numParticipants)
 
         if self._with_battery:
-            self._adjust_for_batteries()
+            charge_volume_per_member, discharge_volume_per_member = adjust_for_batteries(supply, demand, self.timestepDuration)
+
+        self._charge_volume_per_member = charge_volume_per_member
+        self._discharge_volume_per_member = discharge_volume_per_member
+        self._total_charge_volume = sum(charge_volume_per_member)
+        self._total_discharge_volume = sum(discharge_volume_per_member)
 
         for t in range(self.numTimesteps):
             self.marketSolutions.append(
-                MarketSolution(self.supply.iloc[t], self.demand.iloc[t])
+                MarketSolution(supply.iloc[t], demand.iloc[t])
             )
-        return self._evaluate()
 
-    def getTradingNetwork(self: Self) -> tuple[nx.DiGraph, dict[Any, np.ndarray]]:
+        self.consumption = load
+        self.production = pv
+        self.supply = supply
+        self.demand = demand
+
+        numDaysComputed: float = self.numTimesteps * self.timestepDuration / 24
+        print(f"days in sim {numDaysInSim} days comp {numDaysComputed}")
+
+        G, loc = self._getTradingNetwork()
+        return SimulationResult(
+            energy_metrics=EnergyMetrics(
+                total_production=float(self.getProductionVolume()),
+                total_consumption=float(self.getConsumptionVolume()),
+                total_grid_import=float(self.getGridPurchaseVolume()),
+                total_grid_export=float(self.getGridFeedInVolume()),
+            ),
+            market_metrics=MarketMetrics(
+                trading_volume=float(self.getTradingVolume()),
+                ratio_fulfilled_demand=float(self.getTradingVolume() / self.getDemandVolume()) if self.getDemandVolume() != 0 else 0,
+                ratio_sold_supply=float(self.getTradingVolume() / self.getSupplyVolumeImprecise()) if self.getSupplyVolumeImprecise() != 0 else 0,
+            ),
+            cost_metrics=CostMetrics(
+                cost_with_lec=float(sum(self.computePricePerMember(True)) * numDaysInSim / numDaysComputed / (100.0 * self.numParticipants * APT_BLOCK_SIZE)),
+                cost_without_lec=float(
+                    sum(self.computePricePerMember(False)) * numDaysInSim / numDaysComputed / (100.0 * self.numParticipants * APT_BLOCK_SIZE)
+                ),
+            ),
+            trading_network=TradingNetwork.from_networkx(G, loc),
+        )
+
+    def _getTradingNetwork(self: Self) -> tuple[nx.DiGraph, dict[Any, np.ndarray]]:
         network: NetworkAlloc = MarketSolution.overall_trading_network
         gridPurchaseVolume: float = self.getGridPurchaseVolume()
         gridFeedInVolume: float = self.getGridFeedInVolume()
@@ -166,30 +358,6 @@ class ECDataset:
         # plt.title("Trading Network")
         # plt.show()
 
-
-    def _evaluate(self: Self) -> SimulationResult:
-        G, loc = self.getTradingNetwork()
-        return SimulationResult(
-            energy_metrics=EnergyMetrics(
-                total_production=float(self.getProductionVolume),
-                total_consumption=float(self.getConsumptionVolume),
-                total_grid_import=float(self.getGridPurchaseVolume()),
-                total_grid_export=float(self.getGridFeedInVolume()),
-            ),
-            market_metrics=MarketMetrics(
-                trading_volume=float(self.getTradingVolume),
-                ratio_fulfilled_demand=float(self.getTradingVolume / self.getDemandVolume) if self.getDemandVolume != 0 else 0,
-                ratio_sold_supply=float(self.getTradingVolume / self.getSupplyVolumeImprecise) if self.getSupplyVolumeImprecise != 0 else 0,
-            ),
-            cost_metrics=CostMetrics(
-                cost_with_lec=float(sum(self.computePricePerMember(True)) / (3.3 * self.numParticipants * APT_BLOCK_SIZE)),
-                cost_without_lec=float(
-                    sum(self.computePricePerMember(False)) / (3.3 * self.numParticipants * APT_BLOCK_SIZE)
-                ),
-            ),
-            trading_network=TradingNetwork.from_networkx(G, loc),
-        )
-
     def computePricePerMember(self: Self, with_lec: bool) -> npt.NDArray[np.float64]:
         costPerMember: npt.NDArray[np.float64] = np.zeros(
             self.numParticipants, dtype=np.float64
@@ -216,158 +384,8 @@ class ECDataset:
 
                 costPerMember[i] += costGrid + costTrading - profitGrid - profitTrading
 
+        print(f"cost per member {costPerMember}")
         return costPerMember
-
-    def printKeyStats(self: Self) -> None:
-        print(
-            "Overall consumption (kw/h)",
-            self.getConsumptionVolume,
-        )
-        print(
-            "Overall production (kw/h)",
-            self.getProductionVolume,
-        )
-        print(
-            "Overall trading volume (kw/h)",
-            self.getTradingVolume,
-        )
-        print(
-            "Nr of overproduction vs overconsumption datapoints",
-            self.compareProductionWithConsumption,
-        )
-        if self.getDemandVolume != 0:
-            print(
-                "Ratio of market demand fulfilled",
-                self.getTradingVolume / self.getDemandVolume,
-            )
-        if self.getSupplyVolumeImprecise != 0:
-            print(
-                "Ratio of market supply sold",
-                self.getTradingVolume / self.getSupplyVolumeImprecise,
-            )
-
-    def _adjust_for_batteries(self: Self) -> None:
-        # assume everyone has pv (and battery), since ones without pv just have 0 in pv_data
-        batteries = np.array(
-            [
-                Battery(BATTERY_SIZE, self.timestepDuration)
-                for _ in range(self.numParticipants)
-            ]
-        )
-        charge_volume_per_member = np.zeros(self.numParticipants)
-        discharge_volume_per_member = np.zeros(self.numParticipants)
-        for t in range(self.numTimesteps):
-            for i in range(self.numParticipants):
-                if self.supply.iloc[t, i] > 0:
-                    chargeAmount: float = batteries[i].charge(self.supply.iloc[t, i])
-                    charge_volume_per_member[i] += chargeAmount
-                    self.supply.iloc[t, i] -= chargeAmount
-                elif self.demand.iloc[t, i] > 0:
-                    dischargeAmount: float = batteries[i].discharge(
-                        self.demand.iloc[t, i]
-                    )
-                    discharge_volume_per_member[i] += dischargeAmount
-                    self.demand.iloc[t, i] -= dischargeAmount
-        self._total_charge_volume = sum(charge_volume_per_member)
-        self._total_discharge_volume = sum(discharge_volume_per_member)
-        self._charge_volume_per_member = charge_volume_per_member
-        self._discharge_volume_per_member = discharge_volume_per_member
-
-    def _adjust_for_smart_devices(self: Self, smart_device_percentage: int) -> None:
-        """
-        Attempts to reduce peak loads by shifting loads for a subset of users while increasing PV consumption,
-        and ensuring that loads are not shifted outside 8 AM - 10 PM.
-        """
-        if smart_device_percentage == 0:
-            return  # Skip if no smart devices
-        
-        df_shifted = self.consumption.copy()  # Create a copy to avoid modifying the original directly
-        users = self.consumption.columns
-        shiftable_users = np.random.choice(
-            users, size=int(len(users) * smart_device_percentage / 100), replace=False
-        )
-
-        # Dishwasher and washing machine shifting amounts (daily and every 3 days)
-        shift_daily = 0.64  # kWh
-        shift_3day = 0.5  # kWh
-
-        # convert timestamps to date for grouping
-        self.consumption["date"] = self.consumption.index.date
-        self.production["date"] = self.production.index.date
-        grouped_load = self.consumption.groupby("date")
-        grouped_generation = self.production.groupby("date")
-
-        for day, data in grouped_load:
-
-            # find peak hours of each day in allowed time range
-            N_peaks = 3  # number of peaks
-            total_demand = data.drop(columns=["date"], errors="ignore").sum(axis=1)
-
-            valid_hours = total_demand.between_time("08:00", "22:00")
-
-            peak_indices, _ = find_peaks(valid_hours, prominence=0.2, distance=N_peaks)
-            peak_hours = (
-                valid_hours.iloc[peak_indices].nlargest(3).index
-                if len(peak_indices) > 0
-                else valid_hours.nlargest(3).index
-            )
-            # print("peak hours: ", peak_hours)
-
-            # find valley hours in allowed time range
-            valley_hours = valid_hours.nsmallest(N_peaks).index  # lowest 3 hours
-            # print("valley hours: ", valley_hours)
-
-            # Get PV generation for the same day
-            pv_data = grouped_generation.get_group(day).drop(
-                columns=["date"], errors="ignore"
-            )
-            pv_generation = pv_data.sum(axis=1)
-            # all 3 highest pv hours are probably from same "pv peak"
-            high_pv_hours = pv_generation.nlargest(
-                3
-            ).index  # assuming these are in the valid range of hours.
-            # print("high pv hours:", high_pv_hours)
-
-            # shift daily load (dishwasher)
-            if len(peak_hours) > 0:
-                peak_hour = peak_hours[0]  # take the highest peak
-                for user in shiftable_users:
-                    if (
-                        df_shifted.loc[peak_hour, user] >= shift_daily
-                    ):  # user has enough load to shift
-                        # try to shift to high PV generation hours
-                        shift_target = (
-                            np.random.choice(high_pv_hours)
-                            if not high_pv_hours.empty
-                            else np.random.choice(valley_hours)
-                        )
-                        # shift the load
-                        df_shifted.loc[peak_hour, user] -= shift_daily
-                        df_shifted.loc[shift_target, user] += shift_daily
-
-            # shift every 3 days (washing machine)
-            if day.day % 3 == 0 and len(peak_hours) > 0:
-                peak_hour = (
-                    peak_hours[1] if len(peak_hours) > 1 else peak_hours[0]
-                )  # try to use 2nd highest peak
-                for user in shiftable_users:
-                    if df_shifted.loc[peak_hour, user] >= shift_3day:
-                        shift_target = (
-                            np.random.choice(high_pv_hours)
-                            if not high_pv_hours.empty
-                            else np.random.choice(valley_hours)
-                        )
-                        df_shifted.loc[peak_hour, user] -= shift_3day
-                        df_shifted.loc[shift_target, user] += shift_3day
-
-        self.production.drop(columns=["date"], inplace=True, errors="ignore")
-        self.consumption.drop(columns=["date"], inplace=True, errors="ignore")
-
-        self.consumption = df_shifted
-        
-        # Recalculate supply and demand based on the new consumption values
-        self.supply = (self.production - self.consumption).clip(lower=0)
-        self.demand = (self.consumption - self.production).clip(lower=0)
 
     def getDischargeVolumePerMember(self: Self) -> Optional[np.ndarray]:
         return self._discharge_volume_per_member
@@ -387,9 +405,9 @@ class ECDataset:
         """
         return max(
             0,
-            self.getProductionVolume
-            - self.getSelfConsumptionVolume
-            - self.getTradingVolume
+            self.getProductionVolume()
+            - self.getSelfConsumptionVolume()
+            - self.getTradingVolume()
             - self.getChargeVolume(),
         )
 
@@ -399,39 +417,33 @@ class ECDataset:
         """
         return max(
             0,
-            self.getConsumptionVolume
-            - self.getSelfConsumptionVolume
-            - self.getTradingVolume
+            self.getConsumptionVolume()
+            - self.getSelfConsumptionVolume()
+            - self.getTradingVolume()
             - self.getDischargeVolume(),
         )
 
-    @cached_property
     def compareProductionWithConsumption(self: Self) -> tuple[int, int]:
         return (self.supply > 0).sum().sum(), (self.demand > 0).sum().sum()
 
-    @cached_property
     def getSelfConsumptionVolume(self: Self) -> float:
         """
         Returns the volume of self-consumed energy over the timeframe of the dataset.
         """
-        selfConsumption: pd.DataFrame = self.production - self.supply
-        return selfConsumption.sum().sum()
+        return self.production.sum().sum() - self.supply.sum().sum()
 
-    @cached_property
     def getTradingVolume(self: Self) -> float:
         """
         Returns the overall trading volume over the timeframe of the dataset.
         """
         return sum(sol.tradingVolume for sol in self.marketSolutions)
 
-    @cached_property
     def getDemandVolume(self: Self) -> float:
         """
         Returns the overall demand on the market over the timeframe of the dataset.
         """
         return self.demand.sum().sum()
 
-    @cached_property
     def getSupplyVolumeImprecise(self: Self) -> float:
         """
         Returns the overall supply as summed by each timestep. It differs slightly
@@ -440,42 +452,36 @@ class ECDataset:
         """
         return sum(sol.supplyVolume for sol in self.marketSolutions)
 
-    @cached_property
     def getSupplyVolume(self: Self) -> float:
         """
         Returns the overall supply on the market over the timeframe of the dataset.
         """
         return self.supply.sum().sum()
 
-    @cached_property
     def getConsumptionVolume(self: Self) -> float:
         """
         Returns the overall consumption of all participants over the timeframe of the dataset.
         """
         return self.consumption.sum().sum()
 
-    @cached_property
     def getProductionVolume(self: Self) -> float:
         """
         Returns the overall production of all participants over the timeframe of the dataset.
         """
         return self.production.sum().sum()
 
-    @cached_property
     def getDemandPerMember(self: Self) -> pd.Series:
         """
         Returns a map from participant to its overall demand.
         """
         return self.demand.sum()
 
-    @cached_property
     def getSupplyPerMember(self: Self) -> pd.Series:
         """
         Returns a map from participant to its overall supply.
         """
         return self.supply.sum()
 
-    @cached_property
     def getSellVolumePerMember(self: Self) -> pd.Series:
         """
         Returns a map from participant to its overall sell volume.
@@ -487,7 +493,6 @@ class ECDataset:
             }
         )
 
-    @cached_property
     def getBuyVolumePerMember(self: Self) -> pd.Series:
         """
         Returns a map from participant to its overall buy volume.

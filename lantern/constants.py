@@ -41,6 +41,9 @@ BATTERY: str = "b"
 TARGET: str = "t"
 UNBOUNDED: float = float("inf")
 
+# make all random choices deterministic
+RANDOM_SEED: int = 42
+
 # numerical error margin
 EPS: float = 1e-7
 
