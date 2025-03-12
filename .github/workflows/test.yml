@@ -24,18 +24,22 @@ jobs:
 
       - name: 🔬 Run Backend
         run: |
-          if [ "$(uname)" == "Linux" ] || [ "$(uname)" == "Darwin" ]; then
+          if [ "$RUNNER_OS" == "Linux" ] || [ "$RUNNER_OS" == "macOS" ]; then
+            # Commands for Linux/macOS
             make back &
             disown
-          else
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            # Commands for Windows
             Start-Process -NoNewWindow -FilePath "make" -ArgumentList "back"
           fi
 
       - name: 🔬 Run Frontend
         run: |
-          if [ "$(uname)" == "Linux" ] || [ "$(uname)" == "Darwin" ]; then
+          if [ "$RUNNER_OS" == "Linux" ] || [ "$RUNNER_OS" == "macOS" ]; then
+            # Commands for Linux/macOS
             make front &
             disown
-          else
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            # Commands for Windows
             Start-Process -NoNewWindow -FilePath "make" -ArgumentList "front"
           fi
