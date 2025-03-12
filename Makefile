@@ -9,19 +9,32 @@ all: format typecheck run
 init:
 ifeq ($(POETRY),)
 	@echo "Poetry not found. Installing..."
-ifeq ($(OS),Windows)
-	@powershell -Command "iex (New-Object System.Net.WebClient).DownloadString('https://install.python-poetry.org')"
-	@echo "Poetry installed. Adding Poetry to PATH..."
-	@powershell -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';C:\\Users\\runneradmin\\AppData\\Roaming\\Python\\Scripts', 'User')"
-	@echo "Running Poetry install..."
-	@powershell -Command "C:\\Users\\runneradmin\\AppData\\Roaming\\Python\\Scripts\\poetry.exe install"
-	@echo "Poetry installation complete."
-else
+ifeq ($(OS),Linux)
 	@curl -sSL https://install.python-poetry.org | python3 -
 	@echo "Poetry installed. Adding Poetry to PATH..."
+	# On Linux/macOS, add Poetry to PATH for the current session
 	@echo "$$HOME/.local/bin" >> $(GITHUB_PATH)
 	@export PATH="$$HOME/.local/bin:$$PATH"
 	@$$HOME/.local/bin/poetry install
+endif
+ifeq ($(OS),Darwin)
+	@curl -sSL https://install.python-poetry.org | python3 -
+	@echo "Poetry installed. Adding Poetry to PATH..."
+	# On Linux/macOS, add Poetry to PATH for the current session
+	@echo "$$HOME/.local/bin" >> $(GITHUB_PATH)
+	@export PATH="$$HOME/.local/bin:$$PATH"
+	@$$HOME/.local/bin/poetry install
+endif
+ifeq ($(OS),Windows)
+	# Windows-specific Poetry installation
+	@powershell -Command "iex (New-Object System.Net.WebClient).DownloadString('https://install.python-poetry.org')"
+	@echo "Poetry installed. Adding Poetry to PATH..."
+	# Add Poetry to PATH for Windows (permanent user-level change)
+	@powershell -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';C:\\Users\\$(USERNAME)\\AppData\\Roaming\\Python\\Scripts', 'User')"
+	# Run poetry using full path on Windows
+	@echo "Running Poetry install..."
+	@powershell -Command "C:\\Users\\$(USERNAME)\\AppData\\Roaming\\Python\\Scripts\\poetry.exe install"
+	@echo "Poetry installation complete."
 endif
 else
 	@$(POETRY) install
