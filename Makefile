@@ -10,16 +10,18 @@ init:
 ifeq ($(POETRY),)
 	@echo "Poetry not found. Installing..."
 ifeq ($(OS),Windows)
-	@powershell -Command "iex (New-Object System.Net.WebClient).DownloadString('https://install.python-poetry.org')" 
+	@powershell -Command "iex (New-Object System.Net.WebClient).DownloadString('https://install.python-poetry.org')"
 	@echo "Poetry installed. Adding Poetry to PATH..."
 	@powershell -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';C:\\Users\\runneradmin\\AppData\\Roaming\\Python\\Scripts', 'User')"
+	@echo "Running Poetry install..."
+	@powershell -Command "C:\\Users\\runneradmin\\AppData\\Roaming\\Python\\Scripts\\poetry.exe install"
 	@echo "Poetry installation complete."
 else
 	@curl -sSL https://install.python-poetry.org | python3 -
 	@echo "Poetry installed. Adding Poetry to PATH..."
 	@export PATH="$$HOME/.local/bin:$$PATH"
+	@python3 -m poetry install
 endif
-	@poetry install
 else
 	@$(POETRY) install
 endif
