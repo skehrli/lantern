@@ -26,9 +26,9 @@ ifeq ($(DETECTED_OS),Windows)
 	@echo "Installing Poetry on Windows..."
 	@powershell -Command "(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -"
 	@echo "Poetry installed. Adding Poetry to PATH..."
-	@powershell -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';%APPDATA%\Python\Scripts', 'User')"
+	@powershell -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';' + $$env:APPDATA + '\Python\Scripts', 'User')"
 	@echo "Running Poetry install..."
-	@powershell -Command "%APPDATA%\Python\Scripts\poetry.exe install"
+	@powershell -Command "& ($$env:APPDATA + '\Python\Scripts\poetry.exe') install"
 else ifeq ($(DETECTED_OS),Linux)
 	@echo "Installing Poetry on Linux..."
 	@curl -sSL https://install.python-poetry.org | python3 -
