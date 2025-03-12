@@ -12,8 +12,8 @@ ifeq ($(POETRY),)
 ifeq ($(OS),Windows)
 	@powershell -Command "iex (New-Object System.Net.WebClient).DownloadString('https://install.python-poetry.org')" 
 	@echo "Poetry installed. Adding Poetry to PATH..."
-	@set PATH=%APPDATA%\Python\Scripts;%PATH%
-	@echo "C:\\Users\\runneradmin\\AppData\\Roaming\\Python\\Scripts" >> $(GITHUB_PATH)
+	@powershell -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';C:\\Users\\runneradmin\\AppData\\Roaming\\Python\\Scripts', 'User')"
+	@echo "Poetry installation complete."
 else
 	@curl -sSL https://install.python-poetry.org | python3 -
 	@echo "Poetry installed. Adding Poetry to PATH..."
