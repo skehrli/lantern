@@ -23,23 +23,27 @@ jobs:
         run: make init
 
       - name: 🔬 Run Backend
+        shell: bash
+        if: runner.os == 'Linux' || runner.os == 'macOS'
         run: |
-          if [ "$RUNNER_OS" == "Linux" ] || [ "$RUNNER_OS" == "macOS" ]; then
-            # Commands for Linux/macOS
-            make back &
-            disown
-          elif [ "$RUNNER_OS" == "Windows" ]; then
-            # Commands for Windows
-            Start-Process -NoNewWindow -FilePath "make" -ArgumentList "back"
-          fi
+          make back &
+          disown
+
+      - name: 🔬 Run Backend
+        shell: pwsh
+        if: runner.os == 'Windows'
+        run: |
+          Start-Process -NoNewWindow -FilePath "make" -ArgumentList "back"
 
       - name: 🔬 Run Frontend
+        shell: bash
+        if: runner.os == 'Linux' || runner.os == 'macOS'
         run: |
-          if [ "$RUNNER_OS" == "Linux" ] || [ "$RUNNER_OS" == "macOS" ]; then
-            # Commands for Linux/macOS
-            make front &
-            disown
-          elif [ "$RUNNER_OS" == "Windows" ]; then
-            # Commands for Windows
-            Start-Process -NoNewWindow -FilePath "make" -ArgumentList "front"
-          fi
+          make front &
+          disown
+
+      - name: 🔬 Run Frontend
+        shell: pwsh
+        if: runner.os == 'Windows'
+        run: |
+          Start-Process -NoNewWindow -FilePath "make" -ArgumentList "front"
