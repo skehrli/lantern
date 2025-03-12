@@ -21,7 +21,7 @@ else
 	@echo "Poetry installed. Adding Poetry to PATH..."
 	@echo "$$HOME/.local/bin" >> $(GITHUB_PATH)
 	@export PATH="$$HOME/.local/bin:$$PATH"
-	@python3 -m poetry install
+	@$$HOME/.local/bin/poetry install
 endif
 else
 	@$(POETRY) install
