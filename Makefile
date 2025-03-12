@@ -11,9 +11,12 @@ ifeq ($(POETRY),)
 	@echo "Poetry not found. Installing..."
 ifeq ($(OS),Windows)
 	@powershell -Command "iex (New-Object System.Net.WebClient).DownloadString('https://install.python-poetry.org')" 
+	@echo "Poetry installed. Adding Poetry to PATH..."
 	@set PATH=%APPDATA%\Python\Scripts;%PATH%
+	@echo "C:\\Users\\runneradmin\\AppData\\Roaming\\Python\\Scripts" >> $(GITHUB_PATH)
 else
 	@curl -sSL https://install.python-poetry.org | python3 -
+	@echo "Poetry installed. Adding Poetry to PATH..."
 	@export PATH="$$HOME/.local/bin:$$PATH"
 endif
 	@poetry install
@@ -51,10 +54,6 @@ site:
 	xdg-open http://localhost:5173 || open http://localhost:5173 || start http://localhost:5173
 	trap '[[ -n "$$BACKEND_PID" ]] && kill $$BACKEND_PID; [[ -n "$$FRONTEND_PID" ]] && kill $$FRONTEND_PID' EXIT
 	wait $$BACKEND_PID $$FRONTEND_PID
-
-# target to install dependencies
-install:
-	$(POETRY) install
 
 # target to clean up
 clean:
