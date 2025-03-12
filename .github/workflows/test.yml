@@ -23,7 +23,11 @@ jobs:
         run: make init
 
       - name: 🔬 Run Backend
-        run: make back
+        run: |
+          make back &
+          disown
 
       - name: 🔬 Run Frontend
-        run: make front
+        run: |
+          make front &
+          disown     
