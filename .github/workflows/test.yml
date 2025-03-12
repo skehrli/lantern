@@ -20,7 +20,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install Nox
-        run: pip install --user nox
+        run: python -m pip install --upgrade pip
+             pip install nox
 
       - name: 📦 Install Dependencies
         run: nox -s install
@@ -29,24 +30,25 @@ jobs:
         if: runner.os == 'Linux' || runner.os == 'macOS'
         shell: bash
         run: |
-          make back &
+          nox -s back &
           disown
 
       - name: 🔬 Run Backend (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Start-Process -NoNewWindow -FilePath "make" -ArgumentList "back"
+          Start-Process -NoNewWindow -FilePath "nox" -ArgumentList @("-s", "back")
 
       - name: 🔬 Run Frontend (Linux/macOS)
         if: runner.os == 'Linux' || runner.os == 'macOS'
         shell: bash
         run: |
-          make front &
+          nox -s front &
           disown
 
       - name: 🔬 Run Frontend (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Start-Process -NoNewWindow -FilePath "make" -ArgumentList "front"
+          Start-Process -NoNewWindow -FilePath "nox" -ArgumentList @("-s", "front")
+
