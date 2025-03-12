@@ -1,42 +1,40 @@
-import nox
-import shutil
 import os
+import shutil
 import sys
+import nox
 
 
 @nox.session
 def install(session):
-    """Ensure Poetry is installed and available in the PATH."""
+    """Ensure Poetry is installed and available in the PATH"""
     poetry_path = shutil.which("poetry")
 
     if not poetry_path:
         session.log("Poetry not found. Installing...")
-
         if sys.platform in ["linux", "darwin"]:  # Linux/macOS
             session.run("curl", "-sSL", "https://install.python-poetry.org",
-                        "-o", "install-poetry.py", external=True)
-            session.run("python3", "install-poetry.py", external=True)
-            os.remove("install-poetry.py")  # Cleanup
-            poetry_path = os.path.expanduser("~/.local/bin/poetry")
-
-        elif sys.platform == "win32":  # Windows
+                        "|", "python3", external=True)
+            poetry_path = f"{session.env['HOME']}/.local/bin/poetry"
+        else:  # Windows
+            # Use an alternative method to install Poetry for Windows
             session.run(
                 "powershell", "-Command",
-                "iex (New-Object System.Net.WebClient).DownloadString('https://install.python-poetry.org')",
+                "Invoke-WebRequest -Uri 'https://install.python-poetry.org' -OutFile 'install-poetry.ps1'; "
+                "powershell -ExecutionPolicy Bypass -File './install-poetry.ps1'",
                 external=True
             )
-            poetry_path = os.path.join(
-                os.getenv("APPDATA"), "Python", "Scripts", "poetry.exe")
+            poetry_path = f"{session.env['APPDATA']
+                             }\\Python\\Scripts\\poetry.exe"
 
-    # Add Poetry to PATH
     # Initialize PATH if it's not already in the session.env
     if "PATH" not in session.env:
         session.env["PATH"] = os.environ.get("PATH", "")
-    poetry_bin = os.path.dirname(poetry_path)
-    session.env["PATH"] += os.pathsep + poetry_bin
+
+    # Add Poetry to PATH
+    session.env["PATH"] += os.pathsep + os.path.dirname(poetry_path)
     session.log(f"Using Poetry at: {poetry_path}")
 
-    # Install dependencies
+    # Run poetry install inside the virtual environment
     session.run("poetry", "install", external=True)
 
 
@@ -45,9 +43,11 @@ def back(session):
     """Run the backend server using Uvicorn."""
     poetry = "poetry"
     if sys.platform == "win32":  # Windows
+        # Run the server inside the virtual environment with Poetry
         session.run("powershell", "-Command",
                     f"& '{poetry}' run uvicorn lantern.app:app --reload", external=True)
     else:  # Linux/macOS
+        # Ensure that uvicorn is installed and run the server inside the virtual environment
         session.run(poetry, "run", "uvicorn", "lantern.app:app",
                     "--reload", external=True)
 
