@@ -1,30 +1,36 @@
 import nox
 import shutil
+import os
+import sys
 
 
 @nox.session
 def install(session):
-    """Ensure Poetry is installed and available in the PATH"""
+    """Ensure Poetry is installed and available in the PATH."""
     poetry_path = shutil.which("poetry")
 
     if not poetry_path:
         session.log("Poetry not found. Installing...")
-        if session.posix:  # Linux/macOS
+
+        if sys.platform in ["linux", "darwin"]:  # Linux/macOS
             session.run("curl", "-sSL", "https://install.python-poetry.org",
                         "|", "python3", external=True)
-            poetry_path = f"{session.env['HOME']}/.local/bin/poetry"
-        else:  # Windows
+            poetry_path = os.path.expanduser("~/.local/bin/poetry")
+        elif sys.platform == "win32":  # Windows
             session.run(
                 "powershell", "-Command",
                 "iex (New-Object System.Net.WebClient).DownloadString('https://install.python-poetry.org')",
                 external=True
             )
-            poetry_path = f"{session.env['APPDATA']
-                             }\\Python\\Scripts\\poetry.exe"
+            poetry_path = os.path.join(
+                os.getenv("APPDATA"), "Python", "Scripts", "poetry.exe")
 
     # Add Poetry to PATH
-    session.env["PATH"] += f":{poetry_path.rsplit('/', 1)[0]}"
+    poetry_bin = os.path.dirname(poetry_path)
+    session.env["PATH"] += os.pathsep + poetry_bin
     session.log(f"Using Poetry at: {poetry_path}")
+
+    # Install dependencies
     session.run("poetry", "install", external=True)
 
 
@@ -32,7 +38,7 @@ def install(session):
 def back(session):
     """Run the backend server using Uvicorn."""
     poetry = "poetry"
-    if os.name == "nt":  # Windows
+    if sys.platform == "win32":  # Windows
         session.run("powershell", "-Command",
                     f"& '{poetry}' run uvicorn lantern.app:app --reload", external=True)
     else:  # Linux/macOS
@@ -44,7 +50,7 @@ def back(session):
 def front(session):
     """Run the frontend server using Python's HTTP server."""
     poetry = "poetry"
-    if os.name == "nt":  # Windows
+    if sys.platform == "win32":  # Windows
         session.run("powershell", "-Command",
                     f"& '{poetry}' run python -m http.server 8080", external=True)
     else:  # Linux/macOS
