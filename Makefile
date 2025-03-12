@@ -1,4 +1,5 @@
-POETRY = poetry
+OS := $(shell uname -s 2>/dev/null || echo Windows)
+POETRY := $(shell command -v poetry)
 
 # targets
 .PHONY: all format typecheck run
@@ -6,7 +7,19 @@ POETRY = poetry
 all: format typecheck run
 
 init:
-	$(POETRY) install
+ifeq ($(POETRY),)
+	@echo "Poetry not found. Installing..."
+ifeq ($(OS),Windows)
+	@powershell -Command "iex (New-Object System.Net.WebClient).DownloadString('https://install.python-poetry.org')" 
+	@set PATH=%APPDATA%\Python\Scripts;%PATH%
+else
+	@curl -sSL https://install.python-poetry.org | python3 -
+	@export PATH="$$HOME/.local/bin:$$PATH"
+endif
+	@poetry install
+else
+	@$(POETRY) install
+endif
 
 format:
 	$(POETRY) run black ./lantern/*.py
