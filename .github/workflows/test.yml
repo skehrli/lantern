@@ -24,10 +24,18 @@ jobs:
 
       - name: 🔬 Run Backend
         run: |
-          make back &
-          disown
+          if [ "$(uname)" == "Linux" ] || [ "$(uname)" == "Darwin" ]; then
+            make back &
+            disown
+          else
+            Start-Process -NoNewWindow -FilePath "make" -ArgumentList "back"
+          fi
 
       - name: 🔬 Run Frontend
         run: |
-          make front &
-          disown     
+          if [ "$(uname)" == "Linux" ] || [ "$(uname)" == "Darwin" ]; then
+            make front &
+            disown
+          else
+            Start-Process -NoNewWindow -FilePath "make" -ArgumentList "front"
+          fi
