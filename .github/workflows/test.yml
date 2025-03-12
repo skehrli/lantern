@@ -19,31 +19,34 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: 📦 Install Dependencies
-        run: make init
+      - name: Install Nox
+        run: pip install --user nox
 
-      - name: 🔬 Run Backend
-        shell: bash
+      - name: 📦 Install Dependencies
+        run: nox -s install
+
+      - name: 🔬 Run Backend (Linux/macOS)
         if: runner.os == 'Linux' || runner.os == 'macOS'
+        shell: bash
         run: |
           make back &
           disown
 
-      - name: 🔬 Run Backend
-        shell: pwsh
+      - name: 🔬 Run Backend (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
           Start-Process -NoNewWindow -FilePath "make" -ArgumentList "back"
 
-      - name: 🔬 Run Frontend
-        shell: bash
+      - name: 🔬 Run Frontend (Linux/macOS)
         if: runner.os == 'Linux' || runner.os == 'macOS'
+        shell: bash
         run: |
           make front &
           disown
 
-      - name: 🔬 Run Frontend
-        shell: pwsh
+      - name: 🔬 Run Frontend (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
           Start-Process -NoNewWindow -FilePath "make" -ArgumentList "front"
