@@ -29,6 +29,9 @@ def install(session):
                 os.getenv("APPDATA"), "Python", "Scripts", "poetry.exe")
 
     # Add Poetry to PATH
+    # Initialize PATH if it's not already in the session.env
+    if "PATH" not in session.env:
+        session.env["PATH"] = os.environ.get("PATH", "")
     poetry_bin = os.path.dirname(poetry_path)
     session.env["PATH"] += os.pathsep + poetry_bin
     session.log(f"Using Poetry at: {poetry_path}")
