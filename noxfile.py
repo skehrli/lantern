@@ -14,8 +14,11 @@ def install(session):
 
         if sys.platform in ["linux", "darwin"]:  # Linux/macOS
             session.run("curl", "-sSL", "https://install.python-poetry.org",
-                        "|", "python3", external=True)
+                        "-o", "install-poetry.py", external=True)
+            session.run("python3", "install-poetry.py", external=True)
+            os.remove("install-poetry.py")  # Cleanup
             poetry_path = os.path.expanduser("~/.local/bin/poetry")
+
         elif sys.platform == "win32":  # Windows
             session.run(
                 "powershell", "-Command",
