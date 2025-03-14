@@ -1,3 +1,5 @@
+[![Cross-Platform Tests](https://github.com/skehrli/lantern/actions/workflows/test.yml/badge.svg)](https://github.com/skehrli/lantern/actions/workflows/test.yml)
+
 Simulation tool for a synthetic Energy Community Dataset.
 Can be run inside terminal or as webapp.
 
