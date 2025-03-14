@@ -59,8 +59,16 @@ jobs:
           Start-Process -NoNewWindow -FilePath "poe" -ArgumentList @("front-win")
 
       - name: Run tests with coverage
+        if: runner.os == 'Linux'
         run: |
-          poetry run coverage run -m pytest -n 4
+          poetry run coverage run -m pytest --cov-branch --cov-report=xml -n 4
+
+      - name: Upload coverage to Codecov
+        if: runner.os == 'Linux'
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Show Coverage Summary
+        if: runner.os == 'Linux'
         run: poetry run coverage report -m
