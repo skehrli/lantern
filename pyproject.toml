@@ -38,7 +38,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poe.tasks]
 back = "poetry run uvicorn lantern.app:app --reload"
 run = "poetry run python -m lantern.main"
-front-win = "powershell -File frontend.ps1"
+front-win = "powershell -ExecutionPolicy Bypass -File frontend.ps1"
 
 [tool.poe.tasks.front-unix]
 shell = """
