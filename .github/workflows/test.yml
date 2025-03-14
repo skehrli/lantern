@@ -61,7 +61,7 @@ jobs:
       - name: Run tests with coverage
         if: runner.os == 'Linux'
         run: |
-          poetry run coverage run -m pytest --cov-branch --cov-report=xml -n 4
+          poetry run coverage run -m pytest --cov=lantern --cov-branch --cov-report=xml -n 4
 
       - name: Upload coverage to Codecov
         if: runner.os == 'Linux'
