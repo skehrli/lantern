@@ -58,6 +58,11 @@ jobs:
         run: |
           Start-Process -NoNewWindow -FilePath "poe" -ArgumentList @("front-win")
 
+      - name: Run test on Windows
+        if: runner.os == 'Windows'
+        run: |
+          poetry run pytest
+
       - name: Run tests with coverage
         if: runner.os == 'Linux'
         run: |
@@ -68,7 +73,3 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Show Coverage Summary
-        if: runner.os == 'Linux'
-        run: poetry run coverage report -m
