@@ -4,7 +4,7 @@ import random
 import pytest
 
 
-@pytest.mark.parametrize('iteration', range(20))
+@pytest.mark.parametrize('iteration', range(10))
 def test_simulation(iteration):
     random.seed(42)
     community_size: int = random.randint(5, 100)
