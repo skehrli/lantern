@@ -48,8 +48,8 @@ npm run dev
 
 [tool.poe.tasks.front-win]
 shell = """
-Set-Location -Path ./frontend
-if (-not (Test-Path ./node_modules)) {
+Set-Location -Path .\\frontend
+if (-not (Test-Path .\\node_modules)) {
     npm install
 }
 npm run dev
