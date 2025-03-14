@@ -25,6 +25,7 @@ plotly = "^6.0.0"
 pydantic = "^2.10.6"
 seaborn = "^0.13.2"
 networkx = "^3.4.2"
+nox = "^2025.2.9"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.2"
@@ -32,3 +33,14 @@ mypy = "^1.11.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poe.tasks]
+back = "poetry run uvicorn lantern.app:app --reload"
+
+[tool.poe.tasks.front]
+shell = """
+if [ ! -d ./frontend/node_modules ]; then
+  cd ./frontend && npm install
+fi
+cd ./frontend && npm run dev
+"""
