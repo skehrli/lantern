@@ -57,18 +57,22 @@ class TradingNetwork(BaseModel):
 
     @classmethod
     def from_networkx(cls, G: nx.DiGraph, layout: Dict[Any, Any]):
-        edges = [(u, v, float(d.get('weight', 1.0))) 
+        edges = [(u, v, float(d.get('weight', 1.0)))
                 for u, v, d in G.edges(data=True)]
         nodes = list(G.nodes())
-        
+
         # Convert numpy arrays to tuples of floats
         pos = {}
         for k, v in layout.items():
             if isinstance(v, tuple):
                 # Handle tuple case (like 'grid_in' and 'grid_out')
                 arr = v[0]  # Extract the array part of the tuple
-                x = float(arr[0].item()) if arr.size > 0 else 0.0
-                y = float(arr[1].item()) if arr.size > 1 else 0.0
+                if isinstance(arr, np.ndarray):  # Check if it is a NumPy array
+                    x = float(arr[0].item()) if arr.size > 0 else 0.0
+                    y = float(arr[1].item()) if arr.size > 1 else 0.0
+                else:  # If it's not a NumPy array, assume it's a scalar value
+                    x = float(arr)
+                    y = 0.0  # Default to 0 for y if no second value exists
                 pos[k] = (x, y)
             elif isinstance(v, np.ndarray):
                 # Handle regular NumPy arrays
