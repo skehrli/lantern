@@ -28,7 +28,7 @@ pipx install poethepoet
 
 # Verify installations
 Write-Host "Verifying installations..."
-if (Get-Command poetry -ErrorAction SilentlyContinue -and Get-Command poe -ErrorAction SilentlyContinue) {
+if ((Get-Command poetry -ErrorAction SilentlyContinue) -and (Get-Command poe -ErrorAction SilentlyContinue)) {
     Write-Host "Installation successful!"
     Write-Host "Poetry version: $(poetry --version)"
     Write-Host "Poe the Poet version: $(poe --version)"
