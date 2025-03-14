@@ -30,6 +30,7 @@ coverage = "^7.6.12"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.2"
+pytest-xdist = "^3.6.1"
 
 [build-system]
 requires = ["poetry-core"]
