@@ -60,7 +60,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          poetry run coverage run -m pytest
+          poetry run coverage run -m pytest -n 4
 
       - name: Show Coverage Summary
         run: poetry run coverage report -m
