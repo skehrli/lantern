@@ -58,3 +58,6 @@ jobs:
         run: |
           Start-Process -NoNewWindow -FilePath "poe" -ArgumentList @("front-win")
 
+      - name: Test
+        run: |
+          poe run 30 win 20 50 True
