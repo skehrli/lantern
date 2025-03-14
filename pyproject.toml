@@ -39,8 +39,9 @@ back = "poetry run uvicorn lantern.app:app --reload"
 
 [tool.poe.tasks.front]
 shell = """
-if [ ! -d ./frontend/node_modules ]; then
-  cd ./frontend && npm install
+cd ./frontend
+if [ ! -d ./node_modules ]; then
+  npm install
 fi
-cd ./frontend && npm run dev
+npm run dev
 """
