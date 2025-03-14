@@ -18,14 +18,17 @@ from enum import Enum
 from typing import Callable
 import pandas as pd
 import pickle
+import click
 
 
 def fetch_pkl(filename: str) -> pd.DataFrame:
     is_cached: bool = os.path.exists(os.path.join(PKL_DIR, PKL_LOAD_FILE))
     if not is_cached:
-        raise FileNotFoundError(f"Input DataFrame '{filename}' not found in directory '{PKL_DIR}'.")
+        raise FileNotFoundError(
+            f"Input DataFrame '{filename}' not found in directory '{PKL_DIR}'.")
     with open(filename, "rb") as f:
         return pickle.load(f)
+
 
 class Season(Enum):
     SUMMER = "sum"
@@ -91,18 +94,22 @@ def run_simulation(
         raise ValueError("Smart Device percentage must be between 0 and 100")
 
     # treat december as month 0 to create continuity for winter
-    pv_data = pd.DataFrame(pv_data[sorted(pv_data.columns, key=lambda x: (x.month % 12, x.day, x.hour))])
-    load_data = pd.DataFrame(load_data[sorted(load_data.columns, key=lambda x: (x.month % 12, x.day, x.hour))])
+    pv_data = pd.DataFrame(
+        pv_data[sorted(pv_data.columns, key=lambda x: (x.month % 12, x.day, x.hour))])
+    load_data = pd.DataFrame(load_data[sorted(
+        load_data.columns, key=lambda x: (x.month % 12, x.day, x.hour))])
 
     # only keep community_size rows
     num_rows: int = pv_data.shape[0]
-    sampled_rows_load: list[int] = random.sample(range(num_rows * APT_BLOCK_SIZE), community_size * APT_BLOCK_SIZE)
+    sampled_rows_load: list[int] = random.sample(
+        range(num_rows * APT_BLOCK_SIZE), community_size * APT_BLOCK_SIZE)
     sampled_rows_pv: list[int] = random.sample(range(num_rows), community_size)
     load_data = load_data.iloc[sampled_rows_load]
     pv_data = pv_data.iloc[sampled_rows_pv]
 
     # only keep datapoints in specified season
-    pv_data = pv_data.loc[:, [in_season(season_enum, col) for col in pv_data.columns]]
+    pv_data = pv_data.loc[:, [
+        in_season(season_enum, col) for col in pv_data.columns]]
     load_data = load_data.loc[
         :, [in_season(season_enum, col) for col in load_data.columns]
     ]
@@ -125,60 +132,22 @@ def run_simulation(
     return ECDataset(pv_data.T, load_data.T, 1, sd_percentage, with_battery).simulate()
 
 
-def get_valid_season() -> Season:
-    """Continuously prompts the user until they enter a valid season."""
-    while True:
-        value: str = input("Season (sum/win/aut/spr)? ").strip().lower()
-        if value in SEASON_MAP:
-            return SEASON_MAP[value]
-        else:
-            print(f"Please enter a season of (sum/win/aut/spr).")
-
-
-def get_valid_int(prompt: str, min_value: int, max_value: int) -> int:
-    """Continuously prompts the user until they enter a valid integer within a range."""
-    while True:
-        try:
-            value: int = int(input(prompt).strip())  # Get input and convert to integer
-            if min_value <= value <= max_value:
-                return value
-            else:
-                print(f"Please enter a number between {min_value} and {max_value}.")
-        except ValueError:
-            print("Invalid input! Please enter a valid number.")
-
-
-def get_valid_bool(prompt: str) -> bool:
-    """Continuously prompts the user until they enter a valid bool."""
-    while True:
-        value = input(prompt).strip().lower()
-        if value == "y":
-            return True
-        elif value == "n":
-            return False
-        else:
-            print(f"Please enter y or n.")
-
-
-def main() -> None:
+@click.command()
+@click.argument('size', type=click.IntRange(5, 100))
+@click.argument('season', type=click.Choice([s.value for s in Season]))
+@click.argument('pv', type=click.IntRange(0, 100))
+@click.argument('sd', type=click.IntRange(0, 100))
+@click.argument('with_battery', type=click.BOOL)
+def main(size: int, season: str, pv: int, sd: int, with_battery: bool) -> None:
     """
     Entry point for simulation from commandline.
     """
-    community_size: int = get_valid_int("Size of LEC (5-100)? ", 5, 100)
-    season: Season = get_valid_season()
-    pv_percentage: int = get_valid_int(
-        "Percentage of buildings with PV (0-100)? ", 0, 100
-    )
-    sd_percentage: int = get_valid_int(
-        "Percentage of buildings with Smart Devices (0-100)? ", 0, 100
-    )
-    with_battery: bool = get_valid_bool("With battery (y/n)? ")
 
     run_simulation(
-        community_size=community_size,
-        season=season.value,
-        pv_percentage=pv_percentage,
-        sd_percentage=sd_percentage,
+        community_size=size,
+        season=season,
+        pv_percentage=pv,
+        sd_percentage=sd,
         with_battery=with_battery,
     )
 
