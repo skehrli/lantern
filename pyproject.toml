@@ -36,7 +36,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poe.tasks]
 back = "poetry run uvicorn lantern.app:app --reload"
-front-win = "Set-Location -Path .\\frontend; if (-not (Test-Path -Path .\\node_modules)) { npm install }; npm run dev"
+front-win = "powershell -File .\\frontend.ps1"
 
 [tool.poe.tasks.front-unix]
 shell = """
