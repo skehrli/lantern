@@ -1,25 +1,21 @@
 Simulation tool for a synthetic Energy Community Dataset.
 Can be run inside terminal or as webapp.
 
-# Usage
-### Install Dependencies
-```
-make init
-```
-### Run in Terminal
-```
-make run
-```
-### Run Local Website
-Open a terminal. Go to the root directory of the cloned lantern project and start the backend process:
-```
-cd /path/to/lantern
-make back
-```
-Open another terminal session, go to the lantern directory and start the frontend process:
-```
-cd /path/to/lantern
-make front
-```
-Now, open your favorite browser and go to http://localhost:5173
-If something goes wrong, check the logs in the running backend process.
+# Installation
+### Windows
+1. Clone Repository.
+2. Locate cloned repository in powershell.
+3. Run ```.\setup.ps1```. This installs poetry and then all dependencies of the project.
+   If you have issues running the script, run ```powershell -ExecutionPolicy Bypass -File .\setup.ps1``` instead.
+
+### Linux/macOS
+1. ```git clone https://github.com/skehrli/lantern```
+2. ```cd /path/to/lantern```
+3. ```bash setup.sh```. Installs poetry if not yet installed and all dependencies using poetry.
+
+# Running Website Locally
+1. Open two terminals and locate the lantern directory in each.
+2. Run ```poe back``` in first terminal. This runs the backend.
+3. Run ```poe front-win``` or ```poe front-unix``` depending on your OS. This runs the frontend.
+4. Open your favorite browser at http://localhost:5173
+   If something goes wrong, check the logs in the running backend process.
