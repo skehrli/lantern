@@ -49,12 +49,12 @@ jobs:
         if: runner.os == 'Linux' || runner.os == 'macOS'
         shell: bash
         run: |
-          poe front &
+          poe front-unix &
           disown
 
       - name: 🔬 Run Frontend (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Start-Process -NoNewWindow -FilePath "poe" -ArgumentList @("front")
+          Start-Process -NoNewWindow -FilePath "poe" -ArgumentList @("front-win")
 
