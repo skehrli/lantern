@@ -58,6 +58,9 @@ jobs:
         run: |
           Start-Process -NoNewWindow -FilePath "poe" -ArgumentList @("front-win")
 
-      - name: Test
+      - name: Run tests with coverage
         run: |
-          poe run 30 win 20 50 True
+          poetry run coverage run -m pytest
+
+      - name: Show Coverage Summary
+        run: poetry run coverage report -m
