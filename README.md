@@ -1,6 +1,5 @@
 [![Cross-Platform Tests](https://github.com/skehrli/lantern/actions/workflows/test.yml/badge.svg)](https://github.com/skehrli/lantern/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/skehrli/lantern/branch/master/graph/badge.svg?token=Q55PSAK5N5)](https://codecov.io/gh/skehrli/lantern)
-[![codecov](https://codecov.io/gh/skehrli/lantern/graphs/sunburst.svg?token=Q55PSAK5N5)](https://codecov.io/gh/skehrli/lantern)
 
 Simulation tool for a synthetic Energy Community Dataset.
 Can be run inside terminal or as webapp.
