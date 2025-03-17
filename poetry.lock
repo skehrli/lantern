@@ -896,7 +896,7 @@ typing = ["mypy (>=1.15.0,<1.16.0)", "pandas-stubs", "pyright", "typing-extensio
 
 [[package]]
 name = "networkx"
-version = "3.4.2"
+version = "3.4"
 description = "Python package for creating and manipulating graphs and networks"
 optional = false
 python-versions = ">=3.10"
@@ -1228,7 +1228,7 @@ type = ["mypy (>=1.11.2)"]
 
 [[package]]
 name = "plotly"
-version = "6.0.0"
+version = "5.24.1"
 description = "An open-source, interactive data visualization library for Python"
 optional = false
 python-versions = ">=3.8"
