@@ -865,36 +865,6 @@ files = [
 ]
 
 [[package]]
-name = "narwhals"
-version = "1.29.0"
-description = "Extremely lightweight compatibility layer between dataframe libraries"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "narwhals-1.29.0-py3-none-any.whl", hash = "sha256:653aa8e5eb435816e7b50c8def17e7e5e3324c2ffd8a3eec03fef85792e9cf5e"},
-    {file = "narwhals-1.29.0.tar.gz", hash = "sha256:1021c345d56c66ff0cc8e6d03ca8c543d01ffc411630973a5cb69ee86824d823"},
-]
-
-[package.extras]
-core = ["duckdb", "pandas", "polars", "pyarrow", "pyarrow-stubs"]
-cudf = ["cudf (>=24.10.0)"]
-dask = ["dask[dataframe] (>=2024.8)"]
-dev = ["covdefaults", "hypothesis", "mypy (>=1.15.0,<1.16.0)", "pandas-stubs", "pre-commit", "pyright", "pytest", "pytest-cov", "pytest-env", "pytest-randomly", "typing-extensions"]
-docs = ["black", "duckdb", "jinja2", "markdown-exec[ansi]", "mkdocs", "mkdocs-autorefs", "mkdocs-material", "mkdocstrings-python (>=1.16)", "mkdocstrings[python]", "pandas", "polars (>=1.0.0)", "pyarrow"]
-duckdb = ["duckdb (>=1.0)"]
-extra = ["scikit-learn"]
-ibis = ["ibis-framework (>=6.0.0)", "packaging", "pyarrow-hotfix", "rich"]
-modin = ["modin"]
-pandas = ["pandas (>=0.25.3)"]
-polars = ["polars (>=0.20.3)"]
-pyarrow = ["pyarrow (>=11.0.0)"]
-pyspark = ["pyspark (>=3.5.0)"]
-sqlframe = ["sqlframe (>=3.22.0)"]
-tests = ["covdefaults", "hypothesis", "pytest", "pytest-cov", "pytest-env", "pytest-randomly", "typing-extensions"]
-typing = ["mypy (>=1.15.0,<1.16.0)", "pandas-stubs", "pyright", "typing-extensions"]
-
-[[package]]
 name = "networkx"
 version = "3.4"
 description = "Python package for creating and manipulating graphs and networks"
@@ -902,8 +872,8 @@ optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "networkx-3.4.2-py3-none-any.whl", hash = "sha256:df5d4365b724cf81b8c6a7312509d0c22386097011ad1abe274afd5e9d3bbc5f"},
-    {file = "networkx-3.4.2.tar.gz", hash = "sha256:307c3669428c5362aab27c8a1260aa8f47c4e91d3891f48be0141738d8d053e1"},
+    {file = "networkx-3.4-py3-none-any.whl", hash = "sha256:46dad0ec74a825a968e2b36c37ef5b91faa3868f017b2283d9cbff33112222ce"},
+    {file = "networkx-3.4.tar.gz", hash = "sha256:1269b90f8f0d3a4095f016f49650f35ac169729f49b69d0572b2bb142748162b"},
 ]
 
 [package.extras]
@@ -1234,16 +1204,13 @@ optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "plotly-6.0.0-py3-none-any.whl", hash = "sha256:f708871c3a9349a68791ff943a5781b1ec04de7769ea69068adcd9202e57653a"},
-    {file = "plotly-6.0.0.tar.gz", hash = "sha256:c4aad38b8c3d65e4a5e7dd308b084143b9025c2cc9d5317fc1f1d30958db87d3"},
+    {file = "plotly-5.24.1-py3-none-any.whl", hash = "sha256:f67073a1e637eb0dc3e46324d9d51e2fe76e9727c892dde64ddf1e1b51f29089"},
+    {file = "plotly-5.24.1.tar.gz", hash = "sha256:dbc8ac8339d248a4bcc36e08a5659bacfe1b079390b8953533f4eb22169b4bae"},
 ]
 
 [package.dependencies]
-narwhals = ">=1.15.1"
 packaging = "*"
-
-[package.extras]
-express = ["numpy"]
+tenacity = ">=6.2.0"
 
 [[package]]
 name = "pluggy"
@@ -1679,6 +1646,22 @@ anyio = ">=3.6.2,<5"
 full = ["httpx (>=0.27.0,<0.29.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.18)", "pyyaml"]
 
 [[package]]
+name = "tenacity"
+version = "9.0.0"
+description = "Retry code until it succeeds"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "tenacity-9.0.0-py3-none-any.whl", hash = "sha256:93de0c98785b27fcf659856aa9f54bfbd399e29969b0621bc7f762bd441b4539"},
+    {file = "tenacity-9.0.0.tar.gz", hash = "sha256:807f37ca97d62aa361264d497b0e31e92b8027044942bfa756160d908320d73b"},
+]
+
+[package.extras]
+doc = ["reno", "sphinx"]
+test = ["pytest", "tornado (>=4.5)", "typeguard"]
+
+[[package]]
 name = "types-networkx"
 version = "3.4.2.20241227"
 description = "Typing stubs for networkx"
@@ -1801,4 +1784,4 @@ standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.6.3)
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "14a30b54d2a0c1266728171eca9f13ff9e12d2698ee9d0f268f6a641cfe3a9e9"
+content-hash = "1554b529c58e166f3a9074fd948106e90410a0f0be413fa8f4af0e33e455a134"
