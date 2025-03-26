@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './App.css';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface SimulationParams {
   community_size: number;
@@ -104,6 +105,29 @@ const CostComparison = ({ withLec, withoutLec }: { withLec: number, withoutLec: 
         </div>
       )}
     </div>
+  );
+};
+
+const LoadGenProfile = ({ loadProfile, genProfile }: { loadProfile: number[], genProfile: number[] }) => {
+  // Prepare data for the chart
+  const data = loadProfile.map((load, index) => ({
+    time: index, // Assuming index represents the hour of the day
+    load,
+    generation: genProfile[index],
+  }));
+
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="time" domain={[0, 23]} tickFormatter={(tick) => `${tick}:00`} />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey="load" stroke="#8884d8" name="Load (kW)" />
+        <Line type="monotone" dataKey="generation" stroke="#82ca9d" name="Generation (kW)" />
+      </LineChart>
+    </ResponsiveContainer>
   );
 };
 
@@ -348,6 +372,9 @@ function App() {
               </ul>
             </>
           )}
+
+          <h3>Load and Generation Profile</h3>
+          <LoadGenProfile loadProfile={result.profiles.load_profile} genProfile={result.profiles.gen_profile} />
         </div>
       )}
     </div>
