@@ -47,6 +47,11 @@ class CostMetrics(BaseModel):
     cost_without_lec: float
 
 
+class Profiles(BaseModel):
+    load_profile: List[float]
+    gen_profile: List[float]
+
+
 class TradingNetwork(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
@@ -96,6 +101,7 @@ class SimulationResult(BaseModel):
     energy_metrics: EnergyMetrics
     cost_metrics: CostMetrics
     market_metrics: MarketMetrics
+    profiles: Profiles
     trading_network: Optional[TradingNetwork] = None
     warnings: List[str] = []
     errors: List[str] = []

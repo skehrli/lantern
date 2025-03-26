@@ -7,7 +7,7 @@ This module contains the ECDataset class, which is used to manage and manipulate
 datasets for energy communities.
 """
 
-from .models import SimulationResult, EnergyMetrics, CostMetrics, MarketMetrics, TradingNetwork
+from .models import SimulationResult, EnergyMetrics, CostMetrics, MarketMetrics, TradingNetwork, Profiles
 from .battery import Battery
 from .constants import BATTERY_SIZE, P2P_PRICE, GRID_BUY_PRICE, GRID_SELL_PRICE, NetworkAlloc, APT_BLOCK_SIZE, RANDOM_SEED
 from .market_solution import MarketSolution
@@ -18,6 +18,10 @@ import networkx as nx
 import numpy.typing as npt
 from typing import List, Optional, Self, Any
 
+
+def get_daily_profile(data: pd.DataFrame) -> List[float]:
+    data.index = pd.to_datetime(data.index)
+    return data.groupby(data.index.hour).mean().mean(axis=1).tolist()
 
 def adjust_for_smart_devices(smart_device_percentage: int, load: pd.DataFrame, pv: pd.DataFrame) -> pd.DataFrame:
     """
@@ -310,6 +314,11 @@ class ECDataset:
         # aggregate households into buildings and average to monthly load profiles
         # requires reassigning numParticipants and numTimesteps (both are reduced)
         load = aggregate_into_buildings(load)
+
+        # compute daily average load/gen profiles before averaging
+        daily_load_profile: List[float] = get_daily_profile(load)
+        daily_gen_profile: List[float] = get_daily_profile(pv)
+
         load, pv = average_per_month(load, pv)
 
         self.numTimesteps, self.numParticipants = load.shape
@@ -362,6 +371,10 @@ class ECDataset:
                     sum(self.computePricePerMember(False)) * numDaysInSim / numDaysComputed / (100.0 * self.numParticipants * APT_BLOCK_SIZE)
                 ),
             ),
+            profiles=Profiles(
+                load_profile=daily_load_profile,
+                gen_profile=daily_gen_profile,
+            ),
             trading_network=TradingNetwork.from_networkx(G, loc),
         )
 
@@ -392,7 +405,6 @@ class ECDataset:
 
                 costPerMember[i] += costGrid + costTrading - profitGrid - profitTrading
 
-        print(f"cost per member {costPerMember}")
         return costPerMember
 
     def getDischargeVolumePerMember(self: Self) -> Optional[np.ndarray]:

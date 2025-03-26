@@ -25,6 +25,10 @@ interface SimulationResult {
     ratio_fulfilled_demand: number;
     ratio_sold_supply: number;
   };
+  profiles: {
+    load_profile: number[];
+    gen_profile: number[];
+  }
   warnings: string[];
   errors: string[];
 }
