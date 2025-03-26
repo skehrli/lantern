@@ -350,6 +350,8 @@ function App() {
           <p><span>Trading Volume:</span> <span>{formatNumber(result.market_metrics.trading_volume)} kWh</span></p>
           <p><span>Demand Fulfillment:</span> <span>{formatNumber(result.market_metrics.ratio_fulfilled_demand * 100)}%</span></p>
           <p><span>Supply Sold:</span> <span>{formatNumber(result.market_metrics.ratio_sold_supply * 100)}%</span></p>
+          <p><span>Consumption from Grid:</span> <span>{(100 * result.energy_metrics.total_grid_import / result.energy_metrics.total_consumption).toFixed(1)} %</span></p>
+          <p><span>Production to Grid:</span> <span>{(100 * result.energy_metrics.total_grid_export / result.energy_metrics.total_production).toFixed(1)} %</span></p>
 
           {result.warnings.length > 0 && (
             <>
