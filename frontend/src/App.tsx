@@ -2,6 +2,7 @@ import React from 'react'; // Ensure React is imported
 import { useState } from 'react';
 import './App.css';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { FaSun, FaSnowflake, FaLeaf, FaSpa } from 'react-icons/fa'; // Using Font Awesome examples
 
 // Define the EnergyMetrics type based on your provided class structure
 interface EnergyMetricsData {
@@ -253,12 +254,11 @@ interface SimulationResult {
   errors: string[];
 }
 
-// --- Constants and Helper Components ---
-const SEASON_SYMBOLS: Record<string, string> = {
-  'sum': '☀️',  // sun for summer
-  'win': '❄️',  // snowflake for winter
-  'aut': '🍂',  // leaf for autumn
-  'spr': '🌸',  // flower for spring
+export const SEASON_ICONS: Record<string, React.ComponentType<any>> = {
+  'sum': FaSun,        // Reference the imported component
+  'win': FaSnowflake,
+  'aut': FaLeaf,
+  'spr': FaSpa,        // Or FaSeedling, FaFlower etc.
 };
 
 const BatteryIcon = () => (
@@ -569,19 +569,20 @@ function App() {
             </div>
           </div>
 
-          {/* Season Buttons */}
+        {/* Season Buttons */}
           <div className="form-group">
             <label>Season</label>
             <div className="season-buttons">
-              {['sum', 'win', 'aut', 'spr'].map((season) => (
+              {Object.entries(SEASON_ICONS).map(([key, IconComponent]) => (
                 <button
                   type="button"
-                  key={season}
-                  className={params.season === season ? 'active' : ''}
-                  onClick={() => handleButtonClick('season', season)}
-                  aria-pressed={params.season === season} // Accessibility
+                  key={key}
+                  className={params.season === key ? 'active' : ''}
+                  onClick={() => handleButtonClick('season', key)}
+                  aria-pressed={params.season === key}
+                  aria-label={key.charAt(0).toUpperCase() + key.slice(1)} // e.g., "Summer"
                 >
-                  {SEASON_SYMBOLS[season]}
+                  <IconComponent />
                 </button>
               ))}
             </div>
@@ -590,7 +591,7 @@ function App() {
           {/* Circular Sliders */}
           <div className="circles-row">
             <div className="circle-container">
-              <label id="sd-label">Smart Devices (%)</label> {/* More descriptive */}
+              <label id="sd-label">Smart Devices</label> {/* More descriptive */}
               <div
                  className="circle"
                  onMouseDown={(e) => handleCircleSliderChange(e, 'sd_percentage')}
@@ -610,7 +611,7 @@ function App() {
             </div>
 
             <div className="circle-container">
-              <label id="pv-label">Have PV (%)</label> {/* More descriptive */}
+              <label id="pv-label">Have PV</label> {/* More descriptive */}
               <div
                 className="circle"
                 onMouseDown={(e) => handleCircleSliderChange(e, 'pv_percentage')}
@@ -772,6 +773,5 @@ function App() {
     </div> // End of container
   );
 } // End of App component
-
 
 export default App;

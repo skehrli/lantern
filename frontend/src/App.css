@@ -665,5 +665,38 @@ body {
   }
   /* Select the text content container if needed */
   /* .explanation-item > div:not(.explanation-icon-wrapper) { flex: 1; } */
+}
 
+/* Style the span wrapper if needed (optional, often display: block or inline-flex helps) */
+.season-buttons button .season-svg-wrapper {
+  display: inline-flex; /* Helps contain the SVG */
+  align-items: center;
+  justify-content: center;
+}
+
+/* Target the SVG element rendered inside the button */
+.season-buttons button svg {
+  width: 32px;  /* Adjust size as needed */
+  height: 32px; /* Adjust size as needed */
+  /* fill: currentColor; /* This is already set on the SVG, but reinforcing doesn't hurt */
+}
+
+/* Ensure button states define text color for SVG to inherit */
+.season-buttons button {
+  /* ... your existing styles ... */
+  color: #6b7280; /* Default icon color (e.g., gray) */
+}
+
+.season-buttons button.active {
+ /* ... your existing styles ... */
+  /* background-color: #a3e635; */
+  /* border-color: #84cc16; */
+  color: #3f6212; /* Dark green icon color when active */
+}
+
+.season-buttons button:not(.active):hover {
+  /* ... your existing styles ... */
+  /* background-color: #f3f4f6; */
+  /* border-color: #9ca3af; */
+  color: #374151; /* Darker icon color on hover */
 }
