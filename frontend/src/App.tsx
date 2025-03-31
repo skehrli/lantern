@@ -121,8 +121,8 @@ const EnergyPieChart: React.FC<EnergyPieChartProps> = ({ type, metrics, formatNu
 
                 if (self_consumption_volume > tolerance) data.push({ name: 'Self-Consumed', value: self_consumption_volume, color: COLORS.selfConsumed });
                 if (total_charging_volume > tolerance) data.push({ name: 'To Battery', value: total_charging_volume, color: COLORS.toBattery });
-                if (sold_on_market > tolerance) data.push({ name: 'Sold (Market)', value: sold_on_market, color: COLORS.toMarket });
-                if (total_grid_export > tolerance) data.push({ name: 'Exported (Grid)', value: total_grid_export, color: COLORS.toGrid });
+                if (sold_on_market > tolerance) data.push({ name: 'Market (Sold)', value: sold_on_market, color: COLORS.toMarket });
+                if (total_grid_export > tolerance) data.push({ name: 'Grid (Sold)', value: total_grid_export, color: COLORS.toGrid });
 
                 // Handle potential rounding errors - add remainder to largest segment if small discrepancy
                 const sum = data.reduce((acc, item) => acc + item.value, 0);
