@@ -191,9 +191,8 @@ const EnergyPieChart: React.FC<EnergyPieChartProps> = ({ type, metrics, formatNu
     };
 
     return (
-        <ResponsiveContainer width="100%" height={240}> {/* Increased height from 220 */}
-            <PieChart margin={{ top: 10, right: 5, bottom: 40, left: 5 }}> {/* Increased top margin slightly */}
-        {/* --- END MODIFICATION --- */}
+        <ResponsiveContainer width="100%" height={260}>
+            <PieChart margin={{ top: 10, right: 5, bottom: 40, left: 5 }}>
                 <Pie
                     data={chartData}
                     cx="50%"
