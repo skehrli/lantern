@@ -1,12 +1,36 @@
 body {
-  background-color: #f3f4f6; /* Light background for the entire page */
-  color: #1f2937; /* Dark text color */
+  background-color: #f3f4f6;
+  /* Light background for the entire page */
+  color: #1f2937;
+  /* Dark text color */
 }
 
-.container {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 2rem;
+.container-flex {
+  margin: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.containerSelect,
+.containerResults {
+  width: 450px;
+  flex: 0 0 auto;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 1rem;
+}
+
+.containerSelect {
+  text-align: center;
+}
+
+.containerGraph {
+  flex: 1;
+  width: flex;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 1rem;
   text-align: center;
 }
 
@@ -26,8 +50,10 @@ body {
   padding: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
-  background-color: white; /* Light input background */
-  color: #1f2937; /* Dark text */
+  background-color: white;
+  /* Light input background */
+  color: #1f2937;
+  /* Dark text */
 }
 
 input[type="range"] {
@@ -47,13 +73,15 @@ input[type="range"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;  /* Make the emojis bigger */
+  font-size: 32px;
+  /* Make the emojis bigger */
 }
 
 .season-buttons {
   display: flex;
   justify-content: center;
-  gap: 0.5rem;  /* Consistent spacing between buttons */
+  gap: 0.5rem;
+  /* Consistent spacing between buttons */
 }
 
 .season-buttons button.active {
@@ -64,7 +92,8 @@ input[type="range"] {
   position: relative;
   width: 80px;
   height: 80px;
-  border: 2px solid #e5e7eb;  /* Light gray border */
+  border: 2px solid #e5e7eb;
+  /* Light gray border */
   border-radius: 50%;
   margin: 0 auto;
   display: flex;
@@ -72,7 +101,8 @@ input[type="range"] {
   justify-content: center;
   overflow: visible;
   cursor: pointer;
-  background: #f9fafb;  /* Very light background */
+  background: #f9fafb;
+  /* Very light background */
 }
 
 .circle-fill {
@@ -86,7 +116,8 @@ input[type="range"] {
   stroke-width: 4px;
   transform-origin: center;
   z-index: 1;
-  stroke-linecap: round;  /* Add rounded endpoints to the stroke */
+  stroke-linecap: round;
+  /* Add rounded endpoints to the stroke */
 }
 
 .circle input[type="range"] {
@@ -96,7 +127,8 @@ input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
-  transform: rotate(-90deg);  /* Rotate to make it vertical */
+  transform: rotate(-90deg);
+  /* Rotate to make it vertical */
   z-index: 2;
 }
 
@@ -110,7 +142,8 @@ input[type="range"] {
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-top: -10px;  /* Adjust thumb position */
+  margin-top: -10px;
+  /* Adjust thumb position */
 }
 
 .circle input[type="range"]::-webkit-slider-runnable-track {
@@ -139,7 +172,8 @@ input[type="range"] {
   top: 50%;
   margin: -8px;
   transform-origin: center center;
-  opacity: 0;  /* Make it invisible */
+  opacity: 0;
+  /* Make it invisible */
   /* Keep the pointer events active so it's still clickable */
 }
 
@@ -163,9 +197,17 @@ button:hover {
 .results {
   margin-top: 2rem;
   padding: 1.5rem;
-  background-color: white; /* Light background for results */
+  background-color: white;
+  /* Light background for results */
   border-radius: 8px;
-  color: #1f2937; /* Dark text */
+  color: #1f2937;
+  /* Dark text */
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #3b82f6;
 }
 
 .results h2 {
@@ -225,29 +267,37 @@ button:hover {
 .size-slider {
   background: #e5e7eb;
   padding: 0;
-  border-radius: 20px;  /* Slightly smaller radius */
+  border-radius: 20px;
+  /* Slightly smaller radius */
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 10px auto;  /* Center the slider */
+  margin: 10px auto;
+  /* Center the slider */
   position: relative;
-  height: 36px;  /* Thinner height */
+  height: 36px;
+  /* Thinner height */
   overflow: hidden;
-  max-width: 280px;  /* Limit width to match season buttons */
+  max-width: 280px;
+  /* Limit width to match season buttons */
 }
 
 /* Style the range input */
 .size-slider input[type="range"] {
   position: absolute;
-  left: 20px;  /* Add padding here instead */
+  left: 20px;
+  /* Add padding here instead */
   right: 20px;
   top: 0;
-  width: calc(100% - 40px);  /* Account for padding */
+  width: calc(100% - 40px);
+  /* Account for padding */
   height: 100%;
   -webkit-appearance: none;
-  appearance: none;  /* Remove default appearance */
+  appearance: none;
+  /* Remove default appearance */
   background: none;
-  outline: none;  /* Remove focus outline */
+  outline: none;
+  /* Remove focus outline */
   border: none;
   margin: 0;
   z-index: 2;
@@ -271,9 +321,12 @@ button:hover {
 .size-slider input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 0;  /* Set width to 0 */
-  height: 0;  /* Set height to 0 */
-  background: transparent;  /* Make it transparent */
+  width: 0;
+  /* Set width to 0 */
+  height: 0;
+  /* Set height to 0 */
+  background: transparent;
+  /* Make it transparent */
   border: none;
   cursor: pointer;
 }
@@ -307,29 +360,22 @@ button:hover {
   z-index: 2;
 }
 
-/* Helper function to calculate circular fill */
-const getCircularFillPath = (percentage: number) => {
-  const angle = (percentage / 100) * 2 * Math.PI;
-  const radius = 40;  // Half of circle width
-  const x = radius + radius * Math.cos(angle - Math.PI/2);
-  const y = radius + radius * Math.sin(angle - Math.PI/2);
-  return `M${radius},${radius} L${radius},0 A${radius},${radius} 0 ${percentage > 50 ? 1 : 0},1 ${x},${y} Z`;
-};
-
 /* Add new styles for the circles container */
 .circles-container {
   display: flex;
   justify-content: center;
   gap: 2rem;
   margin: 2rem 0;
-  flex-direction: row;  /* Ensure horizontal layout */
+  flex-direction: row;
+  /* Ensure horizontal layout */
 }
 
 .circles-container .form-group {
   flex: 0 1 auto;
   text-align: center;
   margin-bottom: 0;
-  min-width: 120px;  /* Give enough space for the labels */
+  min-width: 120px;
+  /* Give enough space for the labels */
 }
 
 .circle {
@@ -338,7 +384,8 @@ const getCircularFillPath = (percentage: number) => {
 
 /* Style the battery button to match the circles height */
 .circles-container button {
-  margin-top: 1.5rem;  /* Align with circles */
+  margin-top: 1.5rem;
+  /* Align with circles */
   min-width: 80px;
   height: 40px;
 }
@@ -348,7 +395,8 @@ const getCircularFillPath = (percentage: number) => {
   display: flex;
   justify-content: center;
   gap: 1rem;
-  margin-top: 3rem;  /* Increase space between circles and buttons */
+  margin-top: 3rem;
+  /* Increase space between circles and buttons */
 }
 
 .button-group button {
@@ -357,16 +405,19 @@ const getCircularFillPath = (percentage: number) => {
 
 /* Style for the battery button */
 .battery-button {
-  min-width: 80px;  /* Wider to accommodate text */
+  min-width: 80px;
+  /* Wider to accommodate text */
   height: 48px;
   padding: 0 1.5rem;
   border: 1px solid #ccc;
-  border-radius: 24px;  /* Half of height for pill shape */
+  border-radius: 24px;
+  /* Half of height for pill shape */
   background-color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;  /* Space between icon and text */
+  gap: 0.5rem;
+  /* Space between icon and text */
   color: #9ca3af;
 }
 
@@ -461,4 +512,4 @@ const getCircularFillPath = (percentage: number) => {
   text-align: right;
   font-weight: 500;
   color: #059669;
-} 
+}
