@@ -599,9 +599,15 @@ function App() {
       <div className="flex-container">
         {/* --- Input Form --- */}
         <form onSubmit={handleSubmit} className="input-form">
+
+          <div className="form-header">
+            <h2>Local Energy Community Simulation</h2>
+            <p>A local energy community (LEC) is a group of buildings that come together to trade and manage their energy resources. What is your ideal energy community?</p>
+          </div>
+          
           {/* Size Slider */}
           <div className="form-group">
-            <label>Size (Households)</label> {/* More descriptive label */}
+            <label>Size (Buildings)</label> {/* More descriptive label */}
             <div className="size-slider" style={{
                 // Calculate clip-path percentage based on value range 5-100
                 '--clip-percent': `${100 - (((params.community_size - 5) / (100 - 5)) * 100)}%`
