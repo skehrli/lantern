@@ -29,7 +29,7 @@ def adjust_for_smart_devices(smart_device_percentage: int, load: pd.DataFrame, p
     and ensuring that loads are not shifted outside 8 AM - 10 PM.
     """
     if smart_device_percentage == 0:
-        return load  # Skip if no smart devices
+        return load
 
     load_shifted = load.copy()
     users = load_shifted.columns
@@ -37,7 +37,6 @@ def adjust_for_smart_devices(smart_device_percentage: int, load: pd.DataFrame, p
         users, size=int(len(users) * smart_device_percentage / 100), replace=False
     )
 
-    # Dishwasher and washing machine shifting amounts (daily and every 3 days)
     shift_daily = 0.64  # kWh
     shift_3day = 0.5  # kWh
 
@@ -51,7 +50,7 @@ def adjust_for_smart_devices(smart_device_percentage: int, load: pd.DataFrame, p
     for day, data in grouped_load:
 
         # find peak hours of each day in allowed time range
-        N_peaks = 3  # number of peaks
+        N_peaks = 3
         total_demand = data.drop(columns=["date"], errors="ignore").sum(axis=1)
 
         valid_hours = total_demand.between_time("08:00", "22:00")
@@ -63,7 +62,7 @@ def adjust_for_smart_devices(smart_device_percentage: int, load: pd.DataFrame, p
             else valid_hours.nlargest(3).index
         )
 
-        valley_hours = valid_hours.nsmallest(N_peaks).index  # lowest 3 hours
+        valley_hours = valid_hours.nsmallest(N_peaks).index
 
         # Get PV generation for the same day
         pv_data = grouped_generation.get_group(day).drop(
