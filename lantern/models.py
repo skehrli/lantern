@@ -30,14 +30,17 @@ class MetricType(Enum):
 
 
 class EnergyMetrics(BaseModel):
-    total_production: float
     total_consumption: float
     total_grid_import: float
+    self_consumption_volume: float
+    trading_volume: float
+    total_discharging_volume: float
+    total_production: float
     total_grid_export: float
+    total_charging_volume: float
 
 
 class MarketMetrics(BaseModel):
-    trading_volume: float
     ratio_fulfilled_demand: float
     ratio_sold_supply: float
 

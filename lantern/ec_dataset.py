@@ -354,13 +354,16 @@ class ECDataset:
         G, loc = getTradingNetwork(self.getGridPurchaseVolume(), self.getGridFeedInVolume())
         return SimulationResult(
             energy_metrics=EnergyMetrics(
-                total_production=float(self.getProductionVolume()),
                 total_consumption=float(self.getConsumptionVolume()),
                 total_grid_import=float(self.getGridPurchaseVolume()),
+                self_consumption_volume=float(self.getSelfConsumptionVolume()),
+                trading_volume=float(self.getTradingVolume()),
+                total_discharging_volume=float(self.getDischargeVolume()),
+                total_production=float(self.getProductionVolume()),
                 total_grid_export=float(self.getGridFeedInVolume()),
+                total_charging_volume=float(self.getChargeVolume()),
             ),
             market_metrics=MarketMetrics(
-                trading_volume=float(self.getTradingVolume()),
                 ratio_fulfilled_demand=float(self.getTradingVolume() / self.getDemandVolume()) if self.getDemandVolume() != 0 else 0,
                 ratio_sold_supply=float(self.getTradingVolume() / self.getSupplyVolumeImprecise()) if self.getSupplyVolumeImprecise() != 0 else 0,
             ),

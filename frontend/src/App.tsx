@@ -10,19 +10,15 @@ interface SimulationParams {
   with_battery: boolean;
 }
 
+// --- Simulation Result Interfaces ---
 interface SimulationResult {
-  energy_metrics: {
-    total_production: number;
-    total_consumption: number;
-    total_grid_import: number;
-    total_grid_export: number;
-  };
+  energy_metrics: EnergyMetricsData; // Use the defined interface here
   cost_metrics: {
     cost_with_lec: number;
     cost_without_lec: number;
   };
   market_metrics: {
-    trading_volume: number;
+    trading_volume: number; // Keep existing market metrics separate for now
     ratio_fulfilled_demand: number;
     ratio_sold_supply: number;
   };
