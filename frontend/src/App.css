@@ -554,9 +554,116 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
 
-/* --- Deprecated/Combined Styles (Review and remove if not used) --- */
-/* .results was likely replaced by .results-container and .result-tab */
-/* Remove .results { ... } if it's no longer the main container */
+.footer-logo {
+  max-height: 45px;
+  width: auto;
+}
 
-/* Remove JavaScript function definition from CSS */
-/* const getCircularFillPath = ... */
+.footer-banner {
+  display: flex;            /* Arrange logos horizontally */
+  /* --- CHANGED justify-content --- */
+  justify-content: space-between; /* Space BETWEEN items, pushes outer ones to edge */
+  /* --- Was: justify-content: space-around; --- */
+  align-items: center;      /* Vertically center logos */
+  padding: 1.5rem 0;        /* Keep vertical padding */
+  margin-top: 3rem;         /* Space above the banner */
+  border-top: 1px solid #e5e7eb; /* Optional separator line */
+  /* No horizontal padding needed here IF the main .container has it */
+}
+
+.footer-logo {
+  max-height: 45px;         /* Control logo size - adjust as needed */
+  width: auto;              /* Maintain aspect ratio */
+  /* Remove horizontal margin if you added it previously */
+  /* margin: 0 1rem; */
+}
+
+/* Ensure the main container provides the width constraint */
+/* Make sure this rule exists and has horizontal padding */
+.container {
+  max-width: 1200px; /* Or your chosen max-width */
+  margin: 2rem auto; /* Center container */
+  /* Crucial: Add horizontal padding here to define the content width */
+  padding: 1rem 2rem; /* Example: 1rem top/bottom, 2rem left/right */
+}
+
+.results-explanation-banner {
+  display: grid;                   /* Use Grid for layout */
+  grid-template-columns: repeat(3, 1fr); /* Create 3 equal columns */
+  gap: 1.5rem;                     /* Space between grid items */
+  padding: 2rem 0;                 /* Vertical padding */
+  margin-top: 3rem;                /* Space above */
+  border-top: 1px solid #e5e7eb;  /* Separator line */
+  /* background-color: #f9fafb; */ /* Optional: Light background for whole banner area */
+}
+
+.explanation-item {
+  background-color: #ffffff;       /* White background for each box */
+  border-radius: 10px;             /* Slightly more rounded corners */
+  padding: 1.5rem;                 /* Internal spacing */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06); /* Slightly more pronounced shadow */
+  border: 1px solid #f3f4f6;       /* Very subtle border */
+  text-align: center;              /* Center content within the box */
+  display: flex;                   /* Use flex for internal alignment */
+  flex-direction: column;          /* Stack icon, title, text vertically */
+  align-items: center;             /* Center items horizontally */
+}
+
+.explanation-icon-wrapper {
+    background-color: #e0e7ff; /* Light blue background for icon circle */
+    border-radius: 50%;
+    padding: 0.75rem;          /* Padding around icon */
+    margin-bottom: 1rem;       /* Space below icon */
+    display: inline-flex;      /* Make wrapper only as big as content */
+}
+
+.explanation-icon {
+  width: 28px;                  /* Icon size */
+  height: 28px;
+  color: #3b82f6;               /* Icon color (button blue) */
+}
+
+.explanation-item h4 {
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+  color: #1f2937;               /* Darker text for title */
+  font-size: 1.05rem;           /* Slightly larger title */
+  font-weight: 600;
+}
+
+.explanation-item p {
+  margin: 0;
+  color: #4b5563;               /* Muted text color */
+  font-size: 0.9rem;
+  line-height: 1.5;
+  flex-grow: 1; /* Allow text to take remaining space if needed */
+}
+/* --- END REVISED Explanation Banner Styles --- */
+
+/* --- Add Media Query for Responsiveness --- */
+@media (max-width: 768px) { /* Adjust breakpoint as needed */
+  .results-explanation-banner {
+    grid-template-columns: 1fr; /* Stack to single column on smaller screens */
+    gap: 1rem; /* Reduce gap for stacked view */
+  }
+  .explanation-item {
+      text-align: left; /* Align text left when stacked */
+      flex-direction: row; /* Place icon beside text */
+      align-items: flex-start; /* Align icon top */
+      gap: 1rem;
+  }
+   .explanation-icon-wrapper {
+      margin-bottom: 0; /* Remove bottom margin when side-by-side */
+      padding: 0.6rem; /* Slightly smaller icon padding */
+  }
+  .explanation-icon {
+      width: 24px;
+      height: 24px;
+  }
+  .explanation-item h4, .explanation-item p {
+     /* Optionally adjust text sizes for mobile */
+  }
+  /* Select the text content container if needed */
+  /* .explanation-item > div:not(.explanation-icon-wrapper) { flex: 1; } */
+
+}

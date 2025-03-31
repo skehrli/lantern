@@ -23,12 +23,12 @@ interface EnergyPieChartProps {
 
 // Define colors for consistency
 const COLORS = {
-  selfConsumed: '#a3e635', 
-  toBattery: '#65a30d',    
+  selfConsumed: '#65a30d', 
+  toBattery: '#a3e635',    
   toMarket: '#82ca9d',     
   toGrid: '#9ca3af',       
   fromPV: '#a3e635',       
-  fromBattery: '#65a30d',  
+  fromBattery: '#a3e635',  
   fromMarket: '#82ca9d',   
   fromGrid: '#9ca3af',     
 };
@@ -711,7 +711,64 @@ function App() {
             )}
           </div>
         )}
+
+        <section className="results-explanation-banner">
+        {/* Item 1: Cost */}
+        <div className="explanation-item">
+           <div className="explanation-icon-wrapper">
+             {/* Cost Icon SVG */}
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon">
+               <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5a.997.997 0 01.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+             </svg>
+           </div>
+           <h4>Cost Comparison</h4>
+           <p>See how the average bill per household over an entire Season is affected by the ability to trade with your neighbors.</p>
+        </div>
+
+        {/* Item 2: Load Profile */}
+        <div className="explanation-item">
+           <div className="explanation-icon-wrapper">
+             {/* Line Graph Icon SVG */}
+             <svg
+               xmlns="http://www.w3.org/2000/svg"
+               viewBox="0 0 20 20"
+               fill="none" // Use 'none' for fill as we are stroking the path
+               stroke="currentColor" // Use stroke for the line color
+               strokeWidth="1.5"     // Adjust line thickness if needed
+               strokeLinecap="round" // Smoother line endings
+               strokeLinejoin="round" // Smoother line joins
+               className="explanation-icon"
+             >
+               {/* A path representing a simple fluctuating line graph */}
+               <path d="M 2 17 L 6 7 L 10 12 L 14 4 L 18 8" />
+               { <path d="M 2 18 L 18 18 M 2 18 L 2 2" strokeWidth="1" /> }
+             </svg>
+           </div>
+           <h4>Daily Energy Pattern</h4>
+           <p>Shows the average ups and downs of electricity use and solar generation over 24 hours.</p>
+        </div>
+
+        {/* Item 3: Energy Flows */}
+        <div className="explanation-item">
+           <div className="explanation-icon-wrapper">
+            {/* Pie Chart Icon SVG */}
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon">
+                <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+               <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" /> {/* Re-using line chart icon is fine */}
+             </svg>
+           </div>
+           <h4>Energy Flows</h4>
+           <p>Visualizes where your energy comes from (solar, grid etc.) and where generated energy goes.</p>
+        </div>
+      </section>
+
       </div> {/* End of flex-container */}
+       <footer className="footer-banner">
+        <img src="/logos/hslu.png" alt="Description for Logo 1" className="footer-logo"/>
+        <img src="/logos/lantern.png" alt="Description for Logo 2" className="footer-logo"/>
+        <img src="/logos/persist.png" alt="Description for Logo 3" className="footer-logo"/>
+      </footer>
+
     </div> // End of container
   );
 } // End of App component
