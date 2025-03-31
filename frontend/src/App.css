@@ -467,7 +467,7 @@ body {
 
 .bar-wrapper {
   background: #e5e7eb; /* Background for the bar track */
-  border-radius: 6px; /* Rounded corners for the track */
+  border-radius: 32px; /* Rounded corners for the track */
   height: 32px; /* Bar height */
   overflow: hidden; /* Clip the inner bar */
   position: relative; /* For positioning text */
