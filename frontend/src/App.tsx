@@ -4,7 +4,12 @@ import './App.css';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { FaSun, FaSnowflake, FaLeaf, FaSpa } from 'react-icons/fa'; // Using Font Awesome examples
 
-// Define the EnergyMetrics type based on your provided class structure
+interface ResultSelectorProps {
+  resultsCount: number;
+  selectedIndex: number | null;
+  onSelect: (index: number) => void; // Callback when selection changes
+}
+
 interface EnergyMetricsData {
     total_consumption: number;
     total_grid_import: number;
@@ -36,9 +41,39 @@ const COLORS = {
 
 const RADIAN = Math.PI / 180;
 
+const ResultSelector: React.FC<ResultSelectorProps> = ({ resultsCount, selectedIndex, onSelect }) => {
+  if (resultsCount === 0) {
+    return null; // Don't render selector if there are no results yet
+  }
+
+  const handleSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newIndex = parseInt(event.target.value, 10);
+    if (!isNaN(newIndex)) {
+      onSelect(newIndex);
+    }
+  };
+
+  return (
+    <div className="result-selector-container">
+      <label htmlFor="result-select">Choose a Simulation Result:</label>
+      <select
+        id="result-select"
+        value={selectedIndex ?? ''} // Handle null initial state
+        onChange={handleSelectionChange}
+      >
+        {/* Generate options from 0 to resultsCount - 1 */}
+        {Array.from({ length: resultsCount }, (_, index) => (
+          <option key={index} value={index}>
+            Result #{index + 1}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
 // Custom label renderer for Pie chart slices
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
-  // Added check for percent being valid number
   if (percent == null || isNaN(percent) || percent < 0.02) return null; // Don't render labels for tiny slices
 
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5 + 10; // Adjust label position
@@ -382,7 +417,10 @@ const LoadGenProfile = ({ loadProfile, genProfile }: { loadProfile: number[], ge
 
 // --- Main App Component ---
 function App() {
-  const [result, setResult] = useState<SimulationResult | null>(null);
+  // Store an array of results instead of just one
+  const [resultsHistory, setResultsHistory] = useState<SimulationResult[]>([]);
+  // Store the index of the selected result in the history array
+  const [selectedResultIndex, setSelectedResultIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [params, setParams] = useState<SimulationParams>({
     community_size: 10,
@@ -448,6 +486,8 @@ function App() {
 
     console.log('Sending params:', submissionParams);
 
+    let parsedResultData: SimulationResult | null = null;
+
     try {
       const response = await fetch('http://localhost:8000/api/simulate', { // Ensure URL is correct
         method: 'POST',
@@ -477,7 +517,6 @@ function App() {
         const data: SimulationResult = JSON.parse(responseText); // Parse the valid response
         console.log('Parsed response:', data);
 
-        // Add more specific checks for nested properties if needed
         if (!data.cost_metrics || !data.energy_metrics || !data.market_metrics || !data.profiles) {
           console.error('Invalid response format: Missing key metrics sections.', data);
           throw new Error('Invalid response format from server.');
@@ -488,12 +527,25 @@ function App() {
              throw new Error('Invalid response format: Missing required energy metrics.');
         }
 
-        setResult(data);
+        parsedResultData = data;
+
       } catch (parseError: any) { // Catch specific error type
         console.error('Parse error:', parseError, "Response Text:", responseText);
         setError(`Failed to parse server response: ${parseError.message}`);
       }
-    } catch (error: any) { // Catch specific error type
+      if (parsedResultData) {
+          const resultToAdd = parsedResultData;
+          setResultsHistory(prevHistory => {
+            const newHistory = [...prevHistory, resultToAdd]; // Use the captured constant
+            const newIndex = newHistory.length - 1;
+            setSelectedResultIndex(newIndex);
+            return newHistory;
+          });
+      } else {
+          console.error("State update skipped because parsedResultData was null.");
+          setError("An unexpected issue occurred while processing results.");
+      }
+    } catch (error: any) {
       console.error('Fetch/API Error:', error);
       setError(error instanceof Error ? error.message : 'An unexpected error occurred during simulation.');
     }
@@ -533,6 +585,7 @@ function App() {
 
   };
 
+  const currentResult = selectedResultIndex !== null ? resultsHistory[selectedResultIndex] : null;
 
   // --- JSX Render ---
   return (
@@ -644,73 +697,90 @@ function App() {
           </div>
         </form>
 
-              {/* --- Results Area --- */}
-        {result && (
-          <div className="results-container"> {/* This is display: grid */}
-            {/* Item 1: Row 1, Col 1 */}
-            <div className="result-tab">
-              <h3>Average Cost per Household</h3>
-              <CostComparison
-                withLec={result.cost_metrics.cost_with_lec}
-                withoutLec={result.cost_metrics.cost_without_lec}
-              />
-            </div>
+        {/* --- Results Area Wrapper --- */}
+        <div className="results-area"> {/* New wrapper div */}
 
-            {/* Item 2: Row 1, Col 2 */}
-            {result.profiles?.load_profile && result.profiles?.gen_profile && ( // Optional chaining
-              <div className="result-tab">
-                <h3>Load and Generation Profile (kW)</h3>
-                <LoadGenProfile loadProfile={result.profiles.load_profile} genProfile={result.profiles.gen_profile} />
-              </div>
-            )}
+          {/* --- Render Selector --- */}
+          <ResultSelector
+            resultsCount={resultsHistory.length}
+            selectedIndex={selectedResultIndex}
+            onSelect={setSelectedResultIndex} // Pass setter to update selection
+          />
 
-            {/* --- START: Split Energy Flows into two tabs --- */}
+          {/* --- Render Currently Selected Result --- */}
+          {/* Check if currentResult exists before rendering */}
+          {currentResult && (
+            // New div acting as the "box" housing the grid
+            <div className="current-result-display">
+               {/* The existing grid container */}
+               <div className="results-container"> {/* This is display: grid */}
 
-            {/* Item 3: Row 2, Col 1 - Production Pie */}
-            {result.energy_metrics ? (
-              <div className="result-tab pie-chart-tab"> {/* Added common class */}
-                 {/* Use H3 for consistency */}
-                <h3>Production Allocation</h3>
-                 {/* Removed intermediate container div */}
-                <EnergyPieChart type="production" metrics={result.energy_metrics} formatNumber={formatNumber} />
-              </div>
-             ) : (
-                // Optional: Render an empty placeholder grid item if metrics are missing
-                // to maintain grid structure, or omit this tab entirely.
-                 <div className="result-tab placeholder"></div> // Example placeholder
-             )
-            }
+                {/* Item 1: Cost */}
+                <div className="result-tab">
+                  <h3>Average Cost per Household</h3>
+                  <CostComparison
+                    withLec={currentResult.cost_metrics.cost_with_lec}
+                    withoutLec={currentResult.cost_metrics.cost_without_lec}
+                  />
+                </div>
 
-            {/* Item 4: Row 2, Col 2 - Consumption Pie */}
-             {result.energy_metrics ? (
-              <div className="result-tab pie-chart-tab"> {/* Added common class */}
-                 {/* Use H3 for consistency */}
-                <h3>Consumption Sources</h3>
-                 {/* Removed intermediate container div */}
-                <EnergyPieChart type="consumption" metrics={result.energy_metrics} formatNumber={formatNumber} />
-              </div>
-             ) : (
-                 <div className="result-tab placeholder"></div> // Example placeholder
-             )
-            }
+                {/* Item 2: Profile */}
+                {currentResult.profiles?.load_profile && currentResult.profiles?.gen_profile && (
+                  <div className="result-tab">
+                    <h3>Load and Generation Profile (kW)</h3>
+                    <LoadGenProfile
+                      loadProfile={currentResult.profiles.load_profile}
+                      genProfile={currentResult.profiles.gen_profile}
+                    />
+                  </div>
+                )}
 
-            {/* Item 6: Row 3, Col 2 - Warnings (Example) */}
-            {result.warnings && result.warnings.length > 0 && (
-               <div className="result-tab">
-                  <h3>Warnings</h3>
-                  <ul> {result.warnings.map((warning, index) => (<li key={`warn-${index}`}>{warning}</li> ))} </ul>
-               </div>
-            )}
+                {/* Item 3: Production Pie */}
+                {currentResult.energy_metrics ? (
+                  <div className="result-tab pie-chart-tab">
+                    <h3>Production Allocation</h3>
+                    <EnergyPieChart
+                      type="production"
+                      metrics={currentResult.energy_metrics}
+                      formatNumber={formatNumber} />
+                  </div>
+                ) : <div className="result-tab placeholder"></div>}
 
-            {/* Item 7: Row 4, Col 1 - Errors (Example) */}
-            {result.errors && result.errors.length > 0 && (
-               <div className="result-tab">
-                 <h3>Errors</h3>
-                 <ul> {result.errors.map((errorMsg, index) => ( <li key={`err-${index}`}>{errorMsg}</li> ))} </ul>
-               </div>
-            )}
-          </div>
-        )}
+                {/* Item 4: Consumption Pie */}
+                 {currentResult.energy_metrics ? (
+                  <div className="result-tab pie-chart-tab">
+                    <h3>Consumption Sources</h3>
+                    <EnergyPieChart
+                      type="consumption"
+                      metrics={currentResult.energy_metrics}
+                      formatNumber={formatNumber} />
+                  </div>
+                 ) : <div className="result-tab placeholder"></div>}
+
+                {/* Item 6: Warnings (Optional) */}
+                {currentResult.warnings && currentResult.warnings.length > 0 && (
+                   <div className="result-tab">
+                      <h3>Warnings</h3>
+                      <ul> {currentResult.warnings.map((warning, index) => (<li key={`warn-${index}`}>{warning}</li> ))} </ul>
+                   </div>
+                )}
+
+                {/* Item 7: Errors (Optional) */}
+                {currentResult.errors && currentResult.errors.length > 0 && (
+                   <div className="result-tab">
+                     <h3>Errors</h3>
+                     <ul> {currentResult.errors.map((errorMsg, index) => ( <li key={`err-${index}`}>{errorMsg}</li> ))} </ul>
+                   </div>
+                )}
+              </div> {/* End of results-container (grid) */}
+            </div> // End of current-result-display
+          )}
+          {/* Optionally show a message if no result is selected yet */}
+          {!currentResult && resultsHistory.length === 0 && !error && (
+             <p className="no-results-yet">Run a simulation to see results.</p>
+          )}
+
+        </div> {/* End of results-area */}
 
         <section className="results-explanation-banner">
         {/* Item 1: Cost */}

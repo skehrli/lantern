@@ -700,3 +700,82 @@ body {
   /* border-color: #9ca3af; */
   color: #374151; /* Darker icon color on hover */
 }
+
+.results-area {
+  flex: 2 1 500px; /* Allow it to take available space like results-container did */
+  display: flex;
+  flex-direction: column; /* Stack selector above results */
+  gap: 1.5rem; /* Space between selector and results */
+}
+
+/* Container for the result dropdown selector */
+.result-selector-container {
+  padding: 0.75rem 1rem;
+  background-color: #ffffff; /* White background */
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.result-selector-container label {
+  font-weight: 500;
+  color: #4b5563;
+  margin-bottom: 0; /* Remove default bottom margin */
+}
+
+.result-selector-container select {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #f9fafb; /* Slightly off-white */
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 120px; /* Give it some base width */
+  color: #374151;
+}
+
+/* The box that houses the currently displayed result grid */
+.current-result-display {
+  /* No specific background/padding needed here unless desired, */
+  /* as the inner .results-container handles the grid. */
+  /* It mainly serves as a container for conditional rendering */
+}
+
+/* Placeholder message when no results are shown */
+.no-results-yet {
+  text-align: center;
+  color: #6b7280;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+
+/* Adjust existing results-container if needed (might not be necessary) */
+.results-container {
+  /* display: grid; */
+  /* grid-template-columns: 1fr 1fr; */ /* Keep 1fr 1fr if that worked */
+  /* gap: 1.5rem; */
+  /* Ensure it doesn't have extra margin causing overflow */
+  margin: 0;
+}
+
+/* Ensure flex-container still works */
+.flex-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* Ensure input form retains its width */
+/* .input-form { */
+  /* flex: 0 0 350px; */
+  /* max-width: 400px; */
+  /* ... other existing styles ... */
+/* } */
