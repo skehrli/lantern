@@ -22,7 +22,7 @@ BATTERY_SIZE: int = 10
 GRID_BUY_PRICE: float = 21.12
 # GRID_BUY_PRICE: Callable[[pd.Timestamp], float] = lambda time: 12.0 if (time.hour < 6 or time.hour >= 22) else 15.0
 GRID_SELL_PRICE: float = 4.6
-P2P_PRICE: float = 12.86
+P2P_PRICE: float = GRID_BUY_PRICE + GRID_SELL_PRICE / 2.0
 
 # battery retention rate per hour
 RETENTION_RATE: float = 0.999
