@@ -1,15 +1,19 @@
+/* General Body Styles */
 body {
   background-color: #f3f4f6; /* Light background for the entire page */
   color: #1f2937; /* Dark text color */
+  font-family: sans-serif; /* Add a default font */
 }
 
+/* Main Container - Adjust width as needed for wider layout */
 .container {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  max-width: 1200px; /* Allow more space for side-by-side layout */
+  margin: 2rem auto; /* Center the container with top/bottom margin */
+  padding: 1rem; /* Padding around the content */
+  /* text-align: center; /* Remove center alignment if form/results are side-by-side */
 }
 
+/* General Form Group Styling */
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -18,8 +22,18 @@ body {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: bold;
+  color: #4b5563; /* Slightly muted label color */
 }
 
+/* Checkbox specific label */
+.form-group label.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: normal; /* Normal weight for checkbox labels */
+}
+
+/* Input and Select Styling */
 .form-group input,
 .form-group select {
   width: 100%;
@@ -28,192 +42,7 @@ body {
   border-radius: 4px;
   background-color: white; /* Light input background */
   color: #1f2937; /* Dark text */
-}
-
-input[type="range"] {
-  width: 100%;
-  margin: 0.5rem 0;
-}
-
-.season-buttons button {
-  width: 60px;
-  height: 60px;
-  margin: 0.2rem;
-  padding: 0;
-  border: 1px solid #ccc;
-  border-radius: 50%;
-  background-color: white;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;  /* Make the emojis bigger */
-}
-
-.season-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;  /* Consistent spacing between buttons */
-}
-
-.season-buttons button.active {
-  background-color: #a3e635;
-}
-
-.circle {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  border: 2px solid #e5e7eb;  /* Light gray border */
-  border-radius: 50%;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
-  cursor: pointer;
-  background: #f9fafb;  /* Very light background */
-}
-
-.circle-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  fill: none;
-  stroke: #a3e635;
-  stroke-width: 4px;
-  transform-origin: center;
-  z-index: 1;
-  stroke-linecap: round;  /* Add rounded endpoints to the stroke */
-}
-
-.circle input[type="range"] {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-  transform: rotate(-90deg);  /* Rotate to make it vertical */
-  z-index: 2;
-}
-
-.circle input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 24px;
-  height: 24px;
-  background: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-top: -10px;  /* Adjust thumb position */
-}
-
-.circle input[type="range"]::-webkit-slider-runnable-track {
-  -webkit-appearance: none;
-  background: transparent;
-  border: none;
-  height: 100%;
-}
-
-.circle span {
-  position: relative;
-  z-index: 2;
-  color: #374151;
-  font-weight: bold;
-}
-
-.circle-thumb {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  background: white;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 3;
-  left: 50%;
-  top: 50%;
-  margin: -8px;
-  transform-origin: center center;
-  opacity: 0;  /* Make it invisible */
-  /* Keep the pointer events active so it's still clickable */
-}
-
-button {
-  padding: 0.5rem 1rem;
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button.active {
-  background-color: #a3e635;
-}
-
-button:hover {
-  background-color: #2563eb;
-}
-
-.results {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background-color: white; /* Light background for results */
-  border-radius: 8px;
-  color: #1f2937; /* Dark text */
-}
-
-.results h2 {
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  color: #3b82f6;
-}
-
-.results h3 {
-  margin-top: 1.5rem;
-  margin-bottom: 1rem;
-  color: #60a5fa;
-}
-
-.results p {
-  margin: 0.5rem 0;
-  display: flex;
-  justify-content: space-between;
-  border-bottom: 1px solid #ccc;
-  padding: 0.5rem 0;
-}
-
-.results p span:first-child {
-  color: #4b5563;
-}
-
-.results ul {
-  margin: 0.5rem 0;
-  padding-left: 1.5rem;
-}
-
-.results li {
-  margin: 0.25rem 0;
-  color: #4b5563;
-}
-
-.error {
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background-color: #fee2e2;
-  border-radius: 4px;
-  color: #b91c1c;
-}
-
-.form-group label.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  box-sizing: border-box; /* Include padding in width */
 }
 
 .form-group input[type="checkbox"] {
@@ -221,244 +50,513 @@ button:hover {
   margin-right: 0.5rem;
 }
 
-/* Style the range input container */
+/* --- Component-Specific Styles --- */
+
+/* Size Slider */
 .size-slider {
-  background: #e5e7eb;
+  background: #e5e7eb; /* Base track color */
   padding: 0;
-  border-radius: 20px;  /* Slightly smaller radius */
+  border-radius: 18px; /* Rounded ends */
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin: 10px auto;  /* Center the slider */
   position: relative;
-  height: 36px;  /* Thinner height */
+  height: 36px; /* Slider height */
   overflow: hidden;
-  max-width: 280px;  /* Limit width to match season buttons */
+  /* max-width: 280px; /* Limit width if needed, or let it fill */
+  width: 100%; /* Make it take form group width */
+  box-sizing: border-box;
 }
 
-/* Style the range input */
-.size-slider input[type="range"] {
-  position: absolute;
-  left: 20px;  /* Add padding here instead */
-  right: 20px;
-  top: 0;
-  width: calc(100% - 40px);  /* Account for padding */
-  height: 100%;
-  -webkit-appearance: none;
-  appearance: none;  /* Remove default appearance */
-  background: none;
-  outline: none;  /* Remove focus outline */
-  border: none;
-  margin: 0;
-  z-index: 2;
-}
-
-/* Add the green background track */
-.size-slider::before {
+.size-slider::before { /* Green filled part */
   content: '';
   position: absolute;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  background: #a3e635;
-  border-radius: 30px;
+  background: #a3e635; /* Green color */
+  border-radius: 18px;
+  /* clip-path uses the CSS variable set in the component */
   clip-path: inset(0 var(--clip-percent) 0 0);
   transition: clip-path 0.1s ease;
 }
 
-/* Style the range input thumb */
+.size-slider input[type="range"] {
+  width: 100%; /* Slider takes full width */
+  height: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent; /* Make track transparent */
+  outline: none;
+  border: none;
+  margin: 0;
+  padding: 0 18px; /* Padding inside to keep thumb from hitting edges */
+  box-sizing: border-box;
+  position: relative; /* Needed for z-index */
+  z-index: 2; /* Above the ::before element */
+  cursor: pointer;
+}
+
+/* Thumb for Webkit (Chrome, Safari, Edge) */
 .size-slider input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 0;  /* Set width to 0 */
-  height: 0;  /* Set height to 0 */
-  background: transparent;  /* Make it transparent */
-  border: none;
+  width: 24px; /* Thumb size */
+  height: 24px; /* Thumb size */
+  background: white; /* Thumb color */
+  border-radius: 50%;
   cursor: pointer;
+  border: 1px solid #d1d5db; /* Optional border */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: -12px; /* Center thumb vertically (half of height) on the track (adjust if needed) */
+  position: relative; /* Needed for z-index */
+  z-index: 3;
 }
 
-/* For Firefox */
+/* Thumb for Firefox */
 .size-slider input[type="range"]::-moz-range-thumb {
-  width: 0;
-  height: 0;
-  background: transparent;
-  border: none;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
   cursor: pointer;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 3;
 }
 
-/* For IE/Edge */
-.size-slider input[type="range"]::-ms-thumb {
-  width: 0;
-  height: 0;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-/* Style the value display */
+/* Value display inside slider */
 .size-slider span {
   position: absolute;
-  right: 20px;
-  min-width: 40px;
+  right: 15px; /* Position on the right */
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 25px; /* Ensure space for text */
   text-align: right;
   font-weight: bold;
-  color: #374151;
-  z-index: 2;
+  color: #374151; /* Text color */
+  z-index: 1; /* Below the input range, above the ::before */
+  pointer-events: none; /* Don't interfere with slider interaction */
 }
 
-/* Helper function to calculate circular fill */
-const getCircularFillPath = (percentage: number) => {
-  const angle = (percentage / 100) * 2 * Math.PI;
-  const radius = 40;  // Half of circle width
-  const x = radius + radius * Math.cos(angle - Math.PI/2);
-  const y = radius + radius * Math.sin(angle - Math.PI/2);
-  return `M${radius},${radius} L${radius},0 A${radius},${radius} 0 ${percentage > 50 ? 1 : 0},1 ${x},${y} Z`;
-};
-
-/* Add new styles for the circles container */
-.circles-container {
+/* Season Buttons */
+.season-buttons {
   display: flex;
-  justify-content: center;
-  gap: 2rem;
-  margin: 2rem 0;
-  flex-direction: row;  /* Ensure horizontal layout */
+  justify-content: space-around; /* Distribute buttons evenly */
+  gap: 0.5rem;
 }
 
-.circles-container .form-group {
-  flex: 0 1 auto;
-  text-align: center;
-  margin-bottom: 0;
-  min-width: 120px;  /* Give enough space for the labels */
-}
-
-.circle {
-  margin: 0 auto;
-}
-
-/* Style the battery button to match the circles height */
-.circles-container button {
-  margin-top: 1.5rem;  /* Align with circles */
-  min-width: 80px;
-  height: 40px;
-}
-
-/* Adjust the buttons layout */
-.button-group {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 3rem;  /* Increase space between circles and buttons */
-}
-
-.button-group button {
-  min-width: 80px;
-}
-
-/* Style for the battery button */
-.battery-button {
-  min-width: 80px;  /* Wider to accommodate text */
-  height: 48px;
-  padding: 0 1.5rem;
-  border: 1px solid #ccc;
-  border-radius: 24px;  /* Half of height for pill shape */
+.season-buttons button {
+  width: 60px;
+  height: 60px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid #d1d5db; /* Slightly thicker border */
+  border-radius: 50%;
   background-color: white;
-  display: flex;
+  cursor: pointer;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;  /* Space between icon and text */
-  color: #9ca3af;
+  font-size: 28px; /* Adjust emoji size */
+  transition: background-color 0.2s, border-color 0.2s;
+  line-height: 1; /* Better emoji alignment */
 }
 
-.battery-button.active {
-  background-color: #a3e635;
-  border-color: #a3e635;
-  color: white;
+.season-buttons button.active {
+  background-color: #a3e635; /* Active green */
+  border-color: #84cc16; /* Darker green border */
+  box-shadow: 0 2px 4px rgba(132, 204, 22, 0.3);
 }
 
-/* Style for the confirm button */
-.button-group button[type="submit"] {
-  min-width: 100px;
-  height: 48px;
-  padding: 0 1.5rem;
-  border-radius: 24px;
-  background-color: #3b82f6;
-  color: white;
-  font-weight: 500;
-  border: none;
+.season-buttons button:not(.active):hover {
+  background-color: #f3f4f6; /* Light hover */
+  border-color: #9ca3af;
 }
 
-.button-group button[type="submit"]:hover {
-  background-color: #2563eb;
-}
-
+/* Circular Sliders Area */
 .circles-row {
   display: flex;
-  justify-content: center;
-  gap: 3rem;
+  justify-content: space-around; /* Center items with space */
+  gap: 2rem; /* Space between circles */
   margin: 2rem 0;
 }
 
 .circle-container {
   text-align: center;
+  flex: 1; /* Allow containers to take space */
+  max-width: 120px; /* Limit width */
 }
 
 .circle-container label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   font-weight: bold;
+  color: #4b5563;
 }
 
-.cost-comparison {
-  margin: 2rem 0;
-  padding: 1rem;
-  background: #f9fafb;
+/* The Circle Element (for PV/SD) */
+.circle {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #e5e7eb; /* Background track color */
+  margin: 0 auto; /* Center within container */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none; /* Prevent text selection */
+  border: 2px solid #d1d5db; /* Add border */
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); /* Inner shadow */
+}
+.circle:active {
+  cursor: grabbing;
+}
+
+.circle span { /* Percentage text */
+  position: relative;
+  z-index: 2;
+  color: #374151;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.circle-fill { /* SVG for the green progress arc */
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  /* transform: rotate(-90deg); /* Start arc from top */ */
+  z-index: 1;
+}
+
+.circle-fill path {
+  fill: none;
+  stroke: #a3e635; /* Green arc color */
+  stroke-width: 8; /* Thickness of the arc */
+  stroke-linecap: round; /* Rounded ends */
+  /* Path 'd' attribute is set dynamically in the component */
+}
+
+/* Buttons (Battery and Confirm) */
+.button-group {
+  display: flex;
+  justify-content: center; /* Center buttons */
+  gap: 1rem;
+  margin-top: 2rem; /* Space above buttons */
+}
+
+.button-group button { /* Common styles for buttons in this group */
+  height: 48px;
+  padding: 0 1.5rem;
+  border-radius: 24px; /* Pill shape */
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex; /* Align icon and text */
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+/* Battery Button Specifics */
+.battery-button {
+  min-width: 90px; /* Ensure enough width */
+  background-color: white;
+  border: 1px solid #ccc;
+  color: #6b7280; /* Muted text color */
+  gap: 0.5rem; /* Space between icon and text */
+}
+.battery-button svg {
+  fill: currentColor; /* Icon inherits text color */
+}
+
+.battery-button.active {
+  background-color: #ecfccb; /* Very light green */
+  border-color: #a3e635; /* Green border */
+  color: #4d7c0f; /* Dark green text */
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+.battery-button:not(.active):hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* Confirm Button Specifics */
+.button-group button[type="submit"] {
+  min-width: 120px; /* Make confirm button wider */
+  background-color: #3b82f6; /* Blue color */
+  color: white;
+  border: none;
+}
+
+.button-group button[type="submit"]:hover {
+  background-color: #2563eb; /* Darker blue on hover */
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+}
+
+/* --- Layout for Form and Results --- */
+
+.flex-container {
+  display: flex;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  justify-content: space-between; /* Default space */
+  align-items: flex-start; /* Align tops */
+  gap: 2rem; /* Space between form and results area */
+  margin-top: 2rem;
+}
+
+/* Input Form Styling */
+.input-form {
+  flex: 0 0 350px; /* Grow, shrink, base width of 350px */
+  max-width: 400px; /* Max width for the form */
+  padding: 1.5rem 2rem;
+  background-color: #ffffff; /* White background */
   border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+  /* Removed margin-right, using gap in flex-container now */
+}
+
+/* Results Area Styling */
+.results-container {
+  flex: 2 1 500px; /* Take more space, shrink, base width */
+  display: grid;
+  grid-template-columns: 2.5fr 2.5fr;
+  gap: 1.5rem;
+}
+
+/* Individual Result Tab Styling */
+.result-tab {
+  padding: 1.25rem;
+  background-color: white; /* White background */
+  border-radius: 12px; /* Rounded corners */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Subtle shadow */
+  box-sizing: border-box;
+  color: #1f2937; /* Dark text */
+  overflow: hidden;
+}
+
+.result-tab .recharts-responsive-container {
+    min-height: 220px; /* Match the height set in EnergyPieChart */
+}
+.result-tab .recharts-responsive-container svg {
+    /* Helps prevent extra space below SVG in some browsers */
+    display: block;
+}
+
+/* Energy Charts Tab Specific Styles */
+.energy-charts-tab {
+  /* Remove specific flex-basis override, let it use the general .result-tab flex */
+  /* flex-basis: 400px; */ /* REMOVED */
+  min-width: 280px; /* Ensure it doesn't get smaller than others */
+  padding-top: 1rem; /* Slightly reduced top padding */
+  padding-bottom: 0.5rem; /* Reduced bottom padding */
+}
+
+.pie-chart-container {
+  margin-top: 0.5rem; /* Reduced margin */
+  border-top: 1px solid #eee;
+  padding-top: 0.5rem; /* Reduced padding */
+}
+
+.pie-chart-container h4 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 0; /* Remove bottom margin, space handled by container */
+  font-weight: 500;
+  color: #4b5563;
+  font-size: 0.95em; /* Slightly smaller title */
+}
+
+/* Styling for the Recharts Legend */
+.recharts-legend-wrapper {
+   /* Styles applied via wrapperStyle prop now, CSS less specific needed */
+   /* You might need bottom: 0 !important; if it doesn't position correctly */
+}
+.recharts-legend-item {
+  margin-right: 10px !important; /* Space between horizontal items */
+  padding-bottom: 5px; /* Ensure text doesn't get cut off */
+}
+
+.result-tab h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb; /* Separator line */
+  color: #3b82f6; /* Blue title */
+  font-size: 1.1rem;
+}
+
+.result-tab p {
+  margin: 0.6rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* border-bottom: 1px solid #eee; /* Optional line between items */
+  padding: 0.2rem 0;
+  font-size: 0.95rem;
+}
+
+.result-tab p span:first-child {
+  color: #4b5563; /* Label color */
+}
+
+.result-tab p span:last-child {
+  font-weight: 500; /* Slightly bolder value */
+  color: #111827; /* Darker value text */
+  text-align: right;
+}
+
+.result-tab ul { /* For Warnings/Errors */
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.2rem;
+  list-style: disc;
+}
+
+.result-tab li {
+  margin: 0.25rem 0;
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+/* Cost Comparison Component Styles */
+.cost-comparison {
+  margin-top: 1rem;
+  /* background: #f9fafb; Optional slightly different background */
+  /* border-radius: 8px; */
+  /* padding: 1rem 0; */
 }
 
 .bar-container {
-  margin: 1rem 0;
+  margin-bottom: 1rem;
 }
 
 .bar-label {
   text-align: left;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
   font-weight: 500;
+  font-size: 0.9em;
   color: #374151;
 }
 
 .bar-wrapper {
-  background: #e5e7eb;
-  border-radius: 24px;
-  height: 48px;
-  overflow: hidden;
+  background: #e5e7eb; /* Background for the bar track */
+  border-radius: 6px; /* Rounded corners for the track */
+  height: 32px; /* Bar height */
+  overflow: hidden; /* Clip the inner bar */
+  position: relative; /* For positioning text */
 }
 
-.bar {
+.bar { /* The colored bar itself */
   height: 100%;
-  border-radius: 24px;
+  border-radius: 6px; /* Match wrapper */
   display: flex;
   align-items: center;
-  padding: 0 1rem;
-  transition: width 0.3s ease;
+  padding: 0 0.75rem; /* Padding for text inside */
+  transition: width 0.4s ease-in-out; /* Animate width change */
+  box-sizing: border-box;
+  position: relative; /* Needed if text positioning requires it */
 }
 
-.bar span {
+.bar span { /* Text inside the bar */
   color: white;
   font-weight: 500;
+  font-size: 0.9em;
+  position: absolute; /* Position relative to wrapper */
+  right: 0.75rem; /* Position text on the right */
+  white-space: nowrap;
 }
 
-.lec-bar {
-  background-color: #a3e635;
+.lec-bar { /* "With Community" bar */
+  background-color: #a3e635; /* Green */
+}
+.lec-bar span {
+  color: #3f6212; /* Dark green text for better contrast on light green */
 }
 
-.no-lec-bar {
-  background-color: #9ca3af;
+.no-lec-bar { /* "Without Community" bar */
+  background-color: #9ca3af; /* Gray */
 }
+.no-lec-bar span {
+  color: #ffffff; /* White text on gray */
+}
+
 
 .savings-info {
-  margin-top: 1rem;
-  text-align: right;
+  margin-top: 1.5rem;
+  text-align: center;
   font-weight: 500;
-  color: #059669;
-} 
+  color: #059669; /* Green for savings */
+  background-color: #d1fae5; /* Light green background */
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-size: 0.95em;
+}
+
+/* Error Message Styling */
+.error {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #fee2e2; /* Light red */
+  border: 1px solid #fecaca; /* Red border */
+  border-radius: 8px;
+  color: #b91c1c; /* Dark red text */
+}
+
+/* Recharts Chart Styling (optional overrides) */
+.recharts-responsive-container {
+  margin-top: 1rem;
+}
+
+.energy-charts-tab {
+  /* Ensure enough space if needed */
+  min-width: 300px; /* Example: Adjust as necessary */
+  flex-basis: 400px; /* Suggest a slightly larger base width */
+}
+
+.energy-charts-tab h3 {
+  text-align: center; /* Center main title */
+}
+
+.pie-chart-container {
+  margin-top: 1rem;
+  border-top: 1px solid #eee; /* Optional separator */
+  padding-top: 1rem;
+}
+
+.pie-chart-container h4 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+/* Styling for the Recharts Legend */
+.recharts-legend-wrapper {
+  /* Default position is often fine, adjust if needed */
+}
+.recharts-legend-item {
+  margin-bottom: 4px !important; /* Add some space between legend items */
+  font-size: 12px;
+}
+/* Custom Tooltip Style (optional but recommended) */
+.custom-tooltip {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid #ccc !important;
+    padding: 8px 12px !important;
+    border-radius: 4px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* --- Deprecated/Combined Styles (Review and remove if not used) --- */
+/* .results was likely replaced by .results-container and .result-tab */
+/* Remove .results { ... } if it's no longer the main container */
+
+/* Remove JavaScript function definition from CSS */
+/* const getCircularFillPath = ... */

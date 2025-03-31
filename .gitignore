@@ -1,0 +1,10 @@
+/data/*
+/out/
+.mypy_cache/
+/lantern/__pycache__
+/lantern/.mypy_cache
+# /lantern/data_loader.py
+data.db
+.coverage
+__pycache__/noxfile.cpython-313.pyc
+tests/__pycache__/simulation_test.cpython-313-pytest-8.3.5.pyc
