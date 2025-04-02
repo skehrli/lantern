@@ -256,7 +256,7 @@ const EnergyPieChart: React.FC<EnergyPieChartProps> = ({ type, metrics }) => {
                     labelLine={false}
                     label={renderCustomizedLabel}
                     outerRadius={80} // Adjust radius as needed
-                    innerRadius={30} // Make it a donut chart
+                    innerRadius={50} // Make it a donut chart
                     fill="#8884d8" // Default fill (overridden by Cells)
                     dataKey="value"
                     nameKey="name"
