@@ -40,7 +40,6 @@ class SimulationParams(BaseModel):
 
 @app.post("/api/simulate")
 async def simulate(params: SimulationParams):
-    # Log the incoming parameters
     print(f"Simulation request received with parameters: {params}")
     
     try:
@@ -52,8 +51,7 @@ async def simulate(params: SimulationParams):
             with_battery=params.with_battery,
         )
 
-        # Convert Pydantic model to dict and return as JSON
         return JSONResponse(content=result.model_dump())
     except Exception as e:
-        print("Error:", str(e))  # For debugging
+        print("Error:", str(e))
         raise HTTPException(status_code=400, detail=str(e))
