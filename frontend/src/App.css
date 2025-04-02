@@ -567,7 +567,7 @@ body {
 .explanation-items-grid {
   display: grid;
   /* Create two equal-width columns */
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   /* Define gap between grid items (rows and columns) */
   gap: 1.5rem; /* Adjust spacing as needed */
   width: 100%; /* Ensure it takes full width of the panel */
@@ -651,12 +651,20 @@ body {
   padding: 1.5rem 0; /* Vertical padding only */
   margin-top: 3rem;
   border-top: 1px solid #e5e7eb;
+  position: relative;
   /* Horizontal spacing handled by .container padding */
 }
 
+.footer-banner img:nth-child(2) {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .footer-logo {
-  max-height: 45px;
-  width: auto;
+  max-height: 60px;
+  max-width: 200px;
 }
 
 /* --- Responsive Adjustments --- */
