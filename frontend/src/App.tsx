@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
     PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis,
     CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -289,6 +289,9 @@ const EnergyPieChart: React.FC<EnergyPieChartProps> = ({ type, metrics }) => {
                     fill="#8884d8" // Default fill (overridden by Cells)
                     dataKey="value"
                     nameKey="name"
+                    isAnimationActive={true} // Explicitly true (usually default)
+                    animationDuration={750} // Adjust duration (ms) for desired smoothness (e.g., 500-1000ms)
+                    animationEasing="ease-in-out"
                 >
                     {chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} stroke={entry.color} />
@@ -456,15 +459,18 @@ function App() {
 
     // --- Event Handlers  ---
 
-    useEffect(() => {
-        // Check if a valid index is selected and exists in history
-        if (selectedResultIndex !== null && selectedResultIndex >= 0 && selectedResultIndex < resultsHistory.length) {
-            const selectedEntry = resultsHistory[selectedResultIndex];
-            // Update the main params state with the stored params from that history entry
+    const handleResultSelection = useCallback((index: number) => {
+        if (index >= 0 && index < resultsHistory.length) {
+            const selectedEntry = resultsHistory[index];
+            // 1. Update the selected index state
+            setSelectedResultIndex(index);
+            // 2. Update the params state based on the selected history item
             setParams(selectedEntry.params);
+        } else {
+            // Handle potential invalid index if necessary (e.g., reset selection)
+            setSelectedResultIndex(null);
         }
-        // This effect runs when the selected index changes or the history array itself changes
-    }, [selectedResultIndex, resultsHistory]);
+    }, [resultsHistory]); // Dependency: resultsHistory array
 
     const handleParamChange = useCallback((key: keyof SimulationParams, value: any) => {
         setParams(prev => ({ ...prev, [key]: value }));
@@ -783,7 +789,7 @@ function App() {
                   <ResultSelector
                       history={resultsHistory}
                       selectedIndex={selectedResultIndex}
-                      onSelect={setSelectedResultIndex}
+                      onSelect={handleResultSelection}
                   />
 
                   {/* Display selected result or placeholder */}
@@ -792,7 +798,7 @@ function App() {
                           <div className="results-container"> {/* This should be display: grid; grid-template-columns: repeat(3, 1fr); in CSS */}
 
                               {/* --- Column 1 --- */}
-                              <div className="result-tab">
+                              <div className="result-tab" key="cost-comparison">
                                   <h3>Avg. Cost per Household</h3>
                                   <CostComparison
                                       withLec={currentResult.cost_metrics?.cost_with_lec}
@@ -800,12 +806,12 @@ function App() {
                                   />
                               </div>
 
-                              <div className="result-tab">
+                              <div className="result-tab" key="energy-profile">
                                   <h3>Avg. Daily Energy Profile</h3>
                                   <LoadGenProfile profiles={currentResult.profiles} />
                               </div>
 
-                              <div className="result-tab trading-network-tab-span">
+                              <div className="result-tab trading-network-tab-span" key="trading-network">
                                   <h3>Trading Network</h3>
                                   <TradingNetworkForceGraph
                                       tradingNetwork={currentResult.trading_network}
@@ -814,12 +820,12 @@ function App() {
                                   />
                               </div>
 
-                               <div className="result-tab pie-chart-tab">
+                               <div className="result-tab pie-chart-tab" key="production-allocation">
                                   <h3>Energy Consumption Sources</h3>
                                   <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
                               </div>
 
-                              <div className="result-tab pie-chart-tab">
+                              <div className="result-tab pie-chart-tab" key="consumption-sources">
                                   <h3>PV Production Allocation</h3>
                                   <EnergyPieChart type="production" metrics={currentResult.energy_metrics} />
                               </div>
