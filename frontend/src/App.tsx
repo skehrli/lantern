@@ -3,7 +3,13 @@ import {
     PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis,
     CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { FaSun, FaSnowflake, FaLeaf, FaSpa } from 'react-icons/fa';
+import { FaSun, FaSnowflake, FaLeaf, FaSpa, FaCoins } from 'react-icons/fa';
+import { PiSolarPanelFill, PiCity } from 'react-icons/pi';
+import { GiWashingMachine } from "react-icons/gi";
+import { RiDonutChartFill } from "react-icons/ri";
+import { BsCloudSun } from 'react-icons/bs';
+import { IoIosBatteryFull } from 'react-icons/io';
+import { VscGraphLine } from 'react-icons/vsc';
 import './App.css';
 
 // --- Constants ---
@@ -646,14 +652,8 @@ function App() {
                      {/* Explanation Item 1: Community Size */}
                      <div className="explanation-item">
                         <div className="explanation-icon-wrapper">
-                           {/* Building/Group Icon SVG */}
-                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon" aria-hidden="true">
-                             <path d="M10.75 4.75a.75.75 0 00-1.5 0v2.5h-2.5a.75.75 0 000 1.5h2.5v2.5a.75.75 0 001.5 0v-2.5h2.5a.75.75 0 000-1.5h-2.5v-2.5z" />
-                             <path fillRule="evenodd" d="M2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10zM6.715 16.71a.75.75 0 01.37 1.03l-.001.002-2.01 3.014a.75.75 0 11-1.15-.918l.001-.002 2.01-3.014a.75.75 0 01.78-.112zm8.945-1.03a.75.75 0 01.78.112l2.01 3.014.001.002a.75.75 0 11-1.15.918l-2.01-3.014-.001-.002a.75.75 0 01.37-1.03z" clipRule="evenodd" />
-                             { /* Simplified buildings icon idea - replace if you have a better one */ }
-                              <path d="M3 2.75A.75.75 0 013.75 2h4.5a.75.75 0 01.75.75v14.5a.75.75 0 01-.75.75h-4.5A.75.75 0 013 17.25V2.75zm9.5 0A.75.75 0 0113.25 2h4.5a.75.75 0 01.75.75v14.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75V2.75z"/>
-
-                           </svg>
+                           {/* Buildings Icon SVG */}
+                           <PiCity className="explanation-icon" aria-hidden="true"/>
                         </div>
                         <div> {/* Wrap text for better alignment if using flex on item */}
                           <h4>Community Size</h4>
@@ -664,11 +664,8 @@ function App() {
                      {/* Explanation Item 2: Season */}
                      <div className="explanation-item">
                         <div className="explanation-icon-wrapper">
-                          {/* Calendar Icon SVG */}
-                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon" aria-hidden="true">
-                             <path fillRule="evenodd" d="M5.75 3A2.75 2.75 0 003 5.75v8.5A2.75 2.75 0 005.75 17h8.5A2.75 2.75 0 0017 14.25v-8.5A2.75 2.75 0 0014.25 3h-8.5zM4.5 5.75c0-.69.56-1.25 1.25-1.25h8.5c.69 0 1.25.56 1.25 1.25v8.5c0 .69-.56 1.25-1.25 1.25h-8.5c-.69 0-1.25-.56-1.25-1.25v-8.5z" clipRule="evenodd" />
-                             <path d="M7.75 8a.75.75 0 01.75-.75h3a.75.75 0 010 1.5h-3A.75.75 0 017.75 8zM7 11.75a.75.75 0 000 1.5h5.5a.75.75 0 000-1.5H7z" /> // Added lines inside
-                           </svg>
+                           {/* Season Icon SVG */}
+                           <BsCloudSun className="explanation-icon" aria-hidden="true"/>
                         </div>
                          <div>
                            <h4>Season</h4>
@@ -676,24 +673,35 @@ function App() {
                          </div>
                      </div>
 
-                     {/* Explanation Item 3: Configuration Sliders */}
+                     {/* Explanation Item 3: PV adoption slider */}
                      <div className="explanation-item">
                         <div className="explanation-icon-wrapper">
-                          {/* Settings/Sliders Icon SVG */}
-                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon" aria-hidden="true">
-                             <path d="M10 3.75a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75zM10 8.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0V9.5a.75.75 0 01.75-.75zM15.5 6.75a.75.75 0 00-1.5 0v9.5a.75.75 0 001.5 0v-9.5zM4.5 6.75a.75.75 0 00-1.5 0v4.5a.75.75 0 001.5 0v-4.5z"/>
-                           </svg>
+                           {/* PV Icon SVG */}
+                           <PiSolarPanelFill className="explanation-icon" aria-hidden="true"/>
                         </div>
                          <div>
-                           <h4>PV Adoption / Smart Devices</h4>
+                           <h4>PV Adoption</h4>
                            <p>Adjusts the percentage of buildings with solar panels (PV) and the percentage equipped with controllable smart devices.</p>
                          </div>
                      </div>
 
-                     {/* Explanation Item 4: Battery */}
+                     {/* Explanation Item 4: Smart Device Slider */}
                      <div className="explanation-item">
                         <div className="explanation-icon-wrapper">
-                          <BatteryIcon aria-hidden="true" /> {/* Reuse existing icon */}
+                           {/* SD Icon SVG */}
+                           <GiWashingMachine className="explanation-icon" aria-hidden="true"/>
+                        </div>
+                         <div>
+                           <h4>Smart Devices</h4>
+                           <p>Adjusts the percentage of buildings with solar panels (PV) and the percentage equipped with controllable smart devices.</p>
+                         </div>
+                     </div>
+
+                     {/* Explanation Item 5: Battery */}
+                     <div className="explanation-item">
+                        <div className="explanation-icon-wrapper">
+                           {/* SD Icon SVG */}
+                           <IoIosBatteryFull className="explanation-icon" aria-hidden="true"/>
                         </div>
                         <div>
                           <h4>Community Battery</h4>
@@ -752,9 +760,7 @@ function App() {
                                    <div className="explanation-item">
                                       <div className="explanation-icon-wrapper">
                                         {/* Cost Icon SVG */}
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon" aria-hidden="true">
-                                           <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5a.997.997 0 01.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                                         </svg>
+                                        <FaCoins className="explanation-icon" aria-hidden="true"/>
                                       </div>
                                       <div>
                                         <h4>Cost Comparison</h4>
@@ -764,10 +770,7 @@ function App() {
                                    <div className="explanation-item">
                                       <div className="explanation-icon-wrapper">
                                          {/* Line Graph Icon SVG */}
-                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" className="explanation-icon" aria-hidden="true">
-                                           <path d="M 2 17 L 6 7 L 10 12 L 14 4 L 18 8" />
-                                           <path d="M 2 18 L 18 18 M 2 18 L 2 2" strokeWidth="1" />
-                                         </svg>
+                                         <VscGraphLine className="explanation-icon" aria-hidden="true"/>
                                       </div>
                                       <div>
                                         <h4>Daily Energy Pattern</h4>
@@ -777,10 +780,7 @@ function App() {
                                    <div className="explanation-item">
                                       <div className="explanation-icon-wrapper">
                                         {/* Pie Chart Icon SVG */}
-                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon" aria-hidden="true">
-                                             <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
-                                            <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
-                                         </svg>
+                                         <RiDonutChartFill className="explanation-icon" aria-hidden="true"/>
                                       </div>
                                       <div>
                                         <h4>Energy Flows</h4>
