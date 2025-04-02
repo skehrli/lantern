@@ -735,7 +735,7 @@ function App() {
                         </div>
                         <div>
                           <h4>Battery</h4>
-                          <p>Decide whether buildings with solar panels also have a battery to charge their excess production in, or to discharge from when in need.</p>
+                          <p>Decide whether buildings with solar panels also have a battery. Excess solar production can be used to charge the battery, and it can be discharged when solar production is not sufficient.</p>
                         </div>
                      </div>
 
