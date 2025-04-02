@@ -107,35 +107,24 @@ body {
   padding: 0 18px;
   box-sizing: border-box;
   position: relative;
-  z-index: 2; /* Above the ::before element */
+  z-index: 2;
   cursor: pointer;
 }
 
 .size-slider input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  appearance: none;
-  width: 24px;
-  height: 24px;
-  background: white;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 1px solid #d1d5db;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  margin-top: -12px; /* Center thumb vertically */
-  position: relative;
-  z-index: 3;
+  width: 0px;
+  height: 0px;
 }
 
 .size-slider input[type="range"]::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
-  background: white;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 1px solid #d1d5db;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  position: relative;
-  z-index: 3;
+  width: 0px;
+  height: 0px;
+}
+
+.size-slider input[type="range"]::-ms-thumb {                                                    
+  width: 0;                                                                                      
+  height: 0;                                                                                     
 }
 
 .size-slider span { /* Value display inside slider */
