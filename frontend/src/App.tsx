@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
     PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis,
     CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -82,6 +82,12 @@ interface SimulationResult {
     errors: string[];
 }
 
+interface SimulationHistoryEntry {
+  params: SimulationParams;
+  result: SimulationResult;
+  index: number;
+}
+
 // --- Helper Functions ---
 
 /** Formats a number with thousand separators (') and fixed decimal places. */
@@ -118,13 +124,14 @@ const getCircularPath = (percentage: number): string => {
 // --- Reusable Components ---
 
 interface ResultSelectorProps {
-    resultsCount: number;
+    history: SimulationHistoryEntry[];
     selectedIndex: number | null;
     onSelect: (index: number) => void;
 }
 
 /** Dropdown to select previously run simulation results. */
-const ResultSelector: React.FC<ResultSelectorProps> = ({ resultsCount, selectedIndex, onSelect }) => {
+const ResultSelector: React.FC<ResultSelectorProps> = ({ history, selectedIndex, onSelect }) => {
+    const resultsCount = history.length;
     if (resultsCount === 0) {
         return null; // Don't render if no results exist
     }
@@ -144,12 +151,16 @@ const ResultSelector: React.FC<ResultSelectorProps> = ({ resultsCount, selectedI
                 value={selectedIndex ?? ''}
                 onChange={handleSelectionChange}
             >
-                {Array.from({ length: resultsCount }, (_, index) => (
-                    <option key={index} value={index}>
-                        Simulation #{index + 1}
-                    </option>
-                ))}
-            </select>
+                {history.map((entry, index) => {
+                  // Example: Display timestamp if available
+                  const timestampStr = entry.index? ` (${new Date(entry.index).toLocaleTimeString()})` : '';
+                  return (
+                      <option key={index} value={index}>
+                          Simulation #{index + 1}{timestampStr}
+                      </option>
+                  );
+              })}
+           </select>
         </div>
     );
 };
@@ -400,7 +411,7 @@ const LoadGenProfile: React.FC<LoadGenProfileProps> = ({ profiles }) => {
 
 // --- Main Application Component ---
 function App() {
-    const [resultsHistory, setResultsHistory] = useState<SimulationResult[]>([]);
+    const [resultsHistory, setResultsHistory] = useState<SimulationHistoryEntry[]>([]);
     const [selectedResultIndex, setSelectedResultIndex] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -412,15 +423,29 @@ function App() {
         with_battery: true,
     });
 
-    // Memoize current result to avoid recalculation on every render
-    const currentResult = useMemo(() => {
-        if (selectedResultIndex === null || selectedResultIndex >= resultsHistory.length) {
-            return null;
-        }
-        return resultsHistory[selectedResultIndex];
+    const currentHistoryEntry = useMemo(() => {
+      if (selectedResultIndex === null || selectedResultIndex < 0 || selectedResultIndex >= resultsHistory.length) {
+        return null;
+      }
+      return resultsHistory[selectedResultIndex];
     }, [selectedResultIndex, resultsHistory]);
 
-    // --- Event Handlers (using useCallback for potential performance optimization) ---
+    // Memoize current result to avoid recalculation on every render
+    const currentResult = useMemo(() => {
+      return currentHistoryEntry?.result ?? null;
+    }, [currentHistoryEntry]);
+
+    // --- Event Handlers  ---
+
+    useEffect(() => {
+        // Check if a valid index is selected and exists in history
+        if (selectedResultIndex !== null && selectedResultIndex >= 0 && selectedResultIndex < resultsHistory.length) {
+            const selectedEntry = resultsHistory[selectedResultIndex];
+            // Update the main params state with the stored params from that history entry
+            setParams(selectedEntry.params);
+        }
+        // This effect runs when the selected index changes or the history array itself changes
+    }, [selectedResultIndex, resultsHistory]);
 
     const handleParamChange = useCallback((key: keyof SimulationParams, value: any) => {
         setParams(prev => ({ ...prev, [key]: value }));
@@ -467,6 +492,7 @@ function App() {
         e.preventDefault();
         setError(null);
         setIsLoading(true);
+        const currentParams = { ...params };
         console.log('Submitting simulation params:', params);
 
         try {
@@ -503,7 +529,12 @@ function App() {
                 }
 
                 setResultsHistory(prevHistory => {
-                    const newHistory = [...prevHistory, data];
+                    const newEntry: SimulationHistoryEntry = {
+                      params: currentParams,
+                      result: data,
+                      index: Date.now()
+                    }
+                    const newHistory = [...prevHistory, newEntry];
                     setSelectedResultIndex(newHistory.length - 1);
                     return newHistory;
                 });
@@ -714,7 +745,7 @@ function App() {
               {/* --- Results Display Section --- */}
               <div className="results-area">
                   <ResultSelector
-                      resultsCount={resultsHistory.length}
+                      history={resultsHistory}
                       selectedIndex={selectedResultIndex}
                       onSelect={setSelectedResultIndex}
                   />
