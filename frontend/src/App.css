@@ -563,6 +563,16 @@ body {
   text-align: center;
 }
 
+/* --- Grid Container for Explanation Items --- */
+.explanation-items-grid {
+  display: grid;
+  /* Create two equal-width columns */
+  grid-template-columns: repeat(2, 1fr);
+  /* Define gap between grid items (rows and columns) */
+  gap: 1.5rem; /* Adjust spacing as needed */
+  width: 100%; /* Ensure it takes full width of the panel */
+}
+
 /* Styling for explanation items INSIDE the output panel */
 /* These rules reuse/adapt existing .explanation-item styles */
 .output-explanation-panel .explanation-item {
@@ -598,27 +608,6 @@ body {
    line-height: 1.5;
    flex-grow: 1; /* Allow text to take space */
 }
-
-/* Optional: Adjust responsive behavior for the new panel if needed */
-/* @media (max-width: 768px) { */
-  /* .output-explanation-panel .explanation-items-grid { */
-    /* grid-template-columns: 1fr; /* Stack items on smaller screens */ */
-    /* gap: 1rem; */
-  /* } */
-   /* .output-explanation-panel .explanation-item { */
-       /* Adjust layout if needed for stacked view */
-       /* flex-direction: row; */
-       /* text-align: left; */
-       /* align-items: flex-start; */
-       /* gap: 1rem; */
-       /* padding: 1rem; */
-       /* background-color: #f9fafb; */
-       /* border-radius: 8px; */
-   /* } */
-    /* .output-explanation-panel .explanation-icon-wrapper { */
-       /* margin-bottom: 0; */
-   /* } */
-/* } */
 
 .recharts-legend-wrapper {
    /* Position usually handled by Recharts props (verticalAlign, align, wrapperStyle) */

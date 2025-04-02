@@ -18,11 +18,10 @@ const RADIAN = Math.PI / 180;
 const MIN_COMMUNITY_SIZE = 5;
 const MAX_COMMUNITY_SIZE = 100;
 const PIE_CHART_COLORS = {
-    selfConsumed: '#a3e635', // Greenish (Direct use or from Battery)
+    selfConsumed: '#a3e635', // Greenish
     toBattery: '#65a30d',    // Lighter Green
-    toMarket: '#82ca9d',     // Teal/Mint (Traded within LEC)
-    toGrid: '#9ca3af',       // Grey (Exported outside LEC)
-    // Consumption colors mirror production for clarity where applicable
+    toMarket: '#82ca9d',     // Teal/Mint
+    toGrid: '#9ca3af',       // Grey
     fromPV: '#a3e635',       // Same as selfConsumed
     fromBattery: '#65a30d',  // Same as toBattery
     fromMarket: '#82ca9d',   // Same as toMarket
@@ -754,49 +753,55 @@ function App() {
 
                               {/* --- Output Explanation Panel (Grid Columns 1 & 2, Row 3) --- */}
                               <section className="output-explanation-panel" aria-labelledby="output-explanation-title">
-                                   <h3 id="output-explanation-title">Results Explanation</h3> {/* ADDED TITLE */}
+                                   <h3 id="output-explanation-title">Results Explanation</h3>
+                               {/* NEW: Grid container for the explanation items */}
+                               <div className="explanation-items-grid">
 
-                                   {/* Keep the existing explanation items */}
-                                   <div className="explanation-item">
-                                      <div className="explanation-icon-wrapper">
-                                        {/* Cost Icon SVG */}
-                                        <FaCoins className="explanation-icon" aria-hidden="true"/>
-                                      </div>
-                                      <div>
-                                        <h4>Cost Comparison</h4>
-                                         <p>Shows the average seasonal energy cost per household, comparing scenarios with and without participating in the local energy community.</p>
-                                      </div>
-                                   </div>
-                                   <div className="explanation-item">
-                                      <div className="explanation-icon-wrapper">
-                                         {/* Line Graph Icon SVG */}
-                                         <VscGraphLine className="explanation-icon" aria-hidden="true"/>
-                                      </div>
-                                      <div>
-                                        <h4>Daily Energy Pattern</h4>
-                                         <p>Illustrates the average 24-hour cycle of electricity consumption (Load) and solar panel generation (PV Gen) across the community.</p>
-                                       </div>
-                                   </div>
-                                   <div className="explanation-item">
-                                      <div className="explanation-icon-wrapper">
-                                        {/* Pie Chart Icon SVG */}
-                                         <RiDonutChartFill className="explanation-icon" aria-hidden="true"/>
-                                      </div>
-                                      <div>
-                                        <h4>Energy Flows</h4>
-                                         <p>Visualizes how generated solar energy is used and the sources of consumed energy.</p>
-                                      </div>
-                                   </div>
-                                   <div className="explanation-item">
-                                      <div className="explanation-icon-wrapper">
-                                        {/* Network Icon SVG */}
-                                         <PiGraph className="explanation-icon" aria-hidden="true"/>
-                                      </div>
-                                      <div>
-                                        <h4>Trading Network</h4>
-                                         <p>Visualizes how buildings trade with each other and with the grid. The thicker the line, the more energy was traded. Scaled logarithmically.</p>
-                                      </div>
-                                   </div>
+                                    {/* Item 1 (Left Column) */}
+                                    <div className="explanation-item">
+                                        <div className="explanation-icon-wrapper">
+                                            <FaCoins className="explanation-icon" aria-hidden="true"/>
+                                        </div>
+                                        <div>
+                                            <h4>Cost Comparison</h4>
+                                            <p>Shows the average seasonal energy cost per household, comparing scenarios with and without participating in the local energy community.</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Item 2 (Right Column) */}
+                                    <div className="explanation-item">
+                                        <div className="explanation-icon-wrapper">
+                                            <VscGraphLine className="explanation-icon" aria-hidden="true"/>
+                                        </div>
+                                        <div>
+                                            <h4>Daily Energy Pattern</h4>
+                                            <p>Illustrates the average 24-hour cycle of electricity consumption (Load) and solar panel generation (PV Gen) across the community.</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Item 3 (Left Column) */}
+                                    <div className="explanation-item">
+                                        <div className="explanation-icon-wrapper">
+                                            <RiDonutChartFill className="explanation-icon" aria-hidden="true"/>
+                                        </div>
+                                        <div>
+                                            <h4>Energy Flows</h4>
+                                            <p>Visualizes how generated solar energy is used and the sources of consumed energy.</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Item 4 (Right Column) */}
+                                    <div className="explanation-item">
+                                        <div className="explanation-icon-wrapper">
+                                            <PiGraph className="explanation-icon" aria-hidden="true"/>
+                                        </div>
+                                        <div>
+                                            <h4>Trading Network</h4>
+                                            <p>Visualizes how buildings trade with each other and with the grid. The thicker the line, the more energy was traded. Scaled logarithmically.</p>
+                                        </div>
+                                    </div>
+
+                                </div> {/* End .explanation-items-grid */}
                               </section>
                                {/* End output-explanation-panel */}
 
