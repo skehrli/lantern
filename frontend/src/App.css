@@ -311,6 +311,18 @@ body {
   margin-top: 2rem;
 }
 
+/* --- Input Column Styling --- */
+.input-column {
+  /* Apply the sizing constraints HERE */
+  flex: 0 0 350px; /* Don't grow, don't shrink, base width */
+  max-width: 400px; /* Max width */
+
+  /* Use flexbox to stack the form and explanation vertically */
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* Space BETWEEN the form and the explanation panel */
+}
+
 /* --- Results Area --- */
 .results-area {
   flex: 2 1 500px; /* Take remaining space */
@@ -669,4 +681,94 @@ body {
       flex-direction: column; /* Stack logos */
       gap: 1.5rem;
   }
+}
+
+/* --- Input Explanation Panel Styling --- */
+.input-explanation-panel {
+  padding: 1.5rem;
+  background-color: #ffffff; /* Match result tabs/form */
+  border-radius: 12px; /* Match */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Match */
+  box-sizing: border-box;
+}
+
+.input-explanation-panel h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem; /* Space below title */
+  padding-bottom: 0.75rem; /* Space under text */
+  border-bottom: 1px solid #e5e7eb; /* Separator line */
+  color: #3b82f6; /* Match form/result titles */
+  font-size: 1.2rem; /* Slightly larger title */
+  text-align: center;
+}
+
+/* Adjust spacing for items within this specific panel if needed */
+.input-explanation-panel .explanation-item {
+  margin-bottom: 1.5rem; /* Add space between explanation items */
+  /* Override text-align if needed (default from results banner is center) */
+  text-align: left;
+  flex-direction: row; /* Align icon and text horizontally like mobile results explanation */
+  align-items: flex-start; /* Align icon to the top */
+  gap: 1rem; /* Space between icon and text */
+}
+.input-explanation-panel .explanation-item:last-child {
+  margin-bottom: 0; /* Remove margin from last item */
+}
+
+.input-explanation-panel .explanation-icon-wrapper {
+  margin-bottom: 0; /* Remove bottom margin as it's side-by-side now */
+  /* You might want a slightly different background or keep it the same */
+  /* background-color: #eef2ff; */ /* Example: Slightly different light blue */
+}
+
+/* Ensure text takes available space */
+.input-explanation-panel .explanation-item > div:not(.explanation-icon-wrapper) {
+  flex: 1;
+}
+
+
+/* --- Ensure existing explanation styles are available --- */
+/* (These should already be in your CSS from the results explanation banner) */
+
+.explanation-item {
+  /* background-color: #ffffff; */ /* Background is now on the panel */
+  border-radius: 10px;
+  /* padding: 1.5rem; */ /* Padding is now on the panel or handled by item layout */
+  /* box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06); */ /* Shadow is now on the panel */
+  /* border: 1px solid #f3f4f6; */
+  /* text-align: center; */ /* Overridden above for this specific panel */
+  display: flex;
+  /* flex-direction: column; */ /* Overridden above */
+  /* align-items: center; */ /* Overridden above */
+}
+
+.explanation-icon-wrapper {
+    background-color: #e0e7ff;
+    border-radius: 50%;
+    padding: 0.75rem;
+    /* margin-bottom: 1rem; */ /* Overridden above */
+    display: inline-flex;
+    flex-shrink: 0; /* Prevent icon wrapper from shrinking */
+}
+
+.explanation-icon {
+  width: 28px;
+  height: 28px;
+  color: #3b82f6;
+}
+
+.explanation-item h4 {
+  margin-top: 0;
+  margin-bottom: 0.4rem; /* Reduced space */
+  color: #1f2937;
+  font-size: 1.0rem; /* Slightly smaller */
+  font-weight: 600;
+}
+
+.explanation-item p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  /* flex-grow: 1; */ /* Flex handled by parent div */
 }

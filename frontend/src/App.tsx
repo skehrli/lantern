@@ -12,13 +12,13 @@ const RADIAN = Math.PI / 180;
 const MIN_COMMUNITY_SIZE = 5;
 const MAX_COMMUNITY_SIZE = 100;
 const PIE_CHART_COLORS = {
-    selfConsumed: '#65a30d', // Greenish (Direct use or from Battery)
-    toBattery: '#a3e635',    // Lighter Green
+    selfConsumed: '#a3e635', // Greenish (Direct use or from Battery)
+    toBattery: '#65a30d',    // Lighter Green
     toMarket: '#82ca9d',     // Teal/Mint (Traded within LEC)
     toGrid: '#9ca3af',       // Grey (Exported outside LEC)
     // Consumption colors mirror production for clarity where applicable
-    fromPV: '#65a30d',       // Same as selfConsumed
-    fromBattery: '#a3e635',  // Same as toBattery
+    fromPV: '#a3e635',       // Same as selfConsumed
+    fromBattery: '#65a30d',  // Same as toBattery
     fromMarket: '#82ca9d',   // Same as toMarket
     fromGrid: '#9ca3af',     // Same as toGrid
 };
@@ -532,6 +532,8 @@ function App() {
 
             <div className="flex-container">
 
+              <div className="input-column">
+
                 {/* --- Input Form Section --- */}
                 <form onSubmit={handleSubmit} className="input-form">
                     <div className="form-header">
@@ -636,74 +638,139 @@ function App() {
                     </div>
                 </form>
 
-                {/* --- Results Display Section --- */}
-                <div className="results-area">
-                    <ResultSelector
-                        resultsCount={resultsHistory.length}
-                        selectedIndex={selectedResultIndex}
-                        onSelect={setSelectedResultIndex}
-                    />
+                      {/* --- Input Explanation Panel --- */}
+                <section className="input-explanation-panel" aria-labelledby="input-explanation-title">
+                     <h3 id="input-explanation-title">Input Parameters</h3> {/* Title for the panel */}
 
-                    {/* Display selected result or placeholder */}
-                    {currentResult ? (
-                        <div className="current-result-display">
-                            <div className="results-container">
-                                {/* Cost Comparison Tab */}
-                                <div className="result-tab">
-                                    <h3>Avg. Cost per Household</h3>
-                                    <CostComparison
-                                        withLec={currentResult.cost_metrics?.cost_with_lec}
-                                        withoutLec={currentResult.cost_metrics?.cost_without_lec}
-                                    />
-                                </div>
+                     {/* Explanation Item 1: Community Size */}
+                     <div className="explanation-item">
+                        <div className="explanation-icon-wrapper">
+                           {/* Building/Group Icon SVG */}
+                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon" aria-hidden="true">
+                             <path d="M10.75 4.75a.75.75 0 00-1.5 0v2.5h-2.5a.75.75 0 000 1.5h2.5v2.5a.75.75 0 001.5 0v-2.5h2.5a.75.75 0 000-1.5h-2.5v-2.5z" />
+                             <path fillRule="evenodd" d="M2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10zM6.715 16.71a.75.75 0 01.37 1.03l-.001.002-2.01 3.014a.75.75 0 11-1.15-.918l.001-.002 2.01-3.014a.75.75 0 01.78-.112zm8.945-1.03a.75.75 0 01.78.112l2.01 3.014.001.002a.75.75 0 11-1.15.918l-2.01-3.014-.001-.002a.75.75 0 01.37-1.03z" clipRule="evenodd" />
+                             { /* Simplified buildings icon idea - replace if you have a better one */ }
+                              <path d="M3 2.75A.75.75 0 013.75 2h4.5a.75.75 0 01.75.75v14.5a.75.75 0 01-.75.75h-4.5A.75.75 0 013 17.25V2.75zm9.5 0A.75.75 0 0113.25 2h4.5a.75.75 0 01.75.75v14.5a.75.75 0 01-.75.75h-4.5a.75.75 0 01-.75-.75V2.75z"/>
 
-                                {/* Load/Gen Profile Tab */}
-                                <div className="result-tab">
-                                    <h3>Avg. Daily Energy Profile</h3>
-                                    <LoadGenProfile profiles={currentResult.profiles} />
-                                </div>
+                           </svg>
+                        </div>
+                        <div> {/* Wrap text for better alignment if using flex on item */}
+                          <h4>Community Size</h4>
+                          <p>Sets the total number of buildings participating in the local energy community.</p>
+                        </div>
+                     </div>
 
-                                {/* Production Allocation Pie Chart Tab */}
-                                <div className="result-tab pie-chart-tab">
-                                    <h3>PV Production Allocation</h3>
-                                    <EnergyPieChart type="production" metrics={currentResult.energy_metrics} />
-                                </div>
+                     {/* Explanation Item 2: Season */}
+                     <div className="explanation-item">
+                        <div className="explanation-icon-wrapper">
+                          {/* Calendar Icon SVG */}
+                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon" aria-hidden="true">
+                             <path fillRule="evenodd" d="M5.75 3A2.75 2.75 0 003 5.75v8.5A2.75 2.75 0 005.75 17h8.5A2.75 2.75 0 0017 14.25v-8.5A2.75 2.75 0 0014.25 3h-8.5zM4.5 5.75c0-.69.56-1.25 1.25-1.25h8.5c.69 0 1.25.56 1.25 1.25v8.5c0 .69-.56 1.25-1.25 1.25h-8.5c-.69 0-1.25-.56-1.25-1.25v-8.5z" clipRule="evenodd" />
+                             <path d="M7.75 8a.75.75 0 01.75-.75h3a.75.75 0 010 1.5h-3A.75.75 0 017.75 8zM7 11.75a.75.75 0 000 1.5h5.5a.75.75 0 000-1.5H7z" /> // Added lines inside
+                           </svg>
+                        </div>
+                         <div>
+                           <h4>Season</h4>
+                           <p>Selects the typical weather and daylight patterns (Summer, Autumn, Winter, Spring) affecting solar generation and energy demand.</p>
+                         </div>
+                     </div>
 
-                                {/* Consumption Sources Pie Chart Tab */}
-                                <div className="result-tab pie-chart-tab">
-                                    <h3>Energy Consumption Sources</h3>
-                                    <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
-                                </div>
+                     {/* Explanation Item 3: Configuration Sliders */}
+                     <div className="explanation-item">
+                        <div className="explanation-icon-wrapper">
+                          {/* Settings/Sliders Icon SVG */}
+                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon" aria-hidden="true">
+                             <path d="M10 3.75a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75zM10 8.75a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0V9.5a.75.75 0 01.75-.75zM15.5 6.75a.75.75 0 00-1.5 0v9.5a.75.75 0 001.5 0v-9.5zM4.5 6.75a.75.75 0 00-1.5 0v4.5a.75.75 0 001.5 0v-4.5z"/>
+                           </svg>
+                        </div>
+                         <div>
+                           <h4>PV Adoption / Smart Devices</h4>
+                           <p>Adjusts the percentage of buildings with solar panels (PV) and the percentage equipped with controllable smart devices.</p>
+                         </div>
+                     </div>
 
-                                {/* Warnings Tab (Optional) */}
-                                {currentResult.warnings && currentResult.warnings.length > 0 && (
-                                    <div className="result-tab">
-                                        <h3>Warnings</h3>
-                                        <ul>
-                                            {currentResult.warnings.map((warning, index) => (<li key={`warn-${index}`}>{warning}</li>))}
-                                        </ul>
-                                    </div>
-                                )}
+                     {/* Explanation Item 4: Battery */}
+                     <div className="explanation-item">
+                        <div className="explanation-icon-wrapper">
+                          <BatteryIcon aria-hidden="true" /> {/* Reuse existing icon */}
+                        </div>
+                        <div>
+                          <h4>Community Battery</h4>
+                          <p>Toggles whether a shared community battery storage system is included in the simulation.</p>
+                        </div>
+                     </div>
 
-                                {/* Errors Tab (Optional - might indicate partial success) */}
-                                {currentResult.errors && currentResult.errors.length > 0 && (
-                                    <div className="result-tab">
-                                        <h3>Simulation Errors</h3>
-                                        <ul>
-                                            {currentResult.errors.map((errMsg, index) => (<li key={`err-${index}`}>{errMsg}</li>))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div> {/* End .results-container */}
-                        </div> // End .current-result-display
-                    ) : (
-                         // Show loading state or initial prompt
-                        !isLoading && resultsHistory.length === 0 && !error && (
-                            <p className="no-results-yet">Run a simulation to see the results here.</p>
-                        )
-                        // Could add a specific loading indicator here if desired while isLoading is true
-                    )}
-                </div> {/* End .results-area */}
+                </section>
+              </div> {/* --- End input-column wrapper --- */}
+
+              {/* --- Results Display Section --- */}
+              <div className="results-area">
+                  <ResultSelector
+                      resultsCount={resultsHistory.length}
+                      selectedIndex={selectedResultIndex}
+                      onSelect={setSelectedResultIndex}
+                  />
+
+                  {/* Display selected result or placeholder */}
+                  {currentResult ? (
+                      <div className="current-result-display">
+                          <div className="results-container">
+                              {/* Cost Comparison Tab */}
+                              <div className="result-tab">
+                                  <h3>Avg. Cost per Household</h3>
+                                  <CostComparison
+                                      withLec={currentResult.cost_metrics?.cost_with_lec}
+                                      withoutLec={currentResult.cost_metrics?.cost_without_lec}
+                                  />
+                              </div>
+
+                              {/* Load/Gen Profile Tab */}
+                              <div className="result-tab">
+                                  <h3>Avg. Daily Energy Profile</h3>
+                                  <LoadGenProfile profiles={currentResult.profiles} />
+                              </div>
+
+                              {/* Production Allocation Pie Chart Tab */}
+                              <div className="result-tab pie-chart-tab">
+                                  <h3>PV Production Allocation</h3>
+                                  <EnergyPieChart type="production" metrics={currentResult.energy_metrics} />
+                              </div>
+
+                              {/* Consumption Sources Pie Chart Tab */}
+                              <div className="result-tab pie-chart-tab">
+                                  <h3>Energy Consumption Sources</h3>
+                                  <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
+                              </div>
+
+                              {/* Warnings Tab (Optional) */}
+                              {currentResult.warnings && currentResult.warnings.length > 0 && (
+                                  <div className="result-tab">
+                                      <h3>Warnings</h3>
+                                      <ul>
+                                          {currentResult.warnings.map((warning, index) => (<li key={`warn-${index}`}>{warning}</li>))}
+                                      </ul>
+                                  </div>
+                              )}
+
+                              {/* Errors Tab (Optional - might indicate partial success) */}
+                              {currentResult.errors && currentResult.errors.length > 0 && (
+                                  <div className="result-tab">
+                                      <h3>Simulation Errors</h3>
+                                      <ul>
+                                          {currentResult.errors.map((errMsg, index) => (<li key={`err-${index}`}>{errMsg}</li>))}
+                                      </ul>
+                                  </div>
+                              )}
+                          </div> {/* End .results-container */}
+                      </div> // End .current-result-display
+                  ) : (
+                       // Show loading state or initial prompt
+                      !isLoading && resultsHistory.length === 0 && !error && (
+                          <p className="no-results-yet">Run a simulation to see the results here.</p>
+                      )
+                      // Could add a specific loading indicator here if desired while isLoading is true
+                  )}
+              </div> {/* End .results-area */}
 
             </div> {/* End .flex-container */}
 
