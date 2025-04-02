@@ -3,8 +3,8 @@ import {
     PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis,
     CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { FaSun, FaSnowflake, FaLeaf, FaSpa, FaCoins } from 'react-icons/fa';
-import { PiSolarPanelFill, PiCity } from 'react-icons/pi';
+import { FaCanadianMapleLeaf, FaCoins, FaRegSnowflake, FaRegSun } from 'react-icons/fa';
+import { PiSolarPanelFill, PiCity, PiGraph, PiFlowerTulipBold } from 'react-icons/pi';
 import { GiWashingMachine } from "react-icons/gi";
 import { RiDonutChartFill } from "react-icons/ri";
 import { BsCloudSun } from 'react-icons/bs';
@@ -29,10 +29,10 @@ const PIE_CHART_COLORS = {
     fromGrid: '#9ca3af',     // Same as toGrid
 };
 const SEASON_ICONS: Record<string, React.ComponentType<any>> = {
-    'sum': FaSun,
-    'win': FaSnowflake,
-    'aut': FaLeaf,
-    'spr': FaSpa,
+    'sum': FaRegSun,
+    'win': FaRegSnowflake,
+    'aut': FaCanadianMapleLeaf,
+    'spr': PiFlowerTulipBold,
 };
 const CHART_HEIGHT = 260; // Consistent height for Pie charts
 const PROFILE_CHART_HEIGHT = 300; // Height for Load/Gen profile chart
@@ -784,7 +784,17 @@ function App() {
                                       </div>
                                       <div>
                                         <h4>Energy Flows</h4>
-                                         <p>Visualizes how generated solar energy is used (consumed directly, stored, sold) and the sources of consumed energy (solar, battery, market, grid).</p>
+                                         <p>Visualizes how generated solar energy is used and the sources of consumed energy.</p>
+                                      </div>
+                                   </div>
+                                   <div className="explanation-item">
+                                      <div className="explanation-icon-wrapper">
+                                        {/* Network Icon SVG */}
+                                         <PiGraph className="explanation-icon" aria-hidden="true"/>
+                                      </div>
+                                      <div>
+                                        <h4>Trading Network</h4>
+                                         <p>Visualizes how buildings trade with each other and with the grid. The thicker the line, the more energy was traded. Scaled logarithmically.</p>
                                       </div>
                                    </div>
                               </section>
