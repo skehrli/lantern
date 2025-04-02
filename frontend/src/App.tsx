@@ -723,7 +723,7 @@ function App() {
                         </div>
                         <div> {/* Wrap text for better alignment if using flex on item */}
                           <h4>Community Size</h4>
-                          <p>Choose the number of buildings (of six households each) participating in the local energy community.</p>
+                          <p>Choose the number of buildings (of six households each) participating in the local energy community. Buildings without solar panels can still purchase energy from their neighbors.</p>
                         </div>
                      </div>
 
