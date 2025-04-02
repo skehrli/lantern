@@ -10,6 +10,7 @@ import { RiDonutChartFill } from "react-icons/ri";
 import { BsCloudSun } from 'react-icons/bs';
 import { IoIosBatteryFull } from 'react-icons/io';
 import { VscGraphLine } from 'react-icons/vsc';
+import TradingNetworkForceGraph from './components/TradingNetworkForceGraph';
 import './App.css';
 
 // --- Constants ---
@@ -35,7 +36,9 @@ const SEASON_ICONS: Record<string, React.ComponentType<any>> = {
 };
 const CHART_HEIGHT = 260; // Consistent height for Pie charts
 const PROFILE_CHART_HEIGHT = 300; // Height for Load/Gen profile chart
+const GRAPH_CHART_HEIGHT = 300; // Height for Force Graph
 const VALUE_TOLERANCE = 0.01; // Threshold for ignoring small values in charts/calcs
+
 
 // --- Interfaces ---
 interface SimulationParams {
@@ -51,10 +54,10 @@ interface EnergyMetricsData {
     total_grid_import: number;
     self_consumption_volume: number;
     trading_volume: number;
-    total_discharging_volume: number; 
-    total_production: number; 
-    total_grid_export: number; 
-    total_charging_volume: number; 
+    total_discharging_volume: number;
+    total_production: number;
+    total_grid_export: number;
+    total_charging_volume: number;
 }
 
 interface CostMetricsData {
@@ -72,12 +75,28 @@ interface ProfileData {
     gen_profile: number[];
 }
 
+// --- Interface for Trading Network Data ---
+interface TradingNetworkNode {
+    id: string | number; // e.g., 'building_1', 'grid'
+    type: 'building' | 'grid';
+}
+interface TradingNetworkLink {
+    source: string; // id of source node
+    target: string; // id of target node
+    value: number; // Amount of energy traded
+}
+interface TradingNetworkData {
+    links: TradingNetworkLink[];
+    nodes: TradingNetworkNode[];
+}
+// --- End Trading Network Data Interface ---
+
 interface SimulationResult {
     energy_metrics: EnergyMetricsData;
     cost_metrics: CostMetricsData;
     market_metrics: MarketMetricsData;
     profiles: ProfileData;
-    // trading_network: 
+    trading_network: TradingNetworkData | null;
     warnings: string[];
     errors: string[];
 }
@@ -272,7 +291,7 @@ const EnergyPieChart: React.FC<EnergyPieChartProps> = ({ type, metrics }) => {
                     nameKey="name"
                 >
                     {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} stroke={entry.color} /> // Added stroke for better definition
+                        <Cell key={`cell-${index}`} fill={entry.color} stroke={entry.color} />
                     ))}
                 </Pie>
                 <Tooltip content={renderTooltipContent} />
@@ -511,11 +530,19 @@ function App() {
                 let errorMessage = `Error ${response.status}: ${response.statusText}`;
                 try {
                     const errorJson = JSON.parse(responseBody);
-                    errorMessage = errorJson.detail || errorJson.message || errorMessage;
+                    if (errorJson.detail) {
+                        if (Array.isArray(errorJson.detail)) { // Handle Pydantic validation errors
+                            errorMessage = errorJson.detail.map((err: any) => `${err.loc.join('.')} - ${err.msg}`).join('; ');
+                        } else {
+                            errorMessage = errorJson.detail;
+                        }
+                    } else if (errorJson.message) {
+                         errorMessage = errorJson.message;
+                    }
                 } catch (parseError) {
                     if (responseBody) errorMessage += ` - ${responseBody}`;
                 }
-                 console.error("API Error:", errorMessage);
+                 console.error("API Error Response:", responseBody);
                 throw new Error(errorMessage);
             }
 
@@ -524,9 +551,17 @@ function App() {
                 const data: SimulationResult = JSON.parse(responseBody);
                 console.log('Received simulation result:', data);
 
-                if (!data || !data.cost_metrics || !data.energy_metrics || !data.profiles) {
-                    throw new Error('Received invalid data structure from server.');
+                // Basic validation of received structure
+                if (!data || !data.cost_metrics || !data.energy_metrics || !data.profiles ) { // removed trading_network check for now !data.trading_network
+                    throw new Error('Received incomplete or invalid data structure from server.');
                 }
+                 // Add specific check for trading_network if it's crucial
+                 if (data.trading_network === undefined) {
+                    console.warn("API response did not include 'trading_network' field.");
+                    // Optionally set it to null or an empty structure if needed downstream
+                    data.trading_network = null;
+                 }
+
 
                 setResultsHistory(prevHistory => {
                     const newEntry: SimulationHistoryEntry = {
@@ -535,6 +570,7 @@ function App() {
                       index: Date.now()
                     }
                     const newHistory = [...prevHistory, newEntry];
+                    // Select the newly added result
                     setSelectedResultIndex(newHistory.length - 1);
                     return newHistory;
                 });
@@ -753,9 +789,9 @@ function App() {
                   {/* Display selected result or placeholder */}
                   {currentResult ? (
                       <div className="current-result-display">
-                          <div className="results-container">
+                          <div className="results-container"> {/* This should be display: grid; grid-template-columns: repeat(3, 1fr); in CSS */}
 
-                              {/* Cost Comparison Tab */}
+                              {/* --- Column 1 --- */}
                               <div className="result-tab">
                                   <h3>Avg. Cost per Household</h3>
                                   <CostComparison
@@ -764,81 +800,83 @@ function App() {
                                   />
                               </div>
 
-                              {/* Load/Gen Profile Tab */}
                               <div className="result-tab">
                                   <h3>Avg. Daily Energy Profile</h3>
                                   <LoadGenProfile profiles={currentResult.profiles} />
                               </div>
 
-                              {/* Production Allocation Pie Chart Tab */}
+                              <div className="result-tab trading-network-tab-span">
+                                  <h3>Trading Network</h3>
+                                  <TradingNetworkForceGraph
+                                      tradingNetwork={currentResult.trading_network}
+                                      width={350} // Adjust as needed
+                                      height={GRAPH_CHART_HEIGHT * 2 + 20} // Approx double height + gap
+                                  />
+                              </div>
+
+                               <div className="result-tab pie-chart-tab">
+                                  <h3>Energy Consumption Sources</h3>
+                                  <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
+                              </div>
+
                               <div className="result-tab pie-chart-tab">
                                   <h3>PV Production Allocation</h3>
                                   <EnergyPieChart type="production" metrics={currentResult.energy_metrics} />
                               </div>
 
-                              {/* Consumption Sources Pie Chart Tab */}
-                              <div className="result-tab pie-chart-tab">
-                                  <h3>Energy Consumption Sources</h3>
-                                  <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
-                              </div>
-
-                              {/* --- Output Explanation Panel (Grid Columns 1 & 2, Row 3) --- */}
+                              {/* --- Output Explanation Panel (Spanning all columns) --- */}
                               <section className="output-explanation-panel" aria-labelledby="output-explanation-title">
                                    <h3 id="output-explanation-title">Results Explanation</h3>
-                               {/* NEW: Grid container for the explanation items */}
-                               <div className="explanation-items-grid">
+                                    {/* Use the grid container for explanation items */}
+                                    <div className="explanation-items-grid">
 
-                                    {/* Item 1 (Left Column) */}
-                                    <div className="explanation-item">
-                                        <div className="explanation-icon-wrapper">
-                                            <FaCoins className="explanation-icon" aria-hidden="true"/>
+                                        <div className="explanation-item">
+                                            <div className="explanation-icon-wrapper">
+                                                <FaCoins className="explanation-icon" aria-hidden="true"/>
+                                            </div>
+                                            <div>
+                                                <h4>Cost Comparison</h4>
+                                                <p>Shows the average cost per household over the simulated period, comparing scenarios with and without the energy community.</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4>Cost Comparison</h4>
-                                            <p>Shows the average cost per household over the simulated three-month period, comparing scenarios with and without participating in the local energy community.</p>
-                                        </div>
-                                    </div>
 
-                                    {/* Item 2 (Right Column) */}
-                                    <div className="explanation-item">
-                                        <div className="explanation-icon-wrapper">
-                                            <VscGraphLine className="explanation-icon" aria-hidden="true"/>
+                                        <div className="explanation-item">
+                                            <div className="explanation-icon-wrapper">
+                                                <VscGraphLine className="explanation-icon" aria-hidden="true"/>
+                                            </div>
+                                            <div>
+                                                <h4>Daily Energy Pattern</h4>
+                                                <p>Illustrates the average electricity consumption (Load) and solar generation (PV Gen) per building over 24 hours.</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4>Daily Energy Pattern</h4>
-                                            <p>Illustrates the average electricity consumption (Load) and solar panel generation (PV Gen) per building over 24 hours.</p>
-                                        </div>
-                                    </div>
 
-                                    {/* Item 3 (Left Column) */}
-                                    <div className="explanation-item">
-                                        <div className="explanation-icon-wrapper">
-                                            <RiDonutChartFill className="explanation-icon" aria-hidden="true"/>
+                                        <div className="explanation-item">
+                                            <div className="explanation-icon-wrapper">
+                                                <PiGraph className="explanation-icon" aria-hidden="true"/>
+                                            </div>
+                                            <div>
+                                                <h4>Trading Network</h4>
+                                                <p>Visualizes energy flows between buildings and the grid. Thicker lines indicate more energy traded (log scale).</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4>Energy Flows</h4>
-                                            <p>Visualizes how generated solar energy is used and the sources of consumed energy.</p>
-                                        </div>
-                                    </div>
 
-                                    {/* Item 4 (Right Column) */}
-                                    <div className="explanation-item">
-                                        <div className="explanation-icon-wrapper">
-                                            <PiGraph className="explanation-icon" aria-hidden="true"/>
+                                        <div className="explanation-item">
+                                            <div className="explanation-icon-wrapper">
+                                                <RiDonutChartFill className="explanation-icon" aria-hidden="true"/>
+                                            </div>
+                                            <div>
+                                                <h4>Energy Flow</h4>
+                                                <p>Shows how generated solar energy is used (Production Allocation) and where consumed energy comes from (Consumption Sources).</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4>Trading Network</h4>
-                                            <p>Visualizes how buildings trade with each other and with the grid. The thicker the line, the more energy was traded. Scaled logarithmically.</p>
-                                        </div>
-                                    </div>
 
-                                </div> {/* End .explanation-items-grid */}
+                                    </div> {/* End .explanation-items-grid */}
                               </section>
                                {/* End output-explanation-panel */}
 
-                              {/* Warnings Tab (Optional) */}
+                              {/* Warnings Tab (Optional - placed below explanation) */}
                               {currentResult.warnings && currentResult.warnings.length > 0 && (
-                                  <div className="result-tab">
+                                  <div className="result-tab warnings-tab"> {/* Add class, maybe style differently */}
                                       <h3>Warnings</h3>
                                       <ul>
                                           {currentResult.warnings.map((warning, index) => (<li key={`warn-${index}`}>{warning}</li>))}
@@ -846,9 +884,9 @@ function App() {
                                   </div>
                               )}
 
-                              {/* Errors Tab (Optional - might indicate partial success) */}
+                              {/* Errors Tab (Optional - might indicate partial success - placed below explanation) */}
                               {currentResult.errors && currentResult.errors.length > 0 && (
-                                  <div className="result-tab">
+                                  <div className="result-tab errors-tab"> {/* Add class */}
                                       <h3>Simulation Errors</h3>
                                       <ul>
                                           {currentResult.errors.map((errMsg, index) => (<li key={`err-${index}`}>{errMsg}</li>))}
@@ -863,6 +901,11 @@ function App() {
                           <p className="no-results-yet">Run a simulation to see the results here.</p>
                       )
                       // Could add a specific loading indicator here if desired while isLoading is true
+                       || isLoading && ( // Show loading indicator within results area
+                           <div className="loading-indicator">
+                               <p>Loading results...</p> {/* Add a spinner or better visual */}
+                           </div>
+                       )
                   )}
               </div> {/* End .results-area */}
 

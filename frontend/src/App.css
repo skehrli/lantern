@@ -365,7 +365,7 @@ body {
 /* Grid for displaying multiple result tabs */
 .results-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Two equal columns */
+  grid-template-columns: repeat(3, 1fr); /* Two equal columns */
   gap: 1.5rem;
   margin: 0; /* Remove potential default margins */
   /* align-items: start; */
@@ -409,6 +409,14 @@ body {
   font-weight: 500;
   color: #111827; /* Value color */
   text-align: right;
+}
+
+/* Make trading network span entire column */
+.trading-network-tab-span {
+  grid-row: span 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Lists for Warnings/Errors */
@@ -538,7 +546,7 @@ body {
 /* --- Output Explanation Panel Styling (within results grid) --- */
 .output-explanation-panel {
   /* Make it span both grid columns */
-  grid-column: span 2;
+  grid-column: span 3;
 
   /* Basic panel styling (match other tabs) */
   background-color: #ffffff;
