@@ -149,12 +149,8 @@ def getTradingNetwork(gridPurchaseVol: float, gridFeedInVol: float) -> nx.DiGrap
     G.add_node("grid_in", node_color="lightgreen", node_size=3000)
     G.add_node("grid_out", node_color="lightgreen", node_size=3000)
     
-    if len(G) >= 1:
-        G.add_edge("grid_in", "0", weight=gridPurchaseVol)
-    if len(G) >= 2:
-        G.add_edge("1", "grid_out", weight=gridFeedInVol)
-    else:
-        G.add_edge("0", "grid_out", weight=gridFeedInVol)
+    G.add_edge("grid_in", "0", weight=gridPurchaseVol)
+    G.add_edge("1", "grid_out", weight=gridFeedInVol)
 
     return G
     # # Normalize edge weights for visualization and scale inversely with # vertices for visibility
