@@ -532,6 +532,7 @@ function App() {
 
             <div className="flex-container">
 
+              {/* --- Input Column --- */}
               <div className="input-column">
 
                 {/* --- Input Form Section --- */}
@@ -640,7 +641,7 @@ function App() {
 
                       {/* --- Input Explanation Panel --- */}
                 <section className="input-explanation-panel" aria-labelledby="input-explanation-title">
-                     <h3 id="input-explanation-title">Input Parameters</h3> {/* Title for the panel */}
+                     <h3 id="input-explanation-title">Input Explanation</h3> {/* Title for the panel */}
 
                      {/* Explanation Item 1: Community Size */}
                      <div className="explanation-item">
@@ -715,6 +716,7 @@ function App() {
                   {currentResult ? (
                       <div className="current-result-display">
                           <div className="results-container">
+
                               {/* Cost Comparison Tab */}
                               <div className="result-tab">
                                   <h3>Avg. Cost per Household</h3>
@@ -741,6 +743,52 @@ function App() {
                                   <h3>Energy Consumption Sources</h3>
                                   <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
                               </div>
+
+                              {/* --- Output Explanation Panel (Grid Columns 1 & 2, Row 3) --- */}
+                              <section className="output-explanation-panel" aria-labelledby="output-explanation-title">
+                                   <h3 id="output-explanation-title">Results Explanation</h3> {/* ADDED TITLE */}
+
+                                   {/* Keep the existing explanation items */}
+                                   <div className="explanation-item">
+                                      <div className="explanation-icon-wrapper">
+                                        {/* Cost Icon SVG */}
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon" aria-hidden="true">
+                                           <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5a.997.997 0 01.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                                         </svg>
+                                      </div>
+                                      <div>
+                                        <h4>Cost Comparison</h4>
+                                         <p>Shows the average seasonal energy cost per household, comparing scenarios with and without participating in the local energy community.</p>
+                                      </div>
+                                   </div>
+                                   <div className="explanation-item">
+                                      <div className="explanation-icon-wrapper">
+                                         {/* Line Graph Icon SVG */}
+                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" className="explanation-icon" aria-hidden="true">
+                                           <path d="M 2 17 L 6 7 L 10 12 L 14 4 L 18 8" />
+                                           <path d="M 2 18 L 18 18 M 2 18 L 2 2" strokeWidth="1" />
+                                         </svg>
+                                      </div>
+                                      <div>
+                                        <h4>Daily Energy Pattern</h4>
+                                         <p>Illustrates the average 24-hour cycle of electricity consumption (Load) and solar panel generation (PV Gen) across the community.</p>
+                                       </div>
+                                   </div>
+                                   <div className="explanation-item">
+                                      <div className="explanation-icon-wrapper">
+                                        {/* Pie Chart Icon SVG */}
+                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon" aria-hidden="true">
+                                             <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+                                            <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
+                                         </svg>
+                                      </div>
+                                      <div>
+                                        <h4>Energy Flows</h4>
+                                         <p>Visualizes how generated solar energy is used (consumed directly, stored, sold) and the sources of consumed energy (solar, battery, market, grid).</p>
+                                      </div>
+                                   </div>
+                              </section>
+                               {/* End output-explanation-panel */}
 
                               {/* Warnings Tab (Optional) */}
                               {currentResult.warnings && currentResult.warnings.length > 0 && (
@@ -773,40 +821,6 @@ function App() {
               </div> {/* End .results-area */}
 
             </div> {/* End .flex-container */}
-
-            {/* Explanation Banner Section */}
-            <section className="results-explanation-banner" aria-labelledby="explanation-title">
-                 <h2 id="explanation-title" style={{ display: 'none' }}>Result Explanations</h2> {/* Hidden title for screen readers */}
-                <div className="explanation-item">
-                    <div className="explanation-icon-wrapper">
-                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon" aria-hidden="true">
-                            <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5a.997.997 0 01.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                         </svg>
-                    </div>
-                    <h4>Cost Comparison</h4>
-                    <p>Shows the average seasonal energy cost per household, comparing scenarios with and without participating in the local energy community.</p>
-                </div>
-                <div className="explanation-item">
-                    <div className="explanation-icon-wrapper">
-                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" className="explanation-icon" aria-hidden="true">
-                           <path d="M 2 17 L 6 7 L 10 12 L 14 4 L 18 8" />
-                           <path d="M 2 18 L 18 18 M 2 18 L 2 2" strokeWidth="1" />
-                         </svg>
-                    </div>
-                    <h4>Daily Energy Pattern</h4>
-                    <p>Illustrates the average 24-hour cycle of electricity consumption (Load) and solar panel generation (PV Gen) across the community.</p>
-                </div>
-                <div className="explanation-item">
-                    <div className="explanation-icon-wrapper">
-                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="explanation-icon" aria-hidden="true">
-                             <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
-                            <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
-                         </svg>
-                    </div>
-                    <h4>Energy Flows</h4>
-                    <p>Visualizes how generated solar energy is used (consumed directly, stored, sold) and the sources of consumed energy (solar, battery, market, grid).</p>
-                </div>
-            </section>
 
             {/* Footer Section */}
             <footer className="footer-banner">

@@ -361,7 +361,6 @@ body {
 
 /* Container for the currently displayed result grid */
 .current-result-display {
-  /* This element primarily serves as a structural container */
 }
 
 /* Grid for displaying multiple result tabs */
@@ -370,6 +369,7 @@ body {
   grid-template-columns: repeat(2, 1fr); /* Two equal columns */
   gap: 1.5rem;
   margin: 0; /* Remove potential default margins */
+  /* align-items: start; */
 }
 
 /* Styling for individual result tabs */
@@ -536,6 +536,91 @@ body {
   font-size: 0.95em;
 }
 
+/* --- Output Explanation Panel Styling (within results grid) --- */
+.output-explanation-panel {
+  /* Make it span both grid columns */
+  grid-column: span 2;
+
+  /* Basic panel styling (match other tabs) */
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+
+  /* Internal layout for title + explanation items */
+  display: flex; /* Use flex to stack title and items-grid */
+  flex-direction: column;
+}
+
+.output-explanation-panel h3 {
+  /* Style the title within this panel */
+  margin-top: 0;
+  margin-bottom: 1.5rem; /* Space below title */
+  padding-bottom: 0.75rem; /* Space under text */
+  border-bottom: 1px solid #e5e7eb; /* Separator line */
+  color: #3b82f6; /* Match form/result titles */
+  font-size: 1.2rem; /* Slightly larger title */
+  text-align: center;
+}
+
+/* Styling for explanation items INSIDE the output panel */
+/* These rules reuse/adapt existing .explanation-item styles */
+.output-explanation-panel .explanation-item {
+  margin-bottom: 1.5rem; /* Add space between explanation items */
+  /* Override text-align if needed (default from results banner is center) */
+  text-align: left;
+  flex-direction: row; /* Align icon and text horizontally like mobile results explanation */
+  align-items: flex-start; /* Align icon to the top */
+  gap: 1rem; /* Space between icon and text */
+}
+
+.output-explanation-panel .explanation-icon-wrapper {
+   margin-bottom: 0.5rem;
+}
+.output-explanation-panel .explanation-icon {
+   width: 28px;
+   height: 28px;
+   color: #3b82f6;
+}
+
+.output-explanation-panel .explanation-item h4 {
+   margin-top: 0;
+   margin-bottom: 0.6rem;
+   color: #1f2937;
+   font-size: 1.05rem;
+   font-weight: 600;
+}
+
+.output-explanation-panel .explanation-item p {
+   margin: 0;
+   color: #4b5563;
+   font-size: 0.9rem;
+   line-height: 1.5;
+   flex-grow: 1; /* Allow text to take space */
+}
+
+/* Optional: Adjust responsive behavior for the new panel if needed */
+/* @media (max-width: 768px) { */
+  /* .output-explanation-panel .explanation-items-grid { */
+    /* grid-template-columns: 1fr; /* Stack items on smaller screens */ */
+    /* gap: 1rem; */
+  /* } */
+   /* .output-explanation-panel .explanation-item { */
+       /* Adjust layout if needed for stacked view */
+       /* flex-direction: row; */
+       /* text-align: left; */
+       /* align-items: flex-start; */
+       /* gap: 1rem; */
+       /* padding: 1rem; */
+       /* background-color: #f9fafb; */
+       /* border-radius: 8px; */
+   /* } */
+    /* .output-explanation-panel .explanation-icon-wrapper { */
+       /* margin-bottom: 0; */
+   /* } */
+/* } */
+
 .recharts-legend-wrapper {
    /* Position usually handled by Recharts props (verticalAlign, align, wrapperStyle) */
 }
@@ -568,58 +653,6 @@ body {
   border: 1px solid #fecaca; /* Red border */
   border-radius: 8px;
   color: #b91c1c; /* Dark red text */
-}
-
-/* --- Explanation Banner --- */
-.results-explanation-banner {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
-  gap: 1.5rem;
-  padding: 2rem 0;
-  margin-top: 3rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.explanation-item {
-  background-color: #ffffff;
-  border-radius: 10px;
-  padding: 1.5rem;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f3f4f6;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.explanation-icon-wrapper {
-    background-color: #e0e7ff; /* Light blue background for icon */
-    border-radius: 50%;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-    display: inline-flex;
-}
-
-.explanation-icon {
-  width: 28px;
-  height: 28px;
-  color: #3b82f6; /* Icon color (blue) */
-}
-
-.explanation-item h4 {
-  margin-top: 0;
-  margin-bottom: 0.6rem;
-  color: #1f2937;
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.explanation-item p {
-  margin: 0;
-  color: #4b5563;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  flex-grow: 1; /* Allow text to take space */
 }
 
 /* --- Footer --- */
@@ -726,27 +759,15 @@ body {
   flex: 1;
 }
 
-
-/* --- Ensure existing explanation styles are available --- */
-/* (These should already be in your CSS from the results explanation banner) */
-
 .explanation-item {
-  /* background-color: #ffffff; */ /* Background is now on the panel */
   border-radius: 10px;
-  /* padding: 1.5rem; */ /* Padding is now on the panel or handled by item layout */
-  /* box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06); */ /* Shadow is now on the panel */
-  /* border: 1px solid #f3f4f6; */
-  /* text-align: center; */ /* Overridden above for this specific panel */
   display: flex;
-  /* flex-direction: column; */ /* Overridden above */
-  /* align-items: center; */ /* Overridden above */
 }
 
 .explanation-icon-wrapper {
     background-color: #e0e7ff;
     border-radius: 50%;
     padding: 0.75rem;
-    /* margin-bottom: 1rem; */ /* Overridden above */
     display: inline-flex;
     flex-shrink: 0; /* Prevent icon wrapper from shrinking */
 }
@@ -770,5 +791,4 @@ body {
   color: #4b5563;
   font-size: 0.9rem;
   line-height: 1.5;
-  /* flex-grow: 1; */ /* Flex handled by parent div */
 }
