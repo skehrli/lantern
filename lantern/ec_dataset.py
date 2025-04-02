@@ -135,51 +135,28 @@ def adjust_for_batteries(supply: pd.DataFrame, demand: pd.DataFrame, timestepDur
 
     return charge_volume_per_member, discharge_volume_per_member
 
-def getTradingNetwork(gridPurchaseVol: float, gridFeedInVol: float) -> tuple[nx.DiGraph, dict[Any, np.ndarray]]:
+def getTradingNetwork(gridPurchaseVol: float, gridFeedInVol: float) -> nx.DiGraph:
     network: NetworkAlloc = MarketSolution.overall_trading_network
-    gridPurchaseVolume: float = gridPurchaseVol
-    gridFeedInVolume: float = gridFeedInVol
 
     G: nx.DiGraph = nx.DiGraph()
-    pos: dict[Any, tuple[float, float]]
 
     # Add edges to the graph from the dictionary
     for u, neighbors in network.items():
         for v, weight in neighbors.items():
             G.add_edge(u, v, weight=weight)
 
-    # Layout for positioning nodes: If graph is planar, lay out accordingly.
-    # Else, do arf, which works well for large graphs.
-    try:
-        pos = nx.planar_layout(G)
-    except nx.NetworkXException:
-        pos = nx.arf_layout(G)
-
     # Add "grid" to network
     G.add_node("grid_in", node_color="lightgreen", node_size=3000)
     G.add_node("grid_out", node_color="lightgreen", node_size=3000)
+    
+    if len(G) >= 1:
+        G.add_edge("grid_in", "0", weight=gridPurchaseVol)
+    if len(G) >= 2:
+        G.add_edge("1", "grid_out", weight=gridFeedInVol)
+    else:
+        G.add_edge("0", "grid_out", weight=gridFeedInVol)
 
-    leftmost_node: int = min(pos, key=lambda x: pos[x][0]) if len(pos) > 0 else -1
-    rightmost_node: int = max(pos, key=lambda x: pos[x][0]) if len(pos) > 0 else -1
-
-    G.add_edge("grid_in", leftmost_node, weight=gridPurchaseVolume)
-    G.add_edge(rightmost_node, "grid_out", weight=gridFeedInVolume)
-
-    # Get the coordinates of the leftmost and rightmost nodes
-    leftmost_x, leftmost_y = pos[leftmost_node] if leftmost_node != -1 else 0, 0
-    rightmost_x, rightmost_y = pos[rightmost_node] if rightmost_node != -1 else 0, 0
-
-    # Define some horizontal distance to shift the grid nodes
-    grid_spacing = 2  # Distance to shift grid nodes left and right
-
-    # Reposition the grid nodes:
-    # grid_in should be to the left of the leftmost node
-    pos["grid_in"] = (leftmost_x - grid_spacing, leftmost_y)
-
-    # grid_out should be to the right of the rightmost node
-    pos["grid_out"] = (rightmost_x + grid_spacing, rightmost_y)
-
-    return G, pos
+    return G
     # # Normalize edge weights for visualization and scale inversely with # vertices for visibility
     # weights: list[float] = [w["weight"] for _, _, w in G.edges(data=True)]
     # max_weight: float = max(weights) if weights else 1  # Avoid div by 0
@@ -351,7 +328,7 @@ class ECDataset:
         # the number of days the input dataset covers)
         numDaysComputed: float = self.numTimesteps * self.timestepDuration / 24
 
-        G, loc = getTradingNetwork(self.getGridPurchaseVolume(), self.getGridFeedInVolume())
+        G = getTradingNetwork(self.getGridPurchaseVolume(), self.getGridFeedInVolume())
         return SimulationResult(
             energy_metrics=EnergyMetrics(
                 total_consumption=float(self.getConsumptionVolume()),
@@ -377,7 +354,7 @@ class ECDataset:
                 load_profile=daily_load_profile,
                 gen_profile=daily_gen_profile,
             ),
-            trading_network=TradingNetwork.from_networkx(G, loc),
+            trading_network=TradingNetwork.from_networkx(G),
         )
 
 

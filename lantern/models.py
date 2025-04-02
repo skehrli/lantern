@@ -61,37 +61,13 @@ class TradingNetwork(BaseModel):
     # Store graph as edge list for serialization
     edges: List[Tuple[Union[int, str], Union[int, str], float]]  # (from_node, to_node, weight)
     nodes: List[Union[int, str]]
-    layout: Dict[Union[int, str], Tuple[float, float]]
 
     @classmethod
-    def from_networkx(cls, G: nx.DiGraph, layout: Dict[Any, Any]):
+    def from_networkx(cls, G: nx.DiGraph):
         edges = [(u, v, float(d.get('weight', 1.0)))
                 for u, v, d in G.edges(data=True)]
         nodes = list(G.nodes())
-
-        # Convert numpy arrays to tuples of floats
-        pos = {}
-        for k, v in layout.items():
-            if isinstance(v, tuple):
-                # Handle tuple case (like 'grid_in' and 'grid_out')
-                arr = v[0]  # Extract the array part of the tuple
-                if isinstance(arr, np.ndarray):  # Check if it is a NumPy array
-                    x = float(arr[0].item()) if arr.size > 0 else 0.0
-                    y = float(arr[1].item()) if arr.size > 1 else 0.0
-                else:  # If it's not a NumPy array, assume it's a scalar value
-                    x = float(arr)
-                    y = 0.0  # Default to 0 for y if no second value exists
-                pos[k] = (x, y)
-            elif isinstance(v, np.ndarray):
-                # Handle regular NumPy arrays
-                x = float(v[0].item()) if v.size > 0 else 0.0
-                y = float(v[1].item()) if v.size > 1 else 0.0
-                pos[k] = (x, y)
-            else:
-                # Handle plain lists or tuples of floats
-                pos[k] = (float(v[0]), float(v[1]))
-
-        return cls(edges=edges, nodes=nodes, layout=pos)
+        return cls(edges=edges, nodes=nodes)
 
     def to_networkx(self) -> nx.DiGraph:
         G = nx.DiGraph()
