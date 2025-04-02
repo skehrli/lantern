@@ -258,7 +258,7 @@ const EnergyPieChart: React.FC<EnergyPieChartProps> = ({ type, metrics }) => {
 
     return (
         <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-            <PieChart margin={{ top: 10, right: 5, bottom: 10, left: 5 }}> {/* Increased bottom margin for legend */}
+            <PieChart margin={{ top: 5, right: 5, bottom: 5, left: 5 }}> {/* Increased bottom margin for legend */}
                 <Pie
                     data={chartData}
                     cx="50%"
@@ -389,7 +389,7 @@ const LoadGenProfile: React.FC<LoadGenProfileProps> = ({ profiles }) => {
 
     return (
         <ResponsiveContainer width="100%" height={PROFILE_CHART_HEIGHT}>
-            <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+            <LineChart data={chartData} margin={{ top: 5, right: 10, bottom: 5, left: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0"/>
                 <XAxis
                     dataKey="time"
