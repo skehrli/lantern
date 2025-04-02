@@ -8,7 +8,6 @@ body {
 
 /* Main Layout Container */
 .container {
-  max-width: 1200px;
   margin: 2rem auto;
   padding: 1rem 2rem; /* Consistent padding */
 }
