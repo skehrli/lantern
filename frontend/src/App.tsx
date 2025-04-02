@@ -656,7 +656,7 @@ function App() {
                         </div>
                         <div> {/* Wrap text for better alignment if using flex on item */}
                           <h4>Community Size</h4>
-                          <p>Sets the total number of buildings participating in the local energy community.</p>
+                          <p>Choose the number of buildings (of six households each) participating in the local energy community.</p>
                         </div>
                      </div>
 
@@ -668,7 +668,7 @@ function App() {
                         </div>
                          <div>
                            <h4>Season</h4>
-                           <p>Selects the typical weather and daylight patterns (Summer, Autumn, Winter, Spring) affecting solar generation and energy demand.</p>
+                           <p>Select which season the 3-month simulation takes place in. This greatly affects energy usage and solar generation.</p>
                          </div>
                      </div>
 
@@ -680,7 +680,7 @@ function App() {
                         </div>
                          <div>
                            <h4>PV Adoption</h4>
-                           <p>Adjusts the percentage of buildings with solar panels (PV) and the percentage equipped with controllable smart devices.</p>
+                           <p>Adjust the percentage of buildings with solar panels (PV).</p>
                          </div>
                      </div>
 
@@ -692,7 +692,7 @@ function App() {
                         </div>
                          <div>
                            <h4>Smart Devices</h4>
-                           <p>Adjusts the percentage of buildings with solar panels (PV) and the percentage equipped with controllable smart devices.</p>
+                           <p>Adjust the percentage of households with controllable smart devices. This allows for smart load shifting to reduce peak usage.</p>
                          </div>
                      </div>
 
@@ -703,8 +703,8 @@ function App() {
                            <IoIosBatteryFull className="explanation-icon" aria-hidden="true"/>
                         </div>
                         <div>
-                          <h4>Community Battery</h4>
-                          <p>Toggles whether a shared community battery storage system is included in the simulation.</p>
+                          <h4>Battery</h4>
+                          <p>Decide whether buildings with solar panels also have a battery to charge their excess production in, or to discharge from when in need.</p>
                         </div>
                      </div>
 
@@ -764,7 +764,7 @@ function App() {
                                         </div>
                                         <div>
                                             <h4>Cost Comparison</h4>
-                                            <p>Shows the average seasonal energy cost per household, comparing scenarios with and without participating in the local energy community.</p>
+                                            <p>Shows the average cost per household over the simulated three-month period, comparing scenarios with and without participating in the local energy community.</p>
                                         </div>
                                     </div>
 
@@ -775,7 +775,7 @@ function App() {
                                         </div>
                                         <div>
                                             <h4>Daily Energy Pattern</h4>
-                                            <p>Illustrates the average 24-hour cycle of electricity consumption (Load) and solar panel generation (PV Gen) across the community.</p>
+                                            <p>Illustrates the average electricity consumption (Load) and solar panel generation (PV Gen) per building over 24 hours.</p>
                                         </div>
                                     </div>
 
