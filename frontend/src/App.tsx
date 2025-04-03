@@ -10,7 +10,7 @@ import { RiDonutChartFill } from "react-icons/ri";
 import { BsCloudSun } from 'react-icons/bs';
 import { IoIosBatteryFull } from 'react-icons/io';
 import { VscGraphLine } from 'react-icons/vsc';
-import TradingNetworkForceGraph from './components/TradingNetworkForceGraph';
+import TradingNetworkGraph from './components/TradingNetworkGraph';
 import './App.css';
 
 // --- Constants ---
@@ -77,13 +77,13 @@ interface ProfileData {
 
 // --- Interface for Trading Network Data ---
 interface TradingNetworkNode {
-    id: string | number; // e.g., 'building_1', 'grid'
+    id: string | number;
     type: 'building' | 'grid';
 }
 interface TradingNetworkLink {
-    source: string; // id of source node
-    target: string; // id of target node
-    value: number; // Amount of energy traded
+    source: string;
+    target: string;
+    value: number; 
 }
 interface TradingNetworkData {
     links: TradingNetworkLink[];
@@ -813,7 +813,7 @@ function App() {
 
                               <div className="result-tab trading-network-tab-span" key="trading-network">
                                   <h3>Trading Network</h3>
-                                  <TradingNetworkForceGraph
+                                  <TradingNetworkGraph
                                       tradingNetwork={currentResult.trading_network}
                                       width={350} // Adjust as needed
                                       height={GRAPH_CHART_HEIGHT * 2 + 20} // Approx double height + gap
