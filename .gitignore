@@ -8,3 +8,4 @@ data.db
 .coverage
 __pycache__/noxfile.cpython-313.pyc
 tests/__pycache__/simulation_test.cpython-313-pytest-8.3.5.pyc
+node_modules/

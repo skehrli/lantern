@@ -275,6 +275,9 @@ class ECDataset:
         self.consumption = consumption
 
     def simulate(self: Self) -> SimulationResult:
+        # reset the static field for the trading network to avoid overlapping with other simulations
+        MarketSolution.overall_trading_network = {}
+
         # compute the number of days the simulation timeframe covers
         numDaysInSim: float = self.numTimesteps * self.timestepDuration / 24
 
