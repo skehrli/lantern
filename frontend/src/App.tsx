@@ -34,7 +34,7 @@ const SEASON_ICONS: Record<string, React.ComponentType<any>> = {
     'aut': FaCanadianMapleLeaf,
     'spr': PiFlowerTulipBold,
 };
-const CHART_HEIGHT = 260; // Consistent height for Pie charts
+const CHART_HEIGHT = 300; // Consistent height for Pie charts
 const PROFILE_CHART_HEIGHT = 300; // Height for Load/Gen profile chart
 const GRAPH_CHART_HEIGHT = 300; // Height for Force Graph
 const VALUE_TOLERANCE = 0.01; // Threshold for ignoring small values in charts/calcs
@@ -96,15 +96,15 @@ interface SimulationResult {
     cost_metrics: CostMetricsData;
     market_metrics: MarketMetricsData;
     profiles: ProfileData;
-    trading_network: TradingNetworkData | null;
+    trading_network: TradingNetworkData | null; // Optional field
     warnings: string[];
     errors: string[];
 }
 
 interface SimulationHistoryEntry {
-  params: SimulationParams;
-  result: SimulationResult;
-  index: number;
+    params: SimulationParams;
+    result: SimulationResult;
+    index: number;
 }
 
 // --- Helper Functions ---
@@ -171,15 +171,15 @@ const ResultSelector: React.FC<ResultSelectorProps> = ({ history, selectedIndex,
                 onChange={handleSelectionChange}
             >
                 {history.map((entry, index) => {
-                  // Example: Display timestamp if available
-                  const timestampStr = entry.index? ` (${new Date(entry.index).toLocaleTimeString()})` : '';
-                  return (
-                      <option key={index} value={index}>
-                          Simulation #{index + 1}{timestampStr}
-                      </option>
-                  );
-              })}
-           </select>
+                    // Example: Display timestamp if available
+                    const timestampStr = entry.index ? ` (${new Date(entry.index).toLocaleTimeString()})` : '';
+                    return (
+                        <option key={index} value={index}>
+                            Simulation #{index + 1}{timestampStr}
+                        </option>
+                    );
+                })}
+            </select>
         </div>
     );
 };
@@ -346,14 +346,14 @@ const CostComparison: React.FC<CostComparisonProps> = ({ withLec, withoutLec }) 
         const percentageSavings = Math.abs(withoutLec) > VALUE_TOLERANCE ? (savings / Math.abs(withoutLec)) * 100 : 0;
         savingsText = `Savings with community: ${formatNumber(savings)} CHF`;
         if (percentageSavings > 0) {
-           savingsText += ` (${percentageSavings.toFixed(1)}%)`;
+            savingsText += ` (${percentageSavings.toFixed(1)}%)`;
         }
     } else { // withLec cost is higher than withoutLec cost
         const percentageIncrease = Math.abs(withoutLec) > VALUE_TOLERANCE ? (Math.abs(savings) / Math.abs(withoutLec)) * 100 : 0;
         savingsText = `Increased cost with community: ${formatNumber(Math.abs(savings))} CHF`;
-         if (percentageIncrease > 0) {
+        if (percentageIncrease > 0) {
             savingsText += ` (${percentageIncrease.toFixed(1)}%)`;
-         }
+        }
     }
     // Add note about profits if applicable
     if (withLec < 0 || withoutLec < 0) {
@@ -373,9 +373,9 @@ const CostComparison: React.FC<CostComparisonProps> = ({ withLec, withoutLec }) 
             <div className="bar-container">
                 <div className="bar-label">Without Community: {formatNumber(withoutLec)} CHF</div>
                 <div className="bar-wrapper">
-                     {withoutLec > 0 && (
+                    {withoutLec > 0 && (
                         <div className="bar no-lec-bar" style={{ width: `${withoutLecWidthPercent}%` }} />
-                     )}
+                    )}
                 </div>
             </div>
             {savingsText && (
@@ -412,7 +412,7 @@ const LoadGenProfile: React.FC<LoadGenProfileProps> = ({ profiles }) => {
     return (
         <ResponsiveContainer width="100%" height={PROFILE_CHART_HEIGHT}>
             <LineChart data={chartData} margin={{ top: 5, right: 10, bottom: 5, left: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0"/>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                 <XAxis
                     dataKey="time"
                     domain={[0, 23]}
@@ -421,11 +421,11 @@ const LoadGenProfile: React.FC<LoadGenProfileProps> = ({ profiles }) => {
                     interval="preserveStartEnd" // Show 0:00 and 23:00
                     ticks={[0, 6, 12, 18, 23]} // Define specific ticks
                 />
-                <YAxis unit=" kW" width={45}/>
+                <YAxis unit=" kW" width={45} />
                 <Tooltip formatter={(value: number) => formatNumber(value, 2)} />
-                <Legend verticalAlign="top" height={36}/>
+                <Legend verticalAlign="top" height={36} />
                 <Line type="monotone" dataKey="load" stroke="#9ca3af" name="Load" dot={false} strokeWidth={2} />
-                <Line type="monotone" dataKey="generation" stroke="#a3e635" name="PV Gen" dot={false} strokeWidth={2}/>
+                <Line type="monotone" dataKey="generation" stroke="#a3e635" name="PV Gen" dot={false} strokeWidth={2} />
             </LineChart>
         </ResponsiveContainer>
     );
@@ -446,15 +446,15 @@ function App() {
     });
 
     const currentHistoryEntry = useMemo(() => {
-      if (selectedResultIndex === null || selectedResultIndex < 0 || selectedResultIndex >= resultsHistory.length) {
-        return null;
-      }
-      return resultsHistory[selectedResultIndex];
+        if (selectedResultIndex === null || selectedResultIndex < 0 || selectedResultIndex >= resultsHistory.length) {
+            return null;
+        }
+        return resultsHistory[selectedResultIndex];
     }, [selectedResultIndex, resultsHistory]);
 
     // Memoize current result to avoid recalculation on every render
     const currentResult = useMemo(() => {
-      return currentHistoryEntry?.result ?? null;
+        return currentHistoryEntry?.result ?? null;
     }, [currentHistoryEntry]);
 
     // --- Event Handlers  ---
@@ -497,7 +497,7 @@ function App() {
             const roundedPercentage = Math.max(0, Math.min(100, Math.round(percentage)));
             // Use requestAnimationFrame to potentially batch updates
             requestAnimationFrame(() => {
-                 handleParamChange(name, roundedPercentage);
+                handleParamChange(name, roundedPercentage);
             });
         };
 
@@ -543,12 +543,12 @@ function App() {
                             errorMessage = errorJson.detail;
                         }
                     } else if (errorJson.message) {
-                         errorMessage = errorJson.message;
+                        errorMessage = errorJson.message;
                     }
                 } catch (parseError) {
                     if (responseBody) errorMessage += ` - ${responseBody}`;
                 }
-                 console.error("API Error Response:", responseBody);
+                console.error("API Error Response:", responseBody);
                 throw new Error(errorMessage);
             }
 
@@ -558,22 +558,22 @@ function App() {
                 console.log('Received simulation result:', data);
 
                 // Basic validation of received structure
-                if (!data || !data.cost_metrics || !data.energy_metrics || !data.profiles ) { // removed trading_network check for now !data.trading_network
+                if (!data || !data.cost_metrics || !data.energy_metrics || !data.profiles) { // removed trading_network check for now !data.trading_network
                     throw new Error('Received incomplete or invalid data structure from server.');
                 }
-                 // Add specific check for trading_network if it's crucial
-                 if (data.trading_network === undefined) {
+                // Add specific check for trading_network if it's crucial
+                if (data.trading_network === undefined) {
                     console.warn("API response did not include 'trading_network' field.");
                     // Optionally set it to null or an empty structure if needed downstream
                     data.trading_network = null;
-                 }
+                }
 
 
                 setResultsHistory(prevHistory => {
                     const newEntry: SimulationHistoryEntry = {
-                      params: currentParams,
-                      result: data,
-                      index: Date.now()
+                        params: currentParams,
+                        result: data,
+                        index: Date.now()
                     }
                     const newHistory = [...prevHistory, newEntry];
                     // Select the newly added result
@@ -582,8 +582,8 @@ function App() {
                 });
 
             } catch (parseError: any) {
-                 console.error('Failed to parse successful response:', parseError, "Response Body:", responseBody);
-                 throw new Error(`Failed to process server response: ${parseError.message}`);
+                console.error('Failed to parse successful response:', parseError, "Response Body:", responseBody);
+                throw new Error(`Failed to process server response: ${parseError.message}`);
             }
 
         } catch (error: any) {
@@ -596,10 +596,10 @@ function App() {
 
     // Calculate clip-path percentage for the size slider's visual fill
     const sizeSliderClipPercent = useMemo(() => {
-         const range = MAX_COMMUNITY_SIZE - MIN_COMMUNITY_SIZE;
-         if (range <= 0) return 0;
-         const valuePercent = ((params.community_size - MIN_COMMUNITY_SIZE) / range) * 100;
-         return 100 - valuePercent; // Inset from the right
+        const range = MAX_COMMUNITY_SIZE - MIN_COMMUNITY_SIZE;
+        if (range <= 0) return 0;
+        const valuePercent = ((params.community_size - MIN_COMMUNITY_SIZE) / range) * 100;
+        return 100 - valuePercent; // Inset from the right
     }, [params.community_size]);
 
     // --- JSX Structure ---
@@ -610,235 +610,233 @@ function App() {
 
             <div className="flex-container">
 
-              {/* --- Input Column --- */}
-              <div className="input-column">
+                {/* --- Input Column --- */}
+                <div className="input-column">
 
-                {/* --- Input Form Section --- */}
-                <form onSubmit={handleSubmit} className="input-form">
-                    <div className="form-header">
-                        <h2>Energy Community Simulator</h2>
-                        <p>Configure and simulate the performance of a local energy community.</p>
-                    </div>
-
-                    {/* Community Size Slider */}
-                    <div className="form-group">
-                        <label htmlFor="community_size">Community Size (Buildings)</label>
-                        <div className="size-slider" style={{ '--clip-percent': `${sizeSliderClipPercent}%` } as React.CSSProperties}>
-                            <input
-                                type="range"
-                                id="community_size"
-                                name="community_size"
-                                min={MIN_COMMUNITY_SIZE}
-                                max={MAX_COMMUNITY_SIZE}
-                                step="1"
-                                value={params.community_size}
-                                onChange={handleSliderChange}
-                                disabled={isLoading}
-                                aria-describedby="community-size-value"
-                            />
-                            <span id="community-size-value" aria-hidden="true">{params.community_size}</span>
+                    {/* --- Input Form Section --- */}
+                    <form onSubmit={handleSubmit} className="input-form">
+                        <div className="form-header">
+                            <h2>Energy Community Simulator</h2>
+                            <p>Configure and simulate the performance of a local energy community.</p>
                         </div>
-                    </div>
 
-                    {/* Season Selection */}
-                    <div className="form-group">
-                        <label>Season</label>
-                        <div className="season-buttons">
-                            {Object.entries(SEASON_ICONS).map(([key, IconComponent]) => (
-                                <button
-                                    type="button"
-                                    key={key}
-                                    className={params.season === key ? 'active' : ''}
-                                    onClick={() => handleParamChange('season', key)}
+                        {/* Community Size Slider */}
+                        <div className="form-group">
+                            <label htmlFor="community_size">Community Size (Buildings)</label>
+                            <div className="size-slider" style={{ '--clip-percent': `${sizeSliderClipPercent}%` } as React.CSSProperties}>
+                                <input
+                                    type="range"
+                                    id="community_size"
+                                    name="community_size"
+                                    min={MIN_COMMUNITY_SIZE}
+                                    max={MAX_COMMUNITY_SIZE}
+                                    step="1"
+                                    value={params.community_size}
+                                    onChange={handleSliderChange}
                                     disabled={isLoading}
-                                    aria-pressed={params.season === key}
-                                    aria-label={`Season: ${key}`} // More descriptive label
+                                    aria-describedby="community-size-value"
+                                />
+                                <span id="community-size-value" aria-hidden="true">{params.community_size}</span>
+                            </div>
+                        </div>
+
+                        {/* Season Selection */}
+                        <div className="form-group">
+                            <label>Season</label>
+                            <div className="season-buttons">
+                                {Object.entries(SEASON_ICONS).map(([key, IconComponent]) => (
+                                    <button
+                                        type="button"
+                                        key={key}
+                                        className={params.season === key ? 'active' : ''}
+                                        onClick={() => handleParamChange('season', key)}
+                                        disabled={isLoading}
+                                        aria-pressed={params.season === key}
+                                        aria-label={`Season: ${key}`} // More descriptive label
+                                    >
+                                        <IconComponent aria-hidden="true" />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Circular Sliders for PV/SD Percentage */}
+                        <div className="circles-row">
+                            <div className="circle-container">
+                                <label id="sd-label">Smart Devices</label>
+                                <div
+                                    className="circle"
+                                    onMouseDown={(e) => handleCircleSliderInteraction(e, 'sd_percentage')}
+                                    role="slider"
+                                    aria-valuemin={0} aria-valuemax={100}
+                                    aria-valuenow={params.sd_percentage}
+                                    aria-labelledby="sd-label"
+                                    tabIndex={isLoading ? -1 : 0} // Prevent focus when loading
                                 >
-                                    <IconComponent aria-hidden="true" />
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Circular Sliders for PV/SD Percentage */}
-                    <div className="circles-row">
-                        <div className="circle-container">
-                            <label id="sd-label">Smart Devices</label>
-                            <div
-                                className="circle"
-                                onMouseDown={(e) => handleCircleSliderInteraction(e, 'sd_percentage')}
-                                role="slider"
-                                aria-valuemin={0} aria-valuemax={100}
-                                aria-valuenow={params.sd_percentage}
-                                aria-labelledby="sd-label"
-                                tabIndex={isLoading ? -1 : 0} // Prevent focus when loading
-                            >
-                                <svg className="circle-fill" viewBox="0 0 80 80">
-                                    <path d={getCircularPath(params.sd_percentage)} />
-                                </svg>
-                                <span>{params.sd_percentage}%</span>
+                                    <svg className="circle-fill" viewBox="0 0 80 80">
+                                        <path d={getCircularPath(params.sd_percentage)} />
+                                    </svg>
+                                    <span>{params.sd_percentage}%</span>
+                                </div>
+                            </div>
+                            <div className="circle-container">
+                                <label id="pv-label">PV Adoption</label>
+                                <div
+                                    className="circle"
+                                    onMouseDown={(e) => handleCircleSliderInteraction(e, 'pv_percentage')}
+                                    role="slider"
+                                    aria-valuemin={0} aria-valuemax={100}
+                                    aria-valuenow={params.pv_percentage}
+                                    aria-labelledby="pv-label"
+                                    tabIndex={isLoading ? -1 : 0}
+                                >
+                                    <svg className="circle-fill" viewBox="0 0 80 80">
+                                        <path d={getCircularPath(params.pv_percentage)} />
+                                    </svg>
+                                    <span>{params.pv_percentage}%</span>
+                                </div>
                             </div>
                         </div>
-                        <div className="circle-container">
-                            <label id="pv-label">PV Adoption</label>
-                            <div
-                                className="circle"
-                                onMouseDown={(e) => handleCircleSliderInteraction(e, 'pv_percentage')}
-                                role="slider"
-                                aria-valuemin={0} aria-valuemax={100}
-                                aria-valuenow={params.pv_percentage}
-                                aria-labelledby="pv-label"
-                                tabIndex={isLoading ? -1 : 0}
+
+                        {/* Action Buttons */}
+                        <div className="button-group">
+                            <button
+                                type="button"
+                                className={`battery-button ${params.with_battery ? 'active' : ''}`}
+                                onClick={() => handleParamChange('with_battery', !params.with_battery)}
+                                disabled={isLoading}
+                                aria-pressed={params.with_battery}
+                                aria-label="Toggle community battery"
                             >
-                                <svg className="circle-fill" viewBox="0 0 80 80">
-                                    <path d={getCircularPath(params.pv_percentage)} />
-                                </svg>
-                                <span>{params.pv_percentage}%</span>
+                                <BatteryIcon aria-hidden="true" />
+                                Battery: {params.with_battery ? 'On' : 'Off'}
+                            </button>
+                            <button type="submit" disabled={isLoading}>
+                                {isLoading ? 'Simulating...' : 'Run Simulation'}
+                            </button>
+                        </div>
+                    </form>
+
+                    {/* --- Input Explanation Panel --- */}
+                    <section className="input-explanation-panel" aria-labelledby="input-explanation-title">
+                        <h3 id="input-explanation-title">Input Explanation</h3> {/* Title for the panel */}
+
+                        {/* Explanation Item 1: Community Size */}
+                        <div className="explanation-item">
+                            <div className="explanation-icon-wrapper">
+                                {/* Buildings Icon SVG */}
+                                <PiCity className="explanation-icon" aria-hidden="true" />
+                            </div>
+                            <div> {/* Wrap text for better alignment if using flex on item */}
+                                <h4>Community Size</h4>
+                                <p>Choose the number of buildings (of six households each) participating in the local energy community. Buildings without solar panels can still purchase energy from their neighbors.</p>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Action Buttons */}
-                    <div className="button-group">
-                        <button
-                            type="button"
-                            className={`battery-button ${params.with_battery ? 'active' : ''}`}
-                            onClick={() => handleParamChange('with_battery', !params.with_battery)}
-                            disabled={isLoading}
-                            aria-pressed={params.with_battery}
-                            aria-label="Toggle community battery"
-                        >
-                            <BatteryIcon aria-hidden="true" />
-                            Battery: {params.with_battery ? 'On' : 'Off'}
-                        </button>
-                        <button type="submit" disabled={isLoading}>
-                            {isLoading ? 'Simulating...' : 'Run Simulation'}
-                        </button>
-                    </div>
-                </form>
-
-                      {/* --- Input Explanation Panel --- */}
-                <section className="input-explanation-panel" aria-labelledby="input-explanation-title">
-                     <h3 id="input-explanation-title">Input Explanation</h3> {/* Title for the panel */}
-
-                     {/* Explanation Item 1: Community Size */}
-                     <div className="explanation-item">
-                        <div className="explanation-icon-wrapper">
-                           {/* Buildings Icon SVG */}
-                           <PiCity className="explanation-icon" aria-hidden="true"/>
+                        {/* Explanation Item 2: Season */}
+                        <div className="explanation-item">
+                            <div className="explanation-icon-wrapper">
+                                {/* Season Icon SVG */}
+                                <BsCloudSun className="explanation-icon" aria-hidden="true" />
+                            </div>
+                            <div>
+                                <h4>Season</h4>
+                                <p>Select which season the 3-month simulation takes place in. This greatly affects energy usage and solar generation.</p>
+                            </div>
                         </div>
-                        <div> {/* Wrap text for better alignment if using flex on item */}
-                          <h4>Community Size</h4>
-                          <p>Choose the number of buildings (of six households each) participating in the local energy community. Buildings without solar panels can still purchase energy from their neighbors.</p>
+
+                        {/* Explanation Item 3: PV adoption slider */}
+                        <div className="explanation-item">
+                            <div className="explanation-icon-wrapper">
+                                {/* PV Icon SVG */}
+                                <PiSolarPanelFill className="explanation-icon" aria-hidden="true" />
+                            </div>
+                            <div>
+                                <h4>PV Adoption</h4>
+                                <p>Adjust the percentage of buildings with solar panels (PV).</p>
+                            </div>
                         </div>
-                     </div>
 
-                     {/* Explanation Item 2: Season */}
-                     <div className="explanation-item">
-                        <div className="explanation-icon-wrapper">
-                           {/* Season Icon SVG */}
-                           <BsCloudSun className="explanation-icon" aria-hidden="true"/>
+                        {/* Explanation Item 4: Smart Device Slider */}
+                        <div className="explanation-item">
+                            <div className="explanation-icon-wrapper">
+                                {/* SD Icon SVG */}
+                                <GiWashingMachine className="explanation-icon" aria-hidden="true" />
+                            </div>
+                            <div>
+                                <h4>Smart Devices</h4>
+                                <p>Adjust the percentage of households with controllable smart devices. This allows for smart load shifting to reduce peak usage.</p>
+                            </div>
                         </div>
-                         <div>
-                           <h4>Season</h4>
-                           <p>Select which season the 3-month simulation takes place in. This greatly affects energy usage and solar generation.</p>
-                         </div>
-                     </div>
 
-                     {/* Explanation Item 3: PV adoption slider */}
-                     <div className="explanation-item">
-                        <div className="explanation-icon-wrapper">
-                           {/* PV Icon SVG */}
-                           <PiSolarPanelFill className="explanation-icon" aria-hidden="true"/>
+                        {/* Explanation Item 5: Battery */}
+                        <div className="explanation-item">
+                            <div className="explanation-icon-wrapper">
+                                {/* SD Icon SVG */}
+                                <IoIosBatteryFull className="explanation-icon" aria-hidden="true" />
+                            </div>
+                            <div>
+                                <h4>Battery</h4>
+                                <p>Decide whether buildings with solar panels also have a battery. Excess solar production can be used to charge the battery, and it can be discharged when solar production is not sufficient.</p>
+                            </div>
                         </div>
-                         <div>
-                           <h4>PV Adoption</h4>
-                           <p>Adjust the percentage of buildings with solar panels (PV).</p>
-                         </div>
-                     </div>
 
-                     {/* Explanation Item 4: Smart Device Slider */}
-                     <div className="explanation-item">
-                        <div className="explanation-icon-wrapper">
-                           {/* SD Icon SVG */}
-                           <GiWashingMachine className="explanation-icon" aria-hidden="true"/>
-                        </div>
-                         <div>
-                           <h4>Smart Devices</h4>
-                           <p>Adjust the percentage of households with controllable smart devices. This allows for smart load shifting to reduce peak usage.</p>
-                         </div>
-                     </div>
+                    </section>
+                </div> {/* --- End input-column wrapper --- */}
 
-                     {/* Explanation Item 5: Battery */}
-                     <div className="explanation-item">
-                        <div className="explanation-icon-wrapper">
-                           {/* SD Icon SVG */}
-                           <IoIosBatteryFull className="explanation-icon" aria-hidden="true"/>
-                        </div>
-                        <div>
-                          <h4>Battery</h4>
-                          <p>Decide whether buildings with solar panels also have a battery. Excess solar production can be used to charge the battery, and it can be discharged when solar production is not sufficient.</p>
-                        </div>
-                     </div>
+                {/* --- Results Display Section --- */}
+                <div className="results-area">
+                    <ResultSelector
+                        history={resultsHistory}
+                        selectedIndex={selectedResultIndex}
+                        onSelect={handleResultSelection}
+                    />
 
-                </section>
-              </div> {/* --- End input-column wrapper --- */}
+                    {/* Display selected result or placeholder */}
+                    {currentResult ? (
+                        <div className="current-result-display">
+                            <div className="results-container"> {/* This should be display: grid; grid-template-columns: repeat(3, 1fr); in CSS */}
 
-              {/* --- Results Display Section --- */}
-              <div className="results-area">
-                  <ResultSelector
-                      history={resultsHistory}
-                      selectedIndex={selectedResultIndex}
-                      onSelect={handleResultSelection}
-                  />
+                                {/* --- Column 1 --- */}
+                                <div className="result-tab" key="cost-comparison">
+                                    <h3>Avg. Cost per Household</h3>
+                                    <CostComparison
+                                        withLec={currentResult.cost_metrics?.cost_with_lec}
+                                        withoutLec={currentResult.cost_metrics?.cost_without_lec}
+                                    />
+                                </div>
 
-                  {/* Display selected result or placeholder */}
-                  {currentResult ? (
-                      <div className="current-result-display">
-                          <div className="results-container"> {/* This should be display: grid; grid-template-columns: repeat(3, 1fr); in CSS */}
+                                <div className="result-tab" key="energy-profile">
+                                    <h3>Avg. Daily Energy Profile</h3>
+                                    <LoadGenProfile profiles={currentResult.profiles} />
+                                </div>
 
-                              {/* --- Column 1 --- */}
-                              <div className="result-tab" key="cost-comparison">
-                                  <h3>Avg. Cost per Household</h3>
-                                  <CostComparison
-                                      withLec={currentResult.cost_metrics?.cost_with_lec}
-                                      withoutLec={currentResult.cost_metrics?.cost_without_lec}
-                                  />
-                              </div>
+                                <div className="result-tab trading-network-tab-span" key="trading-network">
+                                    <h3>Trading Network</h3>
+                                    <TradingNetworkForceGraph
+                                        tradingNetwork={currentResult.trading_network}
+                                    />
+                                </div>
 
-                              <div className="result-tab" key="energy-profile">
-                                  <h3>Avg. Daily Energy Profile</h3>
-                                  <LoadGenProfile profiles={currentResult.profiles} />
-                              </div>
+                                <div className="result-tab pie-chart-tab" key="production-allocation">
+                                    <h3>Energy Consumption Sources</h3>
+                                    <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
+                                </div>
 
-                              <div className="result-tab trading-network-tab-span" key="trading-network">
-                                  <h3>Trading Network</h3>
-                                  <TradingNetworkForceGraph
-                                      tradingNetwork={currentResult.trading_network}
-                                      width={350} // Adjust as needed
-                                      height={GRAPH_CHART_HEIGHT * 2 + 20} // Approx double height + gap
-                                  />
-                              </div>
+                                <div className="result-tab pie-chart-tab" key="consumption-sources">
+                                    <h3>PV Production Allocation</h3>
+                                    <EnergyPieChart type="production" metrics={currentResult.energy_metrics} />
+                                </div>
 
-                               <div className="result-tab pie-chart-tab" key="production-allocation">
-                                  <h3>Energy Consumption Sources</h3>
-                                  <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
-                              </div>
-
-                              <div className="result-tab pie-chart-tab" key="consumption-sources">
-                                  <h3>PV Production Allocation</h3>
-                                  <EnergyPieChart type="production" metrics={currentResult.energy_metrics} />
-                              </div>
-
-                              {/* --- Output Explanation Panel (Spanning all columns) --- */}
-                              <section className="output-explanation-panel" aria-labelledby="output-explanation-title">
-                                   <h3 id="output-explanation-title">Results Explanation</h3>
+                                {/* --- Output Explanation Panel (Spanning all columns) --- */}
+                                <section className="output-explanation-panel" aria-labelledby="output-explanation-title">
+                                    <h3 id="output-explanation-title">Results Explanation</h3>
                                     {/* Use the grid container for explanation items */}
                                     <div className="explanation-items-grid">
 
                                         <div className="explanation-item">
                                             <div className="explanation-icon-wrapper">
-                                                <FaCoins className="explanation-icon" aria-hidden="true"/>
+                                                <FaCoins className="explanation-icon" aria-hidden="true" />
                                             </div>
                                             <div>
                                                 <h4>Cost Comparison</h4>
@@ -848,7 +846,7 @@ function App() {
 
                                         <div className="explanation-item">
                                             <div className="explanation-icon-wrapper">
-                                                <VscGraphLine className="explanation-icon" aria-hidden="true"/>
+                                                <VscGraphLine className="explanation-icon" aria-hidden="true" />
                                             </div>
                                             <div>
                                                 <h4>Daily Energy Pattern</h4>
@@ -858,7 +856,7 @@ function App() {
 
                                         <div className="explanation-item">
                                             <div className="explanation-icon-wrapper">
-                                                <PiGraph className="explanation-icon" aria-hidden="true"/>
+                                                <PiGraph className="explanation-icon" aria-hidden="true" />
                                             </div>
                                             <div>
                                                 <h4>Trading Network</h4>
@@ -868,7 +866,7 @@ function App() {
 
                                         <div className="explanation-item">
                                             <div className="explanation-icon-wrapper">
-                                                <RiDonutChartFill className="explanation-icon" aria-hidden="true"/>
+                                                <RiDonutChartFill className="explanation-icon" aria-hidden="true" />
                                             </div>
                                             <div>
                                                 <h4>Energy Flow</h4>
@@ -877,49 +875,49 @@ function App() {
                                         </div>
 
                                     </div> {/* End .explanation-items-grid */}
-                              </section>
-                               {/* End output-explanation-panel */}
+                                </section>
+                                {/* End output-explanation-panel */}
 
-                              {/* Warnings Tab (Optional - placed below explanation) */}
-                              {currentResult.warnings && currentResult.warnings.length > 0 && (
-                                  <div className="result-tab warnings-tab"> {/* Add class, maybe style differently */}
-                                      <h3>Warnings</h3>
-                                      <ul>
-                                          {currentResult.warnings.map((warning, index) => (<li key={`warn-${index}`}>{warning}</li>))}
-                                      </ul>
-                                  </div>
-                              )}
+                                {/* Warnings Tab (Optional - placed below explanation) */}
+                                {currentResult.warnings && currentResult.warnings.length > 0 && (
+                                    <div className="result-tab warnings-tab"> {/* Add class, maybe style differently */}
+                                        <h3>Warnings</h3>
+                                        <ul>
+                                            {currentResult.warnings.map((warning, index) => (<li key={`warn-${index}`}>{warning}</li>))}
+                                        </ul>
+                                    </div>
+                                )}
 
-                              {/* Errors Tab (Optional - might indicate partial success - placed below explanation) */}
-                              {currentResult.errors && currentResult.errors.length > 0 && (
-                                  <div className="result-tab errors-tab"> {/* Add class */}
-                                      <h3>Simulation Errors</h3>
-                                      <ul>
-                                          {currentResult.errors.map((errMsg, index) => (<li key={`err-${index}`}>{errMsg}</li>))}
-                                      </ul>
-                                  </div>
-                              )}
-                          </div> {/* End .results-container */}
-                      </div> // End .current-result-display
-                  ) : (
-                       // Show loading state or initial prompt
-                      !isLoading && resultsHistory.length === 0 && !error && (
-                          <p className="no-results-yet">Run a simulation to see the results here.</p>
-                      )
-                      // Could add a specific loading indicator here if desired while isLoading is true
-                       || isLoading && ( // Show loading indicator within results area
-                           <div className="loading-indicator">
-                               <p>Loading results...</p> {/* Add a spinner or better visual */}
-                           </div>
-                       )
-                  )}
-              </div> {/* End .results-area */}
+                                {/* Errors Tab (Optional - might indicate partial success - placed below explanation) */}
+                                {currentResult.errors && currentResult.errors.length > 0 && (
+                                    <div className="result-tab errors-tab"> {/* Add class */}
+                                        <h3>Simulation Errors</h3>
+                                        <ul>
+                                            {currentResult.errors.map((errMsg, index) => (<li key={`err-${index}`}>{errMsg}</li>))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div> {/* End .results-container */}
+                        </div> // End .current-result-display
+                    ) : (
+                        // Show loading state or initial prompt
+                        !isLoading && resultsHistory.length === 0 && !error && (
+                            <p className="no-results-yet">Run a simulation to see the results here.</p>
+                        )
+                        // Could add a specific loading indicator here if desired while isLoading is true
+                        || isLoading && ( // Show loading indicator within results area
+                            <div className="loading-indicator">
+                                <p>Loading results...</p> {/* Add a spinner or better visual */}
+                            </div>
+                        )
+                    )}
+                </div> {/* End .results-area */}
 
             </div> {/* End .flex-container */}
 
             {/* Footer Section */}
             <footer className="footer-banner">
-                 {/* Ensure alt text is descriptive or leave empty if purely decorative */}
+                {/* Ensure alt text is descriptive or leave empty if purely decorative */}
                 <img src="/logos/hslu.png" alt="HSLU Logo" className="footer-logo" />
                 <img src="/logos/lantern.png" alt="Lantern Project Logo" className="footer-logo" />
                 <img src="/logos/persist.png" alt="PERSIST Project Logo" className="footer-logo" />
