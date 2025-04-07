@@ -811,12 +811,14 @@ function App() {
                                     <LoadGenProfile profiles={currentResult.profiles} />
                                 </div>
 
-                                <div className="result-tab trading-network-tab-span" key="trading-network">
-                                    <h3>Trading Network</h3>
-                                    <TradingNetworkForceGraph
-                                        tradingNetwork={currentResult.trading_network}
-                                    />
-                                </div>
+                                {currentResult.trading_network && (
+                                    <div className="result-tab trading-network-tab-span" key="trading-network">
+                                        <h3>Trading Network</h3>
+                                        <TradingNetworkForceGraph
+                                            tradingNetwork={currentResult.trading_network}
+                                        />
+                                    </div>
+                                )}
 
                                 <div className="result-tab pie-chart-tab" key="production-allocation">
                                     <h3>Energy Consumption Sources</h3>

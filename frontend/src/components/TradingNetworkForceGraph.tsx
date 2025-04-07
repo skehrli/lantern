@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ForceGraph2D, { LinkObject, NodeObject } from 'react-force-graph-2d';
 import { ResponsiveContainer } from 'recharts';
 
-
 interface TradingNetwork {
     edges: Array<[string, string, number]>;
     nodes: string[];
@@ -95,7 +94,6 @@ const TradingNetworkForceGraph: React.FC<Props> = ({
                 graphData={{ nodes: graphNodes, links: graphLinks }}
                 nodeLabel={(node: GraphNode) => `ID: ${node.id}\nType: ${node.type}`}
                 linkLabel={(link: GraphLinkObject) => {
-                    console.log("linkLabel", link);
                     if (link.source.id === "grid_in") {
                         return `Grid Input: ${link.value.toFixed(4)}`;
                     } else if (link.target.id === "grid_out") {
@@ -115,7 +113,15 @@ const TradingNetworkForceGraph: React.FC<Props> = ({
                 nodeCanvasObjectMode={() => "replace"}
                 nodeCanvasObject={(node: GraphNode, ctx, globalScale) => {
                     if (node.id !== "grid_in" && node.id !== "grid_out") {
-                        const label = "🏠";
+                        let label;
+                        // adopt logic when backend is ready
+                        if (node.type === "household" && node.id.includes("solar")) {
+                            label = "☀️🏠";
+                        }
+                        else {
+                            label = "🏠";
+                        }
+
                         /* 
                         const fontSize = 10 / globalScale; 
                         ctx.font = `${fontSize}px Sans-Serif`;
