@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "react-force-graph-2d": "^1.27.1"
+    "i18next": "^24.2.3",
+    "i18next-browser-languagedetector": "^8.0.4",
+    "react-force-graph-2d": "^1.27.1",
+    "react-i18next": "^15.4.1"
   }
 }

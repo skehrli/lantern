@@ -1,0 +1,97 @@
+{
+    "app": {
+        "title": "Simulatore di Comunità Energetica",
+        "subtitle": "Configura e simula le prestazioni di una comunità energetica locale."
+    },
+    "buttons": {
+        "runSimulation": "Avvia Simulazione",
+        "simulating": "Simulazione in corso...",
+        "toggleBatteryOn": "Batteria: Accesa",
+        "toggleBatteryOff": "Batteria: Spenta"
+    },
+    "form": {
+        "communitySizeLabel": "Dimensione della comunità (edifici)",
+        "seasonLabel": "Stagione",
+        "smartDevicesLabel": "Dispositivi intelligenti",
+        "pvAdoptionLabel": "Adozione del FV",
+        "inputExplanationTitle": "Spiegazione dei parametri",
+        "explanationCommunitySizeTitle": "Dimensione della comunità",
+        "explanationCommunitySizeText": "Scegli il numero di edifici (ognuno contenente sei abitazioni) che partecipano alla comunità energetica locale. Gli edifici senza pannelli solari possono comunque acquistare energia dai vicini.",
+        "explanationSeasonTitle": "Stagione",
+        "explanationSeasonText": "Seleziona la stagione in cui si svolge la simulazione di tre mesi. Questo influenza in modo significativo i consumi energetici e la produzione solare.",
+        "explanationPVTitle": "Adozione del FV",
+        "explanationPVText": "Regola la percentuale di edifici dotati di pannelli solari (fotovoltaico).",
+        "explanationSDTitle": "Dispositivi intelligenti",
+        "explanationSDText": "Imposta la percentuale di abitazioni dotate di dispositivi intelligenti controllabili. Questo consente lo spostamento dei carichi per ridurre i picchi di consumo.",
+        "explanationBatteryTitle": "Batteria",
+        "explanationBatteryText": "Decidi se gli edifici con pannelli solari dispongono anche di una batteria. L'eccesso di produzione solare può essere utilizzato per caricare la batteria e poi scaricarla quando necessario."
+    },
+    "results": {
+        "selectorLabel": "Visualizza risultato:",
+        "simulationNumberPrefix": "Simulazione #",
+        "noResultsYet": "Esegui una simulazione per vedere i risultati qui.",
+        "loadingResults": "Caricamento dei risultati...",
+        "warningsTitle": "Avvertenze",
+        "errorsTitle": "Errori di simulazione",
+        "resultsExplanationTitle": "Spiegazione dei risultati",
+        "resultsContainer": {
+            "avgCostHeading": "Costo medio per abitazione",
+            "energyProfileHeading": "Profilo energetico giornaliero medio",
+            "tradingNetworkHeading": "Rete di scambio",
+            "consumptionSourcesHeading": "Fonti di consumo energetico",
+            "productionAllocationHeading": "Ripartizione della produzione FV"
+        }
+    },
+    "costComparison": {
+        "notAvailable": "Dati sui costi non disponibili.",
+        "withCommunity": "Con Comunità: ",
+        "withoutCommunity": "Senza Comunità: ",
+        "costsSame": "I costi sono sostanzialmente uguali.",
+        "savingsWithCommunity": "Risparmio con la comunità: ",
+        "increasedCostCommunity": "Aumento dei costi con la comunità: ",
+        "negativeProfitNote": "(I valori negativi indicano un profitto.)"
+    },
+    "profiles": {
+        "dataNotAvailable": "Dati del profilo di consumo e produzione non disponibili.",
+        "loadLegend": "Carico",
+        "pvGenLegend": "Produzione FV"
+    },
+    "energyPieChart": {
+        "noSignificantData": "Nessun dato significativo disponibile per questo grafico.",
+        "loadingData": "Caricamento dati...",
+        "production": {
+            "selfConsumed": "Autoconsumato",
+            "toBattery": "Verso batteria",
+            "marketSold": "Mercato (Vendita)",
+            "gridExport": "Rete (Esportazione)"
+        },
+        "consumption": {
+            "fromPV": "Da FV proprio",
+            "fromBattery": "Da batteria",
+            "marketBought": "Mercato (Acquisto)",
+            "gridImport": "Rete (Importazione)"
+        }
+    },
+    "explanations": {
+        "costComparisonTitle": "Confronto dei costi",
+        "costComparisonText": "Mostra il costo medio per abitazione nel periodo di simulazione, confrontando gli scenari con e senza comunità energetica.",
+        "dailyEnergyPatternTitle": "Profilo energetico giornaliero",
+        "dailyEnergyPatternText": "Illustra il consumo medio di elettricità (carico) e la produzione solare (FV) per edificio nelle 24 ore.",
+        "tradingNetworkTitle": "Rete di scambio",
+        "tradingNetworkText": "Visualizza i flussi di energia tra gli edifici e la rete. Le linee più spesse indicano volumi di energia maggiori (scala logaritmica).",
+        "energyFlowTitle": "Flusso di energia",
+        "energyFlowText": "Mostra come viene utilizzata l'energia solare generata (ripartizione della produzione) e da dove proviene l'energia consumata (fonti di consumo)."
+    },
+    "footer": {
+        "hsluAlt": "Logo HSLU",
+        "lanternAlt": "Logo del progetto Lantern",
+        "persistAlt": "Logo del progetto PERSIST"
+    },
+    "errors": {
+        "genericError": "Errore:",
+        "apiError": "Si è verificato un errore imprevisto."
+    },
+    "lng": {
+        "lng": "Lingua"
+    }
+}

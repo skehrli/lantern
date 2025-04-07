@@ -1,0 +1,36 @@
+.language-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: absolute;
+    right: 0;
+    margin-right: 2rem;
+    margin-top: -0.5rem;
+}
+
+.lang-label {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    color: #555;
+}
+
+.lang-select {
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 0.9rem;
+    color: #333;
+    background: #fff;
+    cursor: pointer;
+    outline: none;
+}
+
+.lang-select:hover {
+    border-color: #999;
+}
+
+.lang-select:focus {
+    border-color: #777;
+}

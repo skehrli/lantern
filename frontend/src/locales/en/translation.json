@@ -1,0 +1,97 @@
+{
+    "app": {
+        "title": "Energy Community Simulator",
+        "subtitle": "Configure and simulate the performance of a local energy community."
+    },
+    "buttons": {
+        "runSimulation": "Run Simulation",
+        "simulating": "Simulating...",
+        "toggleBatteryOn": "Battery: On",
+        "toggleBatteryOff": "Battery: Off"
+    },
+    "form": {
+        "communitySizeLabel": "Community Size (Buildings)",
+        "seasonLabel": "Season",
+        "smartDevicesLabel": "Smart Devices",
+        "pvAdoptionLabel": "PV Adoption",
+        "inputExplanationTitle": "Input Explanation",
+        "explanationCommunitySizeTitle": "Community Size",
+        "explanationCommunitySizeText": "Choose the number of buildings (of six households each) participating in the local energy community. Buildings without solar panels can still purchase energy from their neighbors.",
+        "explanationSeasonTitle": "Season",
+        "explanationSeasonText": "Select which season the 3-month simulation takes place in. This greatly affects energy usage and solar generation.",
+        "explanationPVTitle": "PV Adoption",
+        "explanationPVText": "Adjust the percentage of buildings with solar panels (PV).",
+        "explanationSDTitle": "Smart Devices",
+        "explanationSDText": "Adjust the percentage of households with controllable smart devices. This allows for smart load shifting to reduce peak usage.",
+        "explanationBatteryTitle": "Battery",
+        "explanationBatteryText": "Decide whether buildings with solar panels also have a battery. Excess solar production can be used to charge the battery, and it can be discharged when solar production is not sufficient."
+    },
+    "results": {
+        "selectorLabel": "View Result:",
+        "simulationNumberPrefix": "Simulation #",
+        "noResultsYet": "Run a simulation to see the results here.",
+        "loadingResults": "Loading results...",
+        "warningsTitle": "Warnings",
+        "errorsTitle": "Simulation Errors",
+        "resultsExplanationTitle": "Results Explanation",
+        "resultsContainer": {
+            "avgCostHeading": "Avg. Cost per Household",
+            "energyProfileHeading": "Avg. Daily Energy Profile",
+            "tradingNetworkHeading": "Trading Network",
+            "consumptionSourcesHeading": "Energy Consumption Sources",
+            "productionAllocationHeading": "PV Production Allocation"
+        }
+    },
+    "costComparison": {
+        "notAvailable": "Cost data not available.",
+        "withCommunity": "With Community: ",
+        "withoutCommunity": "Without Community: ",
+        "costsSame": "Costs are effectively the same.",
+        "savingsWithCommunity": "Savings with community: ",
+        "increasedCostCommunity": "Increased cost with community: ",
+        "negativeProfitNote": "(Negative values indicate profit)"
+    },
+    "profiles": {
+        "dataNotAvailable": "Load and Generation profile data not available.",
+        "loadLegend": "Load",
+        "pvGenLegend": "PV Gen"
+    },
+    "energyPieChart": {
+        "noSignificantData": "No significant data available for this chart.",
+        "loadingData": "Loading data...",
+        "production": {
+            "selfConsumed": "Self-Consumed",
+            "toBattery": "To Battery",
+            "marketSold": "Market (Sold)",
+            "gridExport": "Grid (Export)"
+        },
+        "consumption": {
+            "fromPV": "From own PV",
+            "fromBattery": "From Battery",
+            "marketBought": "Market (Bought)",
+            "gridImport": "Grid (Import)"
+        }
+    },
+    "explanations": {
+        "costComparisonTitle": "Cost Comparison",
+        "costComparisonText": "Shows the average cost per household over the simulated period, comparing scenarios with and without the energy community.",
+        "dailyEnergyPatternTitle": "Daily Energy Pattern",
+        "dailyEnergyPatternText": "Illustrates the average electricity consumption (Load) and solar generation (PV Gen) per building over 24 hours.",
+        "tradingNetworkTitle": "Trading Network",
+        "tradingNetworkText": "Visualizes energy flows between buildings and the grid. Thicker lines indicate more energy traded (log scale).",
+        "energyFlowTitle": "Energy Flow",
+        "energyFlowText": "Shows how generated solar energy is used (Production Allocation) and where consumed energy comes from (Consumption Sources)."
+    },
+    "footer": {
+        "hsluAlt": "HSLU Logo",
+        "lanternAlt": "Lantern Project Logo",
+        "persistAlt": "PERSIST Project Logo"
+    },
+    "errors": {
+        "genericError": "Error:",
+        "apiError": "An unexpected error occurred."
+    },
+    "lng": {
+        "lng": "Language"
+    }
+}
