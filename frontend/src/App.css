@@ -3,18 +3,20 @@ body {
   background-color: #f3f4f6;
   color: #1f2937;
   font-family: sans-serif;
-  margin: 0; /* Added to prevent default body margin */
+  margin: 0;
+  /* Added to prevent default body margin */
 }
 
 /* Main Layout Container */
 .container {
-  margin: 2rem auto;
-  padding: 1rem 2rem; /* Consistent padding */
+  padding: 1rem 2rem;
+  /* Consistent padding */
 }
 
 /* --- Form Styles --- */
 .input-form {
-  flex: 0 0 350px; /* Don't grow, don't shrink, base width */
+  flex: 0 0 350px;
+  /* Don't grow, don't shrink, base width */
   max-width: 400px;
   padding: 1.5rem 2rem;
   background-color: #ffffff;
@@ -32,7 +34,8 @@ body {
 
 .form-header h2 {
   margin: 0 0 0.5rem 0;
-  color: #3b82f6; /* Blue heading */
+  color: #3b82f6;
+  /* Blue heading */
   font-size: 1.4rem;
   font-weight: 600;
 }
@@ -81,16 +84,19 @@ body {
   box-sizing: border-box;
 }
 
-.size-slider::before { /* Green filled part */
+.size-slider::before {
+  /* Green filled part */
   content: '';
   position: absolute;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  background: #a3e635; /* Green color */
+  background: #a3e635;
+  /* Green color */
   border-radius: 18px;
-  clip-path: inset(0 var(--clip-percent) 0 0); /* Uses CSS variable from component */
+  clip-path: inset(0 var(--clip-percent) 0 0);
+  /* Uses CSS variable from component */
   transition: clip-path 0.1s ease;
 }
 
@@ -121,12 +127,13 @@ body {
   height: 0px;
 }
 
-.size-slider input[type="range"]::-ms-thumb {                                                    
-  width: 0;                                                                                      
-  height: 0;                                                                                     
+.size-slider input[type="range"]::-ms-thumb {
+  width: 0;
+  height: 0;
 }
 
-.size-slider span { /* Value display inside slider */
+.size-slider span {
+  /* Value display inside slider */
   position: absolute;
   right: 15px;
   top: 50%;
@@ -135,7 +142,8 @@ body {
   text-align: right;
   font-weight: bold;
   color: #374151;
-  z-index: 1; /* Below input, above ::before */
+  z-index: 1;
+  /* Below input, above ::before */
   pointer-events: none;
 }
 
@@ -160,7 +168,8 @@ body {
   justify-content: center;
   transition: background-color 0.2s, border-color 0.2s, color 0.2s;
   line-height: 1;
-  color: #6b7280; /* Default icon color */
+  color: #6b7280;
+  /* Default icon color */
 }
 
 .season-buttons button svg {
@@ -169,16 +178,20 @@ body {
 }
 
 .season-buttons button.active {
-  background-color: #a3e635; /* Active green */
-  border-color: #84cc16; /* Darker green border */
+  background-color: #a3e635;
+  /* Active green */
+  border-color: #84cc16;
+  /* Darker green border */
   box-shadow: 0 2px 4px rgba(132, 204, 22, 0.3);
-  color: #3f6212; /* Dark green icon color when active */
+  color: #3f6212;
+  /* Dark green icon color when active */
 }
 
 .season-buttons button:not(.active):hover {
   background-color: #f3f4f6;
   border-color: #9ca3af;
-  color: #374151; /* Darker icon color on hover */
+  color: #374151;
+  /* Darker icon color on hover */
 }
 
 /* Circular Percentage Sliders */
@@ -207,7 +220,8 @@ body {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background-color: #e5e7eb; /* Background track color */
+  background-color: #e5e7eb;
+  /* Background track color */
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -215,13 +229,15 @@ body {
   cursor: grab;
   user-select: none;
   border: 2px solid #d1d5db;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
+
 .circle:active {
   cursor: grabbing;
 }
 
-.circle span { /* Percentage text */
+.circle span {
+  /* Percentage text */
   position: relative;
   z-index: 2;
   color: #374151;
@@ -229,7 +245,8 @@ body {
   font-size: 1rem;
 }
 
-.circle-fill { /* SVG container for the progress arc */
+.circle-fill {
+  /* SVG container for the progress arc */
   position: absolute;
   left: 0;
   top: 0;
@@ -240,8 +257,10 @@ body {
 
 .circle-fill path {
   fill: none;
-  stroke: #a3e635; /* Green arc color */
-  stroke-width: 8; /* Thickness of the arc */
+  stroke: #a3e635;
+  /* Green arc color */
+  stroke-width: 8;
+  /* Thickness of the arc */
   stroke-linecap: round;
 }
 
@@ -253,10 +272,12 @@ body {
   margin-top: 2rem;
 }
 
-.button-group button { /* Common styles */
+.button-group button {
+  /* Common styles */
   height: 48px;
   padding: 0 1.5rem;
-  border-radius: 24px; /* Pill shape */
+  border-radius: 24px;
+  /* Pill shape */
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
@@ -273,58 +294,73 @@ body {
   color: #6b7280;
   gap: 0.5rem;
 }
+
 .battery-button svg {
-  fill: currentColor; /* Icon inherits text color */
+  fill: currentColor;
+  /* Icon inherits text color */
 }
 
 .battery-button.active {
-  background-color: #ecfccb; /* Very light green */
-  border-color: #a3e635; /* Green border */
-  color: #4d7c0f; /* Dark green text */
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  background-color: #ecfccb;
+  /* Very light green */
+  border-color: #a3e635;
+  /* Green border */
+  color: #4d7c0f;
+  /* Dark green text */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
+
 .battery-button:not(.active):hover {
   background-color: #f9fafb;
   border-color: #9ca3af;
 }
 
-.button-group button[type="submit"] { /* Simulate button */
+.button-group button[type="submit"] {
+  /* Simulate button */
   min-width: 120px;
-  background-color: #3b82f6; /* Blue color */
+  background-color: #3b82f6;
+  /* Blue color */
   color: white;
   border: none;
 }
 
 .button-group button[type="submit"]:hover {
-  background-color: #2563eb; /* Darker blue on hover */
+  background-color: #2563eb;
+  /* Darker blue on hover */
   box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
 }
 
 /* --- Layout for Form and Results --- */
 .flex-container {
   display: flex;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  flex-wrap: wrap;
+  /* Allow wrapping on smaller screens */
   justify-content: space-between;
   align-items: flex-start;
   gap: 2rem;
   margin-top: 2rem;
+  flex-wrap: nowrap;
 }
 
 /* --- Input Column Styling --- */
 .input-column {
   /* Apply the sizing constraints HERE */
-  flex: 0 0 350px; /* Don't grow, don't shrink, base width */
-  max-width: 400px; /* Max width */
+  flex: 0 0 350px;
+  /* Don't grow, don't shrink, base width */
+  max-width: 400px;
+  /* Max width */
 
   /* Use flexbox to stack the form and explanation vertically */
   display: flex;
   flex-direction: column;
-  gap: 2rem; /* Space BETWEEN the form and the explanation panel */
+  gap: 2rem;
+  /* Space BETWEEN the form and the explanation panel */
 }
 
 /* --- Results Area --- */
 .results-area {
-  flex: 2 1 500px; /* Take remaining space */
+  flex: 2 1 500px;
+  /* Take remaining space */
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -359,15 +395,16 @@ body {
 }
 
 /* Container for the currently displayed result grid */
-.current-result-display {
-}
+.current-result-display {}
 
 /* Grid for displaying multiple result tabs */
 .results-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Two equal columns */
+  grid-template-columns: repeat(3, 1fr);
+  /* Two equal columns */
   gap: 1.5rem;
-  margin: 0; /* Remove potential default margins */
+  margin: 0;
+  /* Remove potential default margins */
   /* align-items: start; */
 }
 
@@ -379,7 +416,8 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   box-sizing: border-box;
   color: #1f2937;
-  overflow: hidden; /* Prevent content spillover */
+  overflow: hidden;
+  /* Prevent content spillover */
 }
 
 .result-tab h3 {
@@ -387,7 +425,8 @@ body {
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #e5e7eb;
-  color: #3b82f6; /* Blue title */
+  color: #3b82f6;
+  /* Blue title */
   font-size: 1.1rem;
   text-align: center;
 }
@@ -402,12 +441,14 @@ body {
 }
 
 .result-tab p span:first-child {
-  color: #4b5563; /* Label color */
+  color: #4b5563;
+  /* Label color */
 }
 
 .result-tab p span:last-child {
   font-weight: 500;
-  color: #111827; /* Value color */
+  color: #111827;
+  /* Value color */
   text-align: right;
 }
 
@@ -434,6 +475,7 @@ body {
 
 /* Placeholder message */
 .no-results-yet {
+  margin-top: 0px;
   text-align: center;
   color: #6b7280;
   padding: 2rem;
@@ -462,16 +504,19 @@ body {
 }
 
 .bar-wrapper {
-  background: #e5e7eb; /* Bar track */
+  background: #e5e7eb;
+  /* Bar track */
   border-radius: 32px;
   height: 32px;
   overflow: hidden;
   position: relative;
 }
 
-.bar { /* Colored bar */
+.bar {
+  /* Colored bar */
   height: 100%;
-  border-radius: 6px; /* Match wrapper? Should be same or less */
+  border-radius: 6px;
+  /* Match wrapper? Should be same or less */
   display: flex;
   align-items: center;
   padding: 0 0.75rem;
@@ -480,7 +525,8 @@ body {
   position: relative;
 }
 
-.bar span { /* Text inside bar */
+.bar span {
+  /* Text inside bar */
   color: white;
   font-weight: 500;
   font-size: 0.9em;
@@ -489,26 +535,36 @@ body {
   white-space: nowrap;
 }
 
-.lec-bar { /* "With Community" */
-  background-color: #a3e635; /* Green */
-}
-.lec-bar span {
-  color: #3f6212; /* Dark green text for contrast */
+.lec-bar {
+  /* "With Community" */
+  background-color: #a3e635;
+  /* Green */
 }
 
-.no-lec-bar { /* "Without Community" */
-  background-color: #9ca3af; /* Gray */
+.lec-bar span {
+  color: #3f6212;
+  /* Dark green text for contrast */
 }
+
+.no-lec-bar {
+  /* "Without Community" */
+  background-color: #9ca3af;
+  /* Gray */
+}
+
 .no-lec-bar span {
-  color: #ffffff; /* White text */
+  color: #ffffff;
+  /* White text */
 }
 
 .savings-info {
   margin-top: 1.5rem;
   text-align: center;
   font-weight: 500;
-  color: #059669; /* Green for savings */
-  background-color: #d1fae5; /* Light green background */
+  color: #059669;
+  /* Green for savings */
+  background-color: #d1fae5;
+  /* Light green background */
   padding: 0.6rem 1rem;
   border-radius: 6px;
   font-size: 0.95em;
@@ -516,25 +572,31 @@ body {
 
 /* Charts (Recharts adjustments) */
 .result-tab .recharts-responsive-container {
-    min-height: 260px; /* Consistent height for chart containers */
-    margin-top: 1rem;
-}
-.result-tab .recharts-responsive-container svg {
-    display: block; /* Prevents extra space below SVG */
+  min-height: 260px;
+  /* Consistent height for chart containers */
+  margin-top: 1rem;
 }
 
-.pie-chart-tab { /* Specific styles for tabs containing pie charts */
+.result-tab .recharts-responsive-container svg {
+  display: block;
+  /* Prevents extra space below SVG */
+}
+
+.pie-chart-tab {
+  /* Specific styles for tabs containing pie charts */
   display: flex;
   flex-direction: column;
 }
 
-.pie-chart-container { /* Wrapper within the tab if needed */
+.pie-chart-container {
+  /* Wrapper within the tab if needed */
   margin-top: 0.5rem;
   border-top: 1px solid #eee;
   padding-top: 0.5rem;
 }
 
-.pie-chart-container h4 { /* Sub-titles within chart tab */
+.pie-chart-container h4 {
+  /* Sub-titles within chart tab */
   text-align: center;
   margin-top: 0;
   margin-bottom: 0.5rem;
@@ -556,18 +618,24 @@ body {
   box-sizing: border-box;
 
   /* Internal layout for title + explanation items */
-  display: flex; /* Use flex to stack title and items-grid */
+  display: flex;
+  /* Use flex to stack title and items-grid */
   flex-direction: column;
 }
 
 .output-explanation-panel h3 {
   /* Style the title within this panel */
   margin-top: 0;
-  margin-bottom: 1.5rem; /* Space below title */
-  padding-bottom: 0.75rem; /* Space under text */
-  border-bottom: 1px solid #e5e7eb; /* Separator line */
-  color: #3b82f6; /* Match form/result titles */
-  font-size: 1.2rem; /* Slightly larger title */
+  margin-bottom: 1.5rem;
+  /* Space below title */
+  padding-bottom: 0.75rem;
+  /* Space under text */
+  border-bottom: 1px solid #e5e7eb;
+  /* Separator line */
+  color: #3b82f6;
+  /* Match form/result titles */
+  font-size: 1.2rem;
+  /* Slightly larger title */
   text-align: center;
 }
 
@@ -577,89 +645,114 @@ body {
   /* Create two equal-width columns */
   grid-template-columns: repeat(4, 1fr);
   /* Define gap between grid items (rows and columns) */
-  gap: 1.5rem; /* Adjust spacing as needed */
-  width: 100%; /* Ensure it takes full width of the panel */
+  gap: 1.5rem;
+  /* Adjust spacing as needed */
+  width: 100%;
+  /* Ensure it takes full width of the panel */
 }
 
 /* Styling for explanation items INSIDE the output panel */
 /* These rules reuse/adapt existing .explanation-item styles */
 .output-explanation-panel .explanation-item {
-  margin-bottom: 1.5rem; /* Add space between explanation items */
+  margin-bottom: 1.5rem;
+  /* Add space between explanation items */
   /* Override text-align if needed (default from results banner is center) */
   text-align: left;
-  flex-direction: row; /* Align icon and text horizontally like mobile results explanation */
-  align-items: flex-start; /* Align icon to the top */
-  gap: 1rem; /* Space between icon and text */
+  flex-direction: row;
+  /* Align icon and text horizontally like mobile results explanation */
+  align-items: flex-start;
+  /* Align icon to the top */
+  gap: 1rem;
+  /* Space between icon and text */
 }
 
 .output-explanation-panel .explanation-icon-wrapper {
-   margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
 }
+
 .output-explanation-panel .explanation-icon {
-   width: 28px;
-   height: 28px;
-   color: #3b82f6;
+  width: 28px;
+  height: 28px;
+  color: #3b82f6;
 }
 
 .output-explanation-panel .explanation-item h4 {
-   margin-top: 0;
-   margin-bottom: 0.6rem;
-   color: #1f2937;
-   font-size: 1.05rem;
-   font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 0.6rem;
+  color: #1f2937;
+  font-size: 1.05rem;
+  font-weight: 600;
 }
 
 .output-explanation-panel .explanation-item p {
-   margin: 0;
-   color: #4b5563;
-   font-size: 0.9rem;
-   line-height: 1.5;
-   flex-grow: 1; /* Allow text to take space */
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  flex-grow: 1;
+  /* Allow text to take space */
 }
 
 .recharts-legend-wrapper {
-   /* Position usually handled by Recharts props (verticalAlign, align, wrapperStyle) */
+  /* Position usually handled by Recharts props (verticalAlign, align, wrapperStyle) */
 }
+
 .recharts-legend-item {
-  margin-right: 10px !important; /* Space between horizontal items */
-  margin-bottom: 4px !important; /* Space between vertical items */
-  padding-bottom: 5px; /* Ensure text isn't cut off */
+  margin-right: 10px !important;
+  /* Space between horizontal items */
+  margin-bottom: 4px !important;
+  /* Space between vertical items */
+  padding-bottom: 5px;
+  /* Ensure text isn't cut off */
   font-size: 12px;
 }
 
 /* Custom Tooltip Style */
 .custom-tooltip {
-    background-color: rgba(255, 255, 255, 0.95); /* Slightly less transparent */
-    border: 1px solid #ccc;
-    padding: 8px 12px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    font-size: 0.9em; /* Match other text sizes */
+  background-color: rgba(255, 255, 255, 0.95);
+  /* Slightly less transparent */
+  border: 1px solid #ccc;
+  padding: 8px 12px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 0.9em;
+  /* Match other text sizes */
 }
+
 .custom-tooltip p {
-    margin: 0; /* Override default paragraph margin */
-    padding: 2px 0; /* Add slight vertical padding */
+  margin: 0;
+  /* Override default paragraph margin */
+  padding: 2px 0;
+  /* Add slight vertical padding */
 }
 
 /* Error Message Styling */
 .error {
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background-color: #fee2e2; /* Light red */
-  border: 1px solid #fecaca; /* Red border */
+  background-color: #fee2e2;
+  /* Light red */
+  border: 1px solid #fecaca;
+  /* Red border */
   border-radius: 8px;
-  color: #b91c1c; /* Dark red text */
+  color: #b91c1c;
+  /* Dark red text */
 }
 
 /* --- Footer --- */
 .footer-banner {
+  bottom: 0;
+  left: 0;
   display: flex;
-  justify-content: space-between; /* Space logos evenly */
+  justify-content: space-between;
+  /* Space logos evenly */
   align-items: center;
-  padding: 1.5rem 0; /* Vertical padding only */
-  margin-top: 3rem;
+  padding: 0.5rem 0;
   border-top: 1px solid #e5e7eb;
-  position: relative;
+  position: fixed;
+  width: 100%;
+  height: 50px;
+  background-color: #ffffff;
   /* Horizontal spacing handled by .container padding */
 }
 
@@ -671,95 +764,132 @@ body {
 }
 
 .footer-logo {
-  max-height: 60px;
-  max-width: 200px;
+  height: 80%;
 }
 
 /* --- Responsive Adjustments --- */
-@media (max-width: 992px) { /* Adjust breakpoint for tablet/smaller desktop */
-   .flex-container {
-       flex-direction: column; /* Stack form and results */
-       align-items: center; /* Center stacked items */
-   }
-   .input-form {
-       flex-basis: auto; /* Allow form to take full width */
-       width: 90%; /* Limit width slightly */
-       max-width: 500px; /* Max width when stacked */
-   }
-   .results-area {
-       flex-basis: auto; /* Allow results to take full width */
-       width: 90%; /* Limit width slightly */
-       max-width: 800px; /* Allow results area to be wider */
-   }
-    .results-container {
-        grid-template-columns: 1fr; /* Stack result tabs */
-    }
-    .results-explanation-banner {
-        grid-template-columns: 1fr; /* Stack explanation items */
-    }
+@media (max-width: 992px) {
+
+  /* Adjust breakpoint for tablet/smaller desktop */
+  .flex-container {
+    flex-direction: column;
+    /* Stack form and results */
+    align-items: center;
+    /* Center stacked items */
+  }
+
+  .input-form {
+    flex-basis: auto;
+    /* Allow form to take full width */
+    width: 90%;
+    /* Limit width slightly */
+    max-width: 500px;
+    /* Max width when stacked */
+  }
+
+  .results-area {
+    flex-basis: auto;
+    /* Allow results to take full width */
+    width: 90%;
+    /* Limit width slightly */
+    max-width: 800px;
+    /* Allow results area to be wider */
+  }
+
+  .results-container {
+    grid-template-columns: 1fr;
+    /* Stack result tabs */
+  }
+
+  .results-explanation-banner {
+    grid-template-columns: 1fr;
+    /* Stack explanation items */
+  }
 }
 
-@media (max-width: 768px) { /* Adjust breakpoint for mobile */
+@media (max-width: 768px) {
+
+  /* Adjust breakpoint for mobile */
   .explanation-item {
-      text-align: left;
-      flex-direction: row;
-      align-items: flex-start;
-      gap: 1rem;
+    text-align: left;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
   }
-   .explanation-icon-wrapper {
-      margin-bottom: 0;
-      padding: 0.6rem;
+
+  .explanation-icon-wrapper {
+    margin-bottom: 0;
+    padding: 0.6rem;
   }
+
   .explanation-icon {
-      width: 24px;
-      height: 24px;
+    width: 24px;
+    height: 24px;
   }
+
   .footer-banner {
-      flex-direction: column; /* Stack logos */
-      gap: 1.5rem;
+    flex-direction: column;
+    /* Stack logos */
+    gap: 1.5rem;
   }
 }
 
 /* --- Input Explanation Panel Styling --- */
 .input-explanation-panel {
   padding: 1.5rem;
-  background-color: #ffffff; /* Match result tabs/form */
-  border-radius: 12px; /* Match */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Match */
+  background-color: #ffffff;
+  /* Match result tabs/form */
+  border-radius: 12px;
+  /* Match */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  /* Match */
   box-sizing: border-box;
 }
 
 .input-explanation-panel h3 {
   margin-top: 0;
-  margin-bottom: 1.5rem; /* Space below title */
-  padding-bottom: 0.75rem; /* Space under text */
-  border-bottom: 1px solid #e5e7eb; /* Separator line */
-  color: #3b82f6; /* Match form/result titles */
-  font-size: 1.2rem; /* Slightly larger title */
+  margin-bottom: 1.5rem;
+  /* Space below title */
+  padding-bottom: 0.75rem;
+  /* Space under text */
+  border-bottom: 1px solid #e5e7eb;
+  /* Separator line */
+  color: #3b82f6;
+  /* Match form/result titles */
+  font-size: 1.2rem;
+  /* Slightly larger title */
   text-align: center;
 }
 
 /* Adjust spacing for items within this specific panel if needed */
 .input-explanation-panel .explanation-item {
-  margin-bottom: 1.5rem; /* Add space between explanation items */
+  margin-bottom: 1.5rem;
+  /* Add space between explanation items */
   /* Override text-align if needed (default from results banner is center) */
   text-align: left;
-  flex-direction: row; /* Align icon and text horizontally like mobile results explanation */
-  align-items: flex-start; /* Align icon to the top */
-  gap: 1rem; /* Space between icon and text */
+  flex-direction: row;
+  /* Align icon and text horizontally like mobile results explanation */
+  align-items: flex-start;
+  /* Align icon to the top */
+  gap: 1rem;
+  /* Space between icon and text */
 }
+
 .input-explanation-panel .explanation-item:last-child {
-  margin-bottom: 0; /* Remove margin from last item */
+  margin-bottom: 0;
+  /* Remove margin from last item */
 }
 
 .input-explanation-panel .explanation-icon-wrapper {
-  margin-bottom: 0; /* Remove bottom margin as it's side-by-side now */
+  margin-bottom: 0;
+  /* Remove bottom margin as it's side-by-side now */
   /* You might want a slightly different background or keep it the same */
-  /* background-color: #eef2ff; */ /* Example: Slightly different light blue */
+  /* background-color: #eef2ff; */
+  /* Example: Slightly different light blue */
 }
 
 /* Ensure text takes available space */
-.input-explanation-panel .explanation-item > div:not(.explanation-icon-wrapper) {
+.input-explanation-panel .explanation-item>div:not(.explanation-icon-wrapper) {
   flex: 1;
 }
 
@@ -769,11 +899,12 @@ body {
 }
 
 .explanation-icon-wrapper {
-    background-color: #e0e7ff;
-    border-radius: 50%;
-    padding: 0.75rem;
-    display: inline-flex;
-    flex-shrink: 0; /* Prevent icon wrapper from shrinking */
+  background-color: #e0e7ff;
+  border-radius: 50%;
+  padding: 0.75rem;
+  display: inline-flex;
+  flex-shrink: 0;
+  /* Prevent icon wrapper from shrinking */
 }
 
 .explanation-icon {
@@ -784,9 +915,11 @@ body {
 
 .explanation-item h4 {
   margin-top: 0;
-  margin-bottom: 0.4rem; /* Reduced space */
+  margin-bottom: 0.4rem;
+  /* Reduced space */
   color: #1f2937;
-  font-size: 1.0rem; /* Slightly smaller */
+  font-size: 1.0rem;
+  /* Slightly smaller */
   font-weight: 600;
 }
 
