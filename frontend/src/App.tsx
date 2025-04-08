@@ -816,6 +816,8 @@ function App() {
                                         <h3>Trading Network</h3>
                                         <TradingNetworkForceGraph
                                             tradingNetwork={currentResult.trading_network}
+                                            width={350}
+                                            height={GRAPH_CHART_HEIGHT * 2 + 20}
                                         />
                                     </div>
                                 )}
