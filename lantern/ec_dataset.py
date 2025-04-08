@@ -145,42 +145,7 @@ def getTradingNetwork(gridPurchaseVol: float, gridFeedInVol: float) -> nx.DiGrap
         for v, weight in neighbors.items():
             G.add_edge(u, v, weight=weight)
 
-    # Add "grid" to network
-    G.add_node("grid_in", node_color="lightgreen", node_size=3000)
-    G.add_node("grid_out", node_color="lightgreen", node_size=3000)
-    
-    G.add_edge("grid_in", "0", weight=gridPurchaseVol)
-    G.add_edge("1", "grid_out", weight=gridFeedInVol)
-
     return G
-    # # Normalize edge weights for visualization and scale inversely with # vertices for visibility
-    # weights: list[float] = [w["weight"] for _, _, w in G.edges(data=True)]
-    # max_weight: float = max(weights) if weights else 1  # Avoid div by 0
-    # scaled_widths: list[float] = [
-    #     (np.log(w + 1) / np.log(max_weight + 1)) * 100 / len(G) for w in weights
-    # ]
-
-
-    # edge_colors: list[tuple[float, float, float, float]]
-    # edge_colors = [(0.5, 0.5, 0.5, 0.7) for _ in G.edges()]
-
-    # # Draw graph with variable edge widths
-    # plt.figure(figsize=(8, 6))
-    # nx.draw(
-    #     G,
-    #     pos,
-    #     with_labels=True,
-    #     node_color="skyblue",
-    #     edge_color=edge_colors,
-    #     node_size=2000,
-    #     font_size=12,
-    #     font_weight="bold",
-    #     width=scaled_widths,
-    #     arrows=False,
-    # )
-
-    # plt.title("Trading Network")
-    # plt.show()
 
 def aggregate_into_buildings(load: pd.DataFrame) -> pd.DataFrame:
     load = load.T
