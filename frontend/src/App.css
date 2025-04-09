@@ -5,6 +5,10 @@ body {
   font-family: sans-serif;
   margin: 0;
   /* Added to prevent default body margin */
+  background-image: url('./assets/MapImage.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* Main Layout Container */

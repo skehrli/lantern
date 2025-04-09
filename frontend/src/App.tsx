@@ -14,6 +14,7 @@ import { VscGraphLine } from 'react-icons/vsc';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import TradingNetworkForceGraph from './components/TradingNetworkForceGraph';
 import './App.css';
+import explanationAudio from './assets/explanation.mp3'; // Example path, adjust as needed
 
 // --- Constants ---
 const API_ENDPOINT = 'http://localhost:8000/api/simulate';
@@ -175,11 +176,23 @@ const ResultSelector: React.FC<ResultSelectorProps> = ({ history, selectedIndex,
                 onChange={handleSelectionChange}
             >
                 {history.map((entry, index) => {
-                    // Example: Display timestamp if available
+                    console.log('Rendering option for entry:', entry);
                     const timestampStr = entry.index ? ` (${new Date(entry.index).toLocaleTimeString()})` : '';
+                    // creat const with season emoji {entry.params.season}, check for season
+                    let icon;
+                    if (entry.params.season === 'sum') {
+                        icon = "☀️";
+                    } else if (entry.params.season === 'win') {
+                        icon = "❄️";
+                    } else if (entry.params.season === 'aut') {
+                        icon = "🍂";
+                    } else if (entry.params.season === 'spr') {
+                        icon = "🌼";
+                    }
+
                     return (
                         <option key={index} value={index}>
-                            {t('results.simulationNumberPrefix')}{index + 1} | {entry.params.community_size} | {entry.params.season} {timestampStr}
+                            {t('results.simulationNumberPrefix')}{index + 1} | 🏘️ {entry.params.community_size} | {t('form.seasonLabel')} {icon} | {timestampStr}
                         </option>
                     );
                 })}
@@ -628,7 +641,7 @@ function App() {
                         <div className="form-header">
                             <h2>{t('app.title')}</h2>
                             <p>{t('app.subtitle')}</p>
-
+                            <audio src={explanationAudio} preload="auto" controls /> {/* has to be updated with the audio */}
                         </div>
 
                         {/* Community Size Slider */}
