@@ -1,0 +1,97 @@
+{
+    "app": {
+        "title": "Energiegemeinschaft-Simulator",
+        "subtitle": "Konfigurieren und simulieren Sie die Leistung einer lokalen Energiegemeinschaft."
+    },
+    "buttons": {
+        "runSimulation": "Simulation starten",
+        "simulating": "Simulation läuft...",
+        "toggleBatteryOn": "Batterie: Ein",
+        "toggleBatteryOff": "Batterie: Aus"
+    },
+    "form": {
+        "communitySizeLabel": "Gemeinschaftsgröße (Gebäude)",
+        "seasonLabel": "Jahreszeit",
+        "smartDevicesLabel": "Smart-Geräte",
+        "pvAdoptionLabel": "PV-Ausbau",
+        "inputExplanationTitle": "Erläuterung der Eingaben",
+        "explanationCommunitySizeTitle": "Gemeinschaftsgröße",
+        "explanationCommunitySizeText": "Wählen Sie die Anzahl Gebäude (mit jeweils sechs Haushalten), die an der lokalen Energiegemeinschaft teilnehmen. Gebäude ohne Solaranlagen können dennoch Energie von ihren Nachbarn beziehen.",
+        "explanationSeasonTitle": "Jahreszeit",
+        "explanationSeasonText": "Wählen Sie aus, in welcher Jahreszeit die dreimonatige Simulation stattfindet. Dies beeinflusst den Energieverbrauch und die Solarerzeugung deutlich.",
+        "explanationPVTitle": "PV-Ausbau",
+        "explanationPVText": "Legen Sie den Prozentsatz an Gebäuden mit Solaranlagen (PV) fest.",
+        "explanationSDTitle": "Smart-Geräte",
+        "explanationSDText": "Definieren Sie den Prozentsatz an Haushalten mit steuerbaren Smart-Geräten, um Lasten zu verschieben und Spitzen zu reduzieren.",
+        "explanationBatteryTitle": "Batterie",
+        "explanationBatteryText": "Bestimmen Sie, ob Gebäude mit Solaranlage auch eine Batterie besitzen. Überschüssige Solarenergie kann zum Laden der Batterie genutzt und später entladen werden."
+    },
+    "results": {
+        "selectorLabel": "Ergebnis anzeigen:",
+        "simulationNumberPrefix": "Simulation #",
+        "noResultsYet": "Führen Sie eine Simulation durch, um hier Ergebnisse zu sehen.",
+        "loadingResults": "Ergebnisse werden geladen...",
+        "warningsTitle": "Warnungen",
+        "errorsTitle": "Simulationsfehler",
+        "resultsExplanationTitle": "Erläuterung der Ergebnisse",
+        "resultsContainer": {
+            "avgCostHeading": "Durchschn. Kosten pro Haushalt",
+            "energyProfileHeading": "Durchschn. tägliches Lastprofil",
+            "tradingNetworkHeading": "Handelsnetzwerk",
+            "consumptionSourcesHeading": "Herkunft des Energiebedarfs",
+            "productionAllocationHeading": "Aufteilung der PV-Erzeugung"
+        }
+    },
+    "costComparison": {
+        "notAvailable": "Kostendaten nicht verfügbar.",
+        "withCommunity": "Mit Gemeinschaft:",
+        "withoutCommunity": "Ohne Gemeinschaft:",
+        "costsSame": "Die Kosten sind nahezu identisch.",
+        "savingsWithCommunity": "Ersparnis mit Gemeinschaft:",
+        "increasedCostCommunity": "Höhere Kosten mit Gemeinschaft:",
+        "negativeProfitNote": "(Negative Werte bedeuten Gewinn)"
+    },
+    "profiles": {
+        "dataNotAvailable": "Last- und Erzeugungsprofil-Daten sind nicht verfügbar.",
+        "loadLegend": "Last",
+        "pvGenLegend": "PV-Erzeugung"
+    },
+    "energyPieChart": {
+        "noSignificantData": "Keine relevanten Daten für dieses Diagramm.",
+        "loadingData": "Daten werden geladen...",
+        "production": {
+            "selfConsumed": "Selbstverbrauch",
+            "toBattery": "In Batterie",
+            "marketSold": "Markt (Verkauf)",
+            "gridExport": "Netz (Export)"
+        },
+        "consumption": {
+            "fromPV": "Aus eigener PV",
+            "fromBattery": "Aus Batterie",
+            "marketBought": "Markt (Einkauf)",
+            "gridImport": "Netz (Bezug)"
+        }
+    },
+    "explanations": {
+        "costComparisonTitle": "Kostenvergleich",
+        "costComparisonText": "Zeigt die durchschnittlichen Kosten pro Haushalt über den Simulationszeitraum, sowohl mit als auch ohne Energiegemeinschaft.",
+        "dailyEnergyPatternTitle": "Tägliches Lastprofil",
+        "dailyEnergyPatternText": "Veranschaulicht den durchschnittlichen Stromverbrauch (Last) und die PV-Erzeugung pro Gebäude über 24 Stunden.",
+        "tradingNetworkTitle": "Handelsnetzwerk",
+        "tradingNetworkText": "Visualisiert Energieflüsse zwischen Gebäuden und dem Netz. Dickere Linien kennzeichnen größere Energiemengen (logarithmische Skala).",
+        "energyFlowTitle": "Energiefluss",
+        "energyFlowText": "Zeigt die Nutzung der erzeugten Solarenergie (Aufteilung der Erzeugung) und die Herkunft des verbrauchten Stroms (Herkunft des Energiebedarfs)."
+    },
+    "footer": {
+        "hsluAlt": "HSLU Logo",
+        "lanternAlt": "Lantern Projektlogo",
+        "persistAlt": "PERSIST Projektlogo"
+    },
+    "errors": {
+        "genericError": "Fehler:",
+        "apiError": "Ein unerwarteter Fehler ist aufgetreten."
+    },
+    "lng": {
+        "lng": "Sprache"
+    }
+}

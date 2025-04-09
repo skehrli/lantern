@@ -1,0 +1,97 @@
+{
+    "app": {
+        "title": "Simulateur de communauté énergétique",
+        "subtitle": "Configurez et simulez les performances d'une communauté énergétique locale."
+    },
+    "buttons": {
+        "runSimulation": "Lancer la simulation",
+        "simulating": "Simulation en cours...",
+        "toggleBatteryOn": "Batterie : Activée",
+        "toggleBatteryOff": "Batterie : Désactivée"
+    },
+    "form": {
+        "communitySizeLabel": "Taille de la communauté (bâtiments)",
+        "seasonLabel": "Saison",
+        "smartDevicesLabel": "Appareils intelligents",
+        "pvAdoptionLabel": "Adoption PV",
+        "inputExplanationTitle": "Explications des paramètres",
+        "explanationCommunitySizeTitle": "Taille de la communauté",
+        "explanationCommunitySizeText": "Choisissez le nombre de bâtiments (chacun comprenant six ménages) participant à la communauté énergétique locale. Les bâtiments sans panneaux solaires peuvent toujours acheter de l'énergie à leurs voisins.",
+        "explanationSeasonTitle": "Saison",
+        "explanationSeasonText": "Sélectionnez la saison au cours de laquelle se déroule la simulation de trois mois. Cela affecte considérablement la consommation d'énergie et la production solaire.",
+        "explanationPVTitle": "Adoption PV",
+        "explanationPVText": "Ajustez le pourcentage de bâtiments équipés de panneaux solaires (PV).",
+        "explanationSDTitle": "Appareils intelligents",
+        "explanationSDText": "Définissez le pourcentage de ménages disposant d'appareils intelligents contrôlables. Cela permet un décalage de la charge pour réduire les pics de consommation.",
+        "explanationBatteryTitle": "Batterie",
+        "explanationBatteryText": "Déterminez si les bâtiments équipés de panneaux solaires disposent également d'une batterie. L'excès de production solaire peut charger la batterie, qui peut ensuite être déchargée en cas de besoin."
+    },
+    "results": {
+        "selectorLabel": "Voir le résultat :",
+        "simulationNumberPrefix": "Simulation n°",
+        "noResultsYet": "Lancez une simulation pour voir les résultats ici.",
+        "loadingResults": "Chargement des résultats...",
+        "warningsTitle": "Avertissements",
+        "errorsTitle": "Erreurs de simulation",
+        "resultsExplanationTitle": "Explication des résultats",
+        "resultsContainer": {
+            "avgCostHeading": "Coût moyen par ménage",
+            "energyProfileHeading": "Profil énergétique quotidien moyen",
+            "tradingNetworkHeading": "Réseau de transactions",
+            "consumptionSourcesHeading": "Sources d'approvisionnement en énergie",
+            "productionAllocationHeading": "Répartition de la production PV"
+        }
+    },
+    "costComparison": {
+        "notAvailable": "Données de coûts non disponibles.",
+        "withCommunity": "Avec la communauté : ",
+        "withoutCommunity": "Sans la communauté : ",
+        "costsSame": "Les coûts sont pratiquement identiques.",
+        "savingsWithCommunity": "Économies avec la communauté : ",
+        "increasedCostCommunity": "Augmentation des coûts avec la communauté : ",
+        "negativeProfitNote": "(Les valeurs négatives indiquent un bénéfice.)"
+    },
+    "profiles": {
+        "dataNotAvailable": "Données de profil de charge et de production non disponibles.",
+        "loadLegend": "Consommation",
+        "pvGenLegend": "Production PV"
+    },
+    "energyPieChart": {
+        "noSignificantData": "Aucune donnée significative pour ce graphique.",
+        "loadingData": "Chargement des données...",
+        "production": {
+            "selfConsumed": "Auto-consommé",
+            "toBattery": "Vers batterie",
+            "marketSold": "Marché (Vente)",
+            "gridExport": "Réseau (Export)"
+        },
+        "consumption": {
+            "fromPV": "Provenant de sa propre PV",
+            "fromBattery": "Provenant de la batterie",
+            "marketBought": "Marché (Achat)",
+            "gridImport": "Réseau (Import)"
+        }
+    },
+    "explanations": {
+        "costComparisonTitle": "Comparaison des coûts",
+        "costComparisonText": "Affiche le coût moyen par ménage sur la période simulée, en comparant les scénarios avec et sans communauté énergétique.",
+        "dailyEnergyPatternTitle": "Profil énergétique quotidien",
+        "dailyEnergyPatternText": "Illustre la consommation électrique moyenne (Consommation) et la production solaire (PV) par bâtiment sur 24 heures.",
+        "tradingNetworkTitle": "Réseau de transactions",
+        "tradingNetworkText": "Visualise les flux d'énergie entre les bâtiments et le réseau. Des lignes plus épaisses indiquent des volumes d'énergie plus importants (échelle logarithmique).",
+        "energyFlowTitle": "Flux d'énergie",
+        "energyFlowText": "Montre comment l'énergie solaire produite est utilisée (répartition de la production) et d'où provient l'énergie consommée (sources d'approvisionnement)."
+    },
+    "footer": {
+        "hsluAlt": "Logo HSLU",
+        "lanternAlt": "Logo du projet Lantern",
+        "persistAlt": "Logo du projet PERSIST"
+    },
+    "errors": {
+        "genericError": "Erreur :",
+        "apiError": "Une erreur inattendue s'est produite."
+    },
+    "lng": {
+        "lng": "Langue"
+    }
+}

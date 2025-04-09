@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis,
     CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -10,6 +11,7 @@ import { RiDonutChartFill } from "react-icons/ri";
 import { BsCloudSun } from 'react-icons/bs';
 import { IoIosBatteryFull } from 'react-icons/io';
 import { VscGraphLine } from 'react-icons/vsc';
+import LanguageSwitcher from './components/LanguageSwitcher';
 import TradingNetworkForceGraph from './components/TradingNetworkForceGraph';
 import './App.css';
 
@@ -162,9 +164,11 @@ const ResultSelector: React.FC<ResultSelectorProps> = ({ history, selectedIndex,
         }
     };
 
+    const t = useTranslation().t;
+
     return (
         <div className="result-selector-container">
-            <label htmlFor="result-select">View Result:</label>
+            <label htmlFor="result-select">{t('results.selectorLabel')}</label>
             <select
                 id="result-select"
                 value={selectedIndex ?? ''}
@@ -175,7 +179,7 @@ const ResultSelector: React.FC<ResultSelectorProps> = ({ history, selectedIndex,
                     const timestampStr = entry.index ? ` (${new Date(entry.index).toLocaleTimeString()})` : '';
                     return (
                         <option key={index} value={index}>
-                            Simulation #{index + 1}{timestampStr}
+                            {t('results.simulationNumberPrefix')}{index + 1} | {entry.params.community_size} | {entry.params.season} {timestampStr}
                         </option>
                     );
                 })}
@@ -199,6 +203,8 @@ interface EnergyPieChartProps {
 /** Pie chart component for visualizing energy production allocation or consumption sources. */
 const EnergyPieChart: React.FC<EnergyPieChartProps> = ({ type, metrics }) => {
 
+    const t = useTranslation().t;
+
     const chartData = useMemo(() => {
         if (!metrics) return [];
 
@@ -217,22 +223,22 @@ const EnergyPieChart: React.FC<EnergyPieChartProps> = ({ type, metrics }) => {
 
         if (type === 'production') {
             if (total_production < VALUE_TOLERANCE) return [];
-            if (self_consumption_volume > VALUE_TOLERANCE) data.push({ name: 'Self-Consumed', value: self_consumption_volume, color: PIE_CHART_COLORS.selfConsumed });
-            if (total_charging_volume > VALUE_TOLERANCE) data.push({ name: 'To Battery', value: total_charging_volume, color: PIE_CHART_COLORS.toBattery });
-            if (trading_volume > VALUE_TOLERANCE) data.push({ name: 'Market (Sold)', value: trading_volume, color: PIE_CHART_COLORS.toMarket });
-            if (total_grid_export > VALUE_TOLERANCE) data.push({ name: 'Grid (Export)', value: total_grid_export, color: PIE_CHART_COLORS.toGrid });
+            if (self_consumption_volume > VALUE_TOLERANCE) data.push({ name: `${t('energyPieChart.production.selfConsumed')}`, value: self_consumption_volume, color: PIE_CHART_COLORS.selfConsumed });
+            if (total_charging_volume > VALUE_TOLERANCE) data.push({ name: `${t('energyPieChart.production.toBattery')}`, value: total_charging_volume, color: PIE_CHART_COLORS.toBattery });
+            if (trading_volume > VALUE_TOLERANCE) data.push({ name: `${t('energyPieChart.production.marketSold')}`, value: trading_volume, color: PIE_CHART_COLORS.toMarket });
+            if (total_grid_export > VALUE_TOLERANCE) data.push({ name: `${t('energyPieChart.production.gridExport')}`, value: total_grid_export, color: PIE_CHART_COLORS.toGrid });
 
         } else { // type === 'consumption'
             if (total_consumption < VALUE_TOLERANCE) return [];
-            if (self_consumption_volume > VALUE_TOLERANCE) data.push({ name: 'From own PV', value: self_consumption_volume, color: PIE_CHART_COLORS.fromPV });
-            if (total_discharging_volume > VALUE_TOLERANCE) data.push({ name: 'From Battery', value: total_discharging_volume, color: PIE_CHART_COLORS.fromBattery });
-            if (trading_volume > VALUE_TOLERANCE) data.push({ name: 'Market (Bought)', value: trading_volume, color: PIE_CHART_COLORS.fromMarket });
-            if (total_grid_import > VALUE_TOLERANCE) data.push({ name: 'Grid (Import)', value: total_grid_import, color: PIE_CHART_COLORS.fromGrid });
+            if (self_consumption_volume > VALUE_TOLERANCE) data.push({ name: `${t('energyPieChart.consumption.fromPV')}`, value: self_consumption_volume, color: PIE_CHART_COLORS.fromPV });
+            if (total_discharging_volume > VALUE_TOLERANCE) data.push({ name: `${t('energyPieChart.consumption.fromBattery')}`, value: total_discharging_volume, color: PIE_CHART_COLORS.fromBattery });
+            if (trading_volume > VALUE_TOLERANCE) data.push({ name: `${t('energyPieChart.consumption.marketBought')}`, value: trading_volume, color: PIE_CHART_COLORS.fromMarket });
+            if (total_grid_import > VALUE_TOLERANCE) data.push({ name: `${t('energyPieChart.consumption.gridImport')}`, value: total_grid_import, color: PIE_CHART_COLORS.fromGrid });
         }
 
         return data.filter(d => d.value > VALUE_TOLERANCE);
 
-    }, [metrics, type]); // Recalculate only when metrics or type change
+    }, [metrics, type, t]); // Recalculate only when metrics or type change
 
     const renderCustomizedLabel = useCallback(({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
         if (percent == null || isNaN(percent) || percent < 0.03) return null; // Hide labels for very small slices
@@ -268,11 +274,11 @@ const EnergyPieChart: React.FC<EnergyPieChartProps> = ({ type, metrics }) => {
     }, [chartData]); // Depends on chartData for total calculation
 
     if (!metrics) {
-        return <p>Loading data...</p>; // Or some placeholder
+        return <p>{t('energyPieChart.loadingData')}</p>; // Or some placeholder
     }
 
     if (chartData.length === 0) {
-        return <p>No significant data available for this chart.</p>;
+        return <p>{t('energyPieChart.noSignificantData')}</p>;
     }
 
     return (
@@ -317,8 +323,10 @@ interface CostComparisonProps {
 
 /** Displays comparison bars for costs with and without the energy community. */
 const CostComparison: React.FC<CostComparisonProps> = ({ withLec, withoutLec }) => {
+    const t = useTranslation().t;
+
     if (withLec === null || withoutLec === null) {
-        return <p>Cost data not available.</p>;
+        return <p>{t('costComparison.notAvailable')}</p>;
     }
 
     // Handle potentially negative costs (profits) for scaling
@@ -341,29 +349,29 @@ const CostComparison: React.FC<CostComparisonProps> = ({ withLec, withoutLec }) 
     let savingsText = '';
 
     if (Math.abs(savings) < VALUE_TOLERANCE) {
-        savingsText = 'Costs are effectively the same.';
+        savingsText = t('costComparison.costsSame');
     } else if (savings > 0) { // withLec cost is lower than withoutLec cost
         const percentageSavings = Math.abs(withoutLec) > VALUE_TOLERANCE ? (savings / Math.abs(withoutLec)) * 100 : 0;
-        savingsText = `Savings with community: ${formatNumber(savings)} CHF`;
+        savingsText = `${t('costComparison.savingsWithCommunity')}: ${formatNumber(savings)} CHF`;
         if (percentageSavings > 0) {
             savingsText += ` (${percentageSavings.toFixed(1)}%)`;
         }
     } else { // withLec cost is higher than withoutLec cost
         const percentageIncrease = Math.abs(withoutLec) > VALUE_TOLERANCE ? (Math.abs(savings) / Math.abs(withoutLec)) * 100 : 0;
-        savingsText = `Increased cost with community: ${formatNumber(Math.abs(savings))} CHF`;
+        savingsText = `${t('costComparison.increasedCostCommunity')}: ${formatNumber(Math.abs(savings))} CHF`;
         if (percentageIncrease > 0) {
             savingsText += ` (${percentageIncrease.toFixed(1)}%)`;
         }
     }
     // Add note about profits if applicable
     if (withLec < 0 || withoutLec < 0) {
-        savingsText += " (Negative values indicate profit)";
+        savingsText += t('costComparison.negativeProfitNote');
     }
 
     return (
         <div className="cost-comparison">
             <div className="bar-container">
-                <div className="bar-label">With Community: {formatNumber(withLec)} CHF</div>
+                <div className="bar-label">{t('costComparison.withCommunity')} {formatNumber(withLec)} CHF</div>
                 <div className="bar-wrapper">
                     {withLec > 0 && (
                         <div className="bar lec-bar" style={{ width: `${withLecWidthPercent}%` }} />
@@ -371,7 +379,7 @@ const CostComparison: React.FC<CostComparisonProps> = ({ withLec, withoutLec }) 
                 </div>
             </div>
             <div className="bar-container">
-                <div className="bar-label">Without Community: {formatNumber(withoutLec)} CHF</div>
+                <div className="bar-label">{t('costComparison.withoutCommunity')}  {formatNumber(withoutLec)} CHF</div>
                 <div className="bar-wrapper">
                     {withoutLec > 0 && (
                         <div className="bar no-lec-bar" style={{ width: `${withoutLecWidthPercent}%` }} />
@@ -437,6 +445,7 @@ function App() {
     const [selectedResultIndex, setSelectedResultIndex] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const { t } = useTranslation();
     const [params, setParams] = useState<SimulationParams>({
         community_size: 10,
         season: 'sum',
@@ -605,8 +614,9 @@ function App() {
     // --- JSX Structure ---
     return (
         <div className="container">
+            <LanguageSwitcher />
 
-            {error && <div className="error">Error: {error}</div>}
+            {error && <div className="error">{t('errors.genericError')} {error}</div>}
 
             <div className="flex-container">
 
@@ -616,13 +626,14 @@ function App() {
                     {/* --- Input Form Section --- */}
                     <form onSubmit={handleSubmit} className="input-form">
                         <div className="form-header">
-                            <h2>Energy Community Simulator</h2>
-                            <p>Configure and simulate the performance of a local energy community.</p>
+                            <h2>{t('app.title')}</h2>
+                            <p>{t('app.subtitle')}</p>
+
                         </div>
 
                         {/* Community Size Slider */}
                         <div className="form-group">
-                            <label htmlFor="community_size">Community Size (Buildings)</label>
+                            <label htmlFor="community_size">{t('form.communitySizeLabel')}</label>
                             <div className="size-slider" style={{ '--clip-percent': `${sizeSliderClipPercent}%` } as React.CSSProperties}>
                                 <input
                                     type="range"
@@ -642,7 +653,7 @@ function App() {
 
                         {/* Season Selection */}
                         <div className="form-group">
-                            <label>Season</label>
+                            <label>{t('form.seasonLabel')}</label>
                             <div className="season-buttons">
                                 {Object.entries(SEASON_ICONS).map(([key, IconComponent]) => (
                                     <button
@@ -652,7 +663,7 @@ function App() {
                                         onClick={() => handleParamChange('season', key)}
                                         disabled={isLoading}
                                         aria-pressed={params.season === key}
-                                        aria-label={`Season: ${key}`} // More descriptive label
+                                        aria-label={`${t('form.seasonLabel')}: ${key}`} // More descriptive label
                                     >
                                         <IconComponent aria-hidden="true" />
                                     </button>
@@ -663,7 +674,7 @@ function App() {
                         {/* Circular Sliders for PV/SD Percentage */}
                         <div className="circles-row">
                             <div className="circle-container">
-                                <label id="sd-label">Smart Devices</label>
+                                <label id="sd-label">{t('form.smartDevicesLabel')}</label>
                                 <div
                                     className="circle"
                                     onMouseDown={(e) => handleCircleSliderInteraction(e, 'sd_percentage')}
@@ -680,7 +691,7 @@ function App() {
                                 </div>
                             </div>
                             <div className="circle-container">
-                                <label id="pv-label">PV Adoption</label>
+                                <label id="pv-label">{t('form.pvAdoptionLabel')}</label>
                                 <div
                                     className="circle"
                                     onMouseDown={(e) => handleCircleSliderInteraction(e, 'pv_percentage')}
@@ -706,20 +717,20 @@ function App() {
                                 onClick={() => handleParamChange('with_battery', !params.with_battery)}
                                 disabled={isLoading}
                                 aria-pressed={params.with_battery}
-                                aria-label="Toggle community battery"
+                                aria-label={t('buttons.toggleBatteryOff')}
                             >
                                 <BatteryIcon aria-hidden="true" />
-                                Battery: {params.with_battery ? 'On' : 'Off'}
+                                {params.with_battery ? t('buttons.toggleBatteryOn') : t('buttons.toggleBatteryOff')}
                             </button>
                             <button type="submit" disabled={isLoading}>
-                                {isLoading ? 'Simulating...' : 'Run Simulation'}
+                                {isLoading ? t('buttons.simulating') : t('buttons.runSimulation')}
                             </button>
                         </div>
                     </form>
 
                     {/* --- Input Explanation Panel --- */}
                     <section className="input-explanation-panel" aria-labelledby="input-explanation-title">
-                        <h3 id="input-explanation-title">Input Explanation</h3> {/* Title for the panel */}
+                        <h3 id="input-explanation-title">{t('form.inputExplanationTitle')}</h3>
 
                         {/* Explanation Item 1: Community Size */}
                         <div className="explanation-item">
@@ -728,8 +739,8 @@ function App() {
                                 <PiCity className="explanation-icon" aria-hidden="true" />
                             </div>
                             <div> {/* Wrap text for better alignment if using flex on item */}
-                                <h4>Community Size</h4>
-                                <p>Choose the number of buildings (of six households each) participating in the local energy community. Buildings without solar panels can still purchase energy from their neighbors.</p>
+                                <h4>{t('form.explanationCommunitySizeTitle')}</h4>
+                                <p>{t('form.explanationCommunitySizeText')}</p>
                             </div>
                         </div>
 
@@ -740,8 +751,8 @@ function App() {
                                 <BsCloudSun className="explanation-icon" aria-hidden="true" />
                             </div>
                             <div>
-                                <h4>Season</h4>
-                                <p>Select which season the 3-month simulation takes place in. This greatly affects energy usage and solar generation.</p>
+                                <h4>{t('form.explanationSeasonTitle')}</h4>
+                                <p>{t('form.explanationSeasonText')}</p>
                             </div>
                         </div>
 
@@ -752,8 +763,8 @@ function App() {
                                 <PiSolarPanelFill className="explanation-icon" aria-hidden="true" />
                             </div>
                             <div>
-                                <h4>PV Adoption</h4>
-                                <p>Adjust the percentage of buildings with solar panels (PV).</p>
+                                <h4>{t('form.explanationPVTitle')}</h4>
+                                <p>{t('form.explanationPVText')}</p>
                             </div>
                         </div>
 
@@ -764,8 +775,8 @@ function App() {
                                 <GiWashingMachine className="explanation-icon" aria-hidden="true" />
                             </div>
                             <div>
-                                <h4>Smart Devices</h4>
-                                <p>Adjust the percentage of households with controllable smart devices. This allows for smart load shifting to reduce peak usage.</p>
+                                <h4>{t('form.explanationSDTitle')}</h4>
+                                <p>{t('form.explanationSDText')}</p>
                             </div>
                         </div>
 
@@ -776,8 +787,8 @@ function App() {
                                 <IoIosBatteryFull className="explanation-icon" aria-hidden="true" />
                             </div>
                             <div>
-                                <h4>Battery</h4>
-                                <p>Decide whether buildings with solar panels also have a battery. Excess solar production can be used to charge the battery, and it can be discharged when solar production is not sufficient.</p>
+                                <h4>{t('form.explanationBatteryTitle')}</h4>
+                                <p>{t('form.explanationBatteryText')}</p>
                             </div>
                         </div>
 
@@ -786,6 +797,7 @@ function App() {
 
                 {/* --- Results Display Section --- */}
                 <div className="results-area">
+
                     <ResultSelector
                         history={resultsHistory}
                         selectedIndex={selectedResultIndex}
@@ -799,7 +811,7 @@ function App() {
 
                                 {/* --- Column 1 --- */}
                                 <div className="result-tab" key="cost-comparison">
-                                    <h3>Avg. Cost per Household</h3>
+                                    <h3>{t('results.resultsContainer.avgCostHeading')}</h3>
                                     <CostComparison
                                         withLec={currentResult.cost_metrics?.cost_with_lec}
                                         withoutLec={currentResult.cost_metrics?.cost_without_lec}
@@ -807,13 +819,13 @@ function App() {
                                 </div>
 
                                 <div className="result-tab" key="energy-profile">
-                                    <h3>Avg. Daily Energy Profile</h3>
+                                    <h3>{t('results.resultsContainer.energyProfileHeading')}</h3>
                                     <LoadGenProfile profiles={currentResult.profiles} />
                                 </div>
 
                                 {currentResult.trading_network && (
                                     <div className="result-tab trading-network-tab-span" key="trading-network">
-                                        <h3>Trading Network</h3>
+                                        <h3>{t('results.resultsContainer.tradingNetworkHeading')}</h3>
                                         <TradingNetworkForceGraph
                                             tradingNetwork={currentResult.trading_network}
                                         />
@@ -821,18 +833,18 @@ function App() {
                                 )}
 
                                 <div className="result-tab pie-chart-tab" key="production-allocation">
-                                    <h3>Energy Consumption Sources</h3>
+                                    <h3>{t('results.resultsContainer.consumptionSourcesHeading')}</h3>
                                     <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
                                 </div>
 
                                 <div className="result-tab pie-chart-tab" key="consumption-sources">
-                                    <h3>PV Production Allocation</h3>
+                                    <h3>{t('results.resultsContainer.productionAllocationHeading')}</h3>
                                     <EnergyPieChart type="production" metrics={currentResult.energy_metrics} />
                                 </div>
 
                                 {/* --- Output Explanation Panel (Spanning all columns) --- */}
                                 <section className="output-explanation-panel" aria-labelledby="output-explanation-title">
-                                    <h3 id="output-explanation-title">Results Explanation</h3>
+                                    <h3 id="output-explanation-title">{t('results.resultsExplanationTitle')}</h3>
                                     {/* Use the grid container for explanation items */}
                                     <div className="explanation-items-grid">
 
@@ -841,8 +853,8 @@ function App() {
                                                 <FaCoins className="explanation-icon" aria-hidden="true" />
                                             </div>
                                             <div>
-                                                <h4>Cost Comparison</h4>
-                                                <p>Shows the average cost per household over the simulated period, comparing scenarios with and without the energy community.</p>
+                                                <h4>{t('explanations.costComparisonTitle')}</h4>
+                                                <p>{t('explanations.costComparisonText')}</p>
                                             </div>
                                         </div>
 
@@ -851,8 +863,8 @@ function App() {
                                                 <VscGraphLine className="explanation-icon" aria-hidden="true" />
                                             </div>
                                             <div>
-                                                <h4>Daily Energy Pattern</h4>
-                                                <p>Illustrates the average electricity consumption (Load) and solar generation (PV Gen) per building over 24 hours.</p>
+                                                <h4>{t('explanations.dailyEnergyPatternTitle')}</h4>
+                                                <p>{t('explanations.dailyEnergyPatternText')}</p>
                                             </div>
                                         </div>
 
@@ -861,8 +873,8 @@ function App() {
                                                 <PiGraph className="explanation-icon" aria-hidden="true" />
                                             </div>
                                             <div>
-                                                <h4>Trading Network</h4>
-                                                <p>Visualizes energy flows between buildings and the grid. Thicker lines indicate more energy traded (log scale).</p>
+                                                <h4>{t('explanations.tradingNetworkTitle')}</h4>
+                                                <p>{t('explanations.tradingNetworkText')}</p>
                                             </div>
                                         </div>
 
@@ -871,8 +883,8 @@ function App() {
                                                 <RiDonutChartFill className="explanation-icon" aria-hidden="true" />
                                             </div>
                                             <div>
-                                                <h4>Energy Flow</h4>
-                                                <p>Shows how generated solar energy is used (Production Allocation) and where consumed energy comes from (Consumption Sources).</p>
+                                                <h4>{t('explanations.energyFlowTitle')}</h4>
+                                                <p>{t('explanations.energyFlowText')}</p>
                                             </div>
                                         </div>
 
@@ -883,7 +895,7 @@ function App() {
                                 {/* Warnings Tab (Optional - placed below explanation) */}
                                 {currentResult.warnings && currentResult.warnings.length > 0 && (
                                     <div className="result-tab warnings-tab"> {/* Add class, maybe style differently */}
-                                        <h3>Warnings</h3>
+                                        <h3>{t('explanations.energyFlowText')}</h3>
                                         <ul>
                                             {currentResult.warnings.map((warning, index) => (<li key={`warn-${index}`}>{warning}</li>))}
                                         </ul>
@@ -893,7 +905,7 @@ function App() {
                                 {/* Errors Tab (Optional - might indicate partial success - placed below explanation) */}
                                 {currentResult.errors && currentResult.errors.length > 0 && (
                                     <div className="result-tab errors-tab"> {/* Add class */}
-                                        <h3>Simulation Errors</h3>
+                                        <h3>{t('results.errorsTitle')}</h3>
                                         <ul>
                                             {currentResult.errors.map((errMsg, index) => (<li key={`err-${index}`}>{errMsg}</li>))}
                                         </ul>
@@ -904,12 +916,12 @@ function App() {
                     ) : (
                         // Show loading state or initial prompt
                         !isLoading && resultsHistory.length === 0 && !error && (
-                            <p className="no-results-yet">Run a simulation to see the results here.</p>
+                            <p className="no-results-yet">{t('results.noResultsYet')}</p>
                         )
                         // Could add a specific loading indicator here if desired while isLoading is true
                         || isLoading && ( // Show loading indicator within results area
                             <div className="loading-indicator">
-                                <p>Loading results...</p> {/* Add a spinner or better visual */}
+                                <p>{t('results.loadingResults')}</p> {/* Add a spinner or better visual */}
                             </div>
                         )
                     )}
@@ -920,9 +932,9 @@ function App() {
             {/* Footer Section */}
             <footer className="footer-banner">
                 {/* Ensure alt text is descriptive or leave empty if purely decorative */}
-                <img src="/logos/hslu.png" alt="HSLU Logo" className="footer-logo" />
-                <img src="/logos/lantern.png" alt="Lantern Project Logo" className="footer-logo" />
-                <img src="/logos/persist.png" alt="PERSIST Project Logo" className="footer-logo" />
+                <img src="/logos/hslu.png" alt={t('footer.hsluAlt')} className="footer-logo" />
+                <img src="/logos/lantern.png" alt={t('footer.lanternAlt')} className="footer-logo" />
+                <img src="/logos/persist.png" alt={t('footer.persistAlt')} className="footer-logo" />
             </footer>
 
         </div> // End .container
