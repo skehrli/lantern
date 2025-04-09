@@ -176,19 +176,15 @@ const ResultSelector: React.FC<ResultSelectorProps> = ({ history, selectedIndex,
                 onChange={handleSelectionChange}
             >
                 {history.map((entry, index) => {
-                    console.log('Rendering option for entry:', entry);
                     const timestampStr = entry.index ? ` (${new Date(entry.index).toLocaleTimeString()})` : '';
-                    // creat const with season emoji {entry.params.season}, check for season
-                    let icon;
-                    if (entry.params.season === 'sum') {
-                        icon = "☀️";
-                    } else if (entry.params.season === 'win') {
-                        icon = "❄️";
-                    } else if (entry.params.season === 'aut') {
-                        icon = "🍂";
-                    } else if (entry.params.season === 'spr') {
-                        icon = "🌼";
-                    }
+                    const seasonIcons: { [key: string]: string } = {
+                        sum: "☀️",
+                        win: "❄️",
+                        aut: "🍂",
+                        spr: "🌼",
+                    };
+
+                    const icon = seasonIcons[entry.params.season] || "❓";
 
                     return (
                         <option key={index} value={index}>

@@ -4,7 +4,8 @@ body {
   color: #1f2937;
   font-family: sans-serif;
   margin: 0;
-  /* Added to prevent default body margin */
+  align-items: center;
+  /* has to be removed for smaller screens */
   background-image: url('./assets/MapImage.png');
   background-size: cover;
   background-position: center;
@@ -14,7 +15,6 @@ body {
 /* Main Layout Container */
 .container {
   padding: 1rem 2rem;
-  /* Consistent padding */
 }
 
 /* --- Form Styles --- */
