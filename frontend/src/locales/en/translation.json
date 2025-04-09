@@ -1,7 +1,8 @@
 {
     "app": {
         "title": "Energy Community Simulator",
-        "subtitle": "Configure and simulate the performance of a local energy community."
+        "subtitle": "Configure and simulate the performance of a local energy community.",
+        "description": "A local energy community is a group of people (usually neighbors) who share and manage energy together in a small area. In Switzerland, they often use solar panels to produce their own electricity. This helps them save money, use cleaner energy, and rely less on big power companies."
     },
     "buttons": {
         "runSimulation": "Run Simulation",

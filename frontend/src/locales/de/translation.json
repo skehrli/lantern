@@ -1,7 +1,8 @@
 {
     "app": {
         "title": "Energiegemeinschaft-Simulator",
-        "subtitle": "Konfigurieren und simulieren Sie die Leistung einer lokalen Energiegemeinschaft."
+        "subtitle": "Konfigurieren und simulieren Sie die Leistung einer lokalen Energiegemeinschaft.",
+        "description": "Eine lokale Energiegemeinschaft ist eine Gruppe von Menschen (in der Regel Nachbarn), die in einem kleinen Gebiet Energie gemeinsam nutzen und verwalten. In der Schweiz nutzen sie oft Sonnenkollektoren, um ihren eigenen Strom zu produzieren. Das hilft ihnen, Geld zu sparen, saubere Energie zu nutzen und sich weniger von grossen Energieversorgern abhängig zu machen."
     },
     "buttons": {
         "runSimulation": "Simulation starten",
@@ -10,12 +11,12 @@
         "toggleBatteryOff": "Batterie: Aus"
     },
     "form": {
-        "communitySizeLabel": "Gemeinschaftsgröße (Gebäude)",
+        "communitySizeLabel": "Gemeinschaftsgrösse (Gebäude)",
         "seasonLabel": "Jahreszeit",
         "smartDevicesLabel": "Smart-Geräte",
         "pvAdoptionLabel": "PV-Ausbau",
         "inputExplanationTitle": "Erläuterung der Eingaben",
-        "explanationCommunitySizeTitle": "Gemeinschaftsgröße",
+        "explanationCommunitySizeTitle": "Gemeinschaftsgrösse",
         "explanationCommunitySizeText": "Wählen Sie die Anzahl Gebäude (mit jeweils sechs Haushalten), die an der lokalen Energiegemeinschaft teilnehmen. Gebäude ohne Solaranlagen können dennoch Energie von ihren Nachbarn beziehen.",
         "explanationSeasonTitle": "Jahreszeit",
         "explanationSeasonText": "Wählen Sie aus, in welcher Jahreszeit die dreimonatige Simulation stattfindet. Dies beeinflusst den Energieverbrauch und die Solarerzeugung deutlich.",
@@ -78,7 +79,7 @@
         "dailyEnergyPatternTitle": "Tägliches Lastprofil",
         "dailyEnergyPatternText": "Veranschaulicht den durchschnittlichen Stromverbrauch (Last) und die PV-Erzeugung pro Gebäude über 24 Stunden.",
         "tradingNetworkTitle": "Handelsnetzwerk",
-        "tradingNetworkText": "Visualisiert Energieflüsse zwischen Gebäuden und dem Netz. Dickere Linien kennzeichnen größere Energiemengen (logarithmische Skala).",
+        "tradingNetworkText": "Visualisiert Energieflüsse zwischen Gebäuden und dem Netz. Dickere Linien kennzeichnen grössere Energiemengen (logarithmische Skala).",
         "energyFlowTitle": "Energiefluss",
         "energyFlowText": "Zeigt die Nutzung der erzeugten Solarenergie (Aufteilung der Erzeugung) und die Herkunft des verbrauchten Stroms (Herkunft des Energiebedarfs)."
     },

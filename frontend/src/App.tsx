@@ -638,6 +638,7 @@ function App() {
                             <h2>{t('app.title')}</h2>
                             <p>{t('app.subtitle')}</p>
                             <audio src={explanationAudio} preload="auto" controls /> {/* has to be updated with the audio */}
+                            <p>{t('app.description')}</p>
                         </div>
 
                         {/* Community Size Slider */}

@@ -1,7 +1,8 @@
 {
     "app": {
         "title": "Simulatore di Comunità Energetica",
-        "subtitle": "Configura e simula le prestazioni di una comunità energetica locale."
+        "subtitle": "Configura e simula le prestazioni di una comunità energetica locale.",
+        "description": "Una comunità energetica locale è un gruppo di persone (di solito vicini di casa) che condividono e gestiscono insieme l'energia in una piccola area. In Svizzera, spesso utilizzano pannelli solari per produrre la propria elettricità. Questo li aiuta a risparmiare denaro, a utilizzare energia più pulita e a dipendere meno dalle grandi compagnie elettriche."
     },
     "buttons": {
         "runSimulation": "Avvia Simulazione",
