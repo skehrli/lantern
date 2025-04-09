@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
 import ForceGraph2D, { NodeObject, LinkObject, ForceGraphMethods } from 'react-force-graph-2d';
-import * as d3 from 'd3-force';
+// import * as d3 from 'd3-force';
+import { FaBuilding } from 'react-icons/fa6';
+import ReactDOMServer from 'react-dom/server';
 
 // --- Component Props ---
-// Describes the expected input data format from the API/parent component
 interface ApiTradingNetworkData {
-    nodes: string[]; // Array of node IDs
-    edges: [string, string, number][]; // Array of [sourceId, targetId, value]
+    nodes: string[];
+    edges: [string, string, number][];
 }
 
 interface TradingNetworkGraphProps {
@@ -16,18 +17,19 @@ interface TradingNetworkGraphProps {
 }
 
 // --- Internal Data Structures ---
-// Extends the base LinkObject to include properties needed for styling
 interface InternalLinkObject extends LinkObject {
-    value: number;      // Original trade value
+    source: string | number; // Ensure source/target types match node IDs
+    target: string | number;
+    value: number;
     baseColor: string;
-    curvature: number; // Curvature for rendering arcs
+    curvature: number;
 }
 
-// Extends the base NodeObject for styling and typing
 interface InternalNodeObject extends NodeObject {
-    type: 'building' | 'grid';
+    id: string | number;
     baseColor: string;
-    val: number; // Size value
+    val: number; // Physics size
+    visualSize: number; // Drawing size
 }
 
 // --- Helper Functions ---
@@ -42,47 +44,77 @@ const formatNumber = (num: number | null | undefined, decimals: number = 1): str
 // --- Constants ---
 // Visual Styling
 const NODE_COLORS = {
-    building: 'rgba(59, 130, 246, 0.95)', // Blue for buildings
-    grid: 'rgba(107, 114, 128, 0.95)',   // Grey for the grid node
-    highlight: 'rgba(239, 68, 68, 1)',   // Red for highlighted nodes/links
+    building: 'rgba(59, 130, 246, 0.95)',
+    highlight: 'rgba(239, 68, 68, 1)',
 };
-const LINK_COLOR = 'rgba(156, 163, 175, 0.5)'; // Default link color
-const LINK_HIGHLIGHT_COLOR = 'rgba(239, 68, 68, 0.9)'; // Highlighted link color
-const MIN_NODE_SIZE = 5;
-const MAX_NODE_SIZE = 14;
-const GRID_NODE_SIZE = 12;
-const MIN_LINK_WIDTH = 0.6;
+const LINK_COLOR = 'rgba(156, 163, 175, 0.5)';
+const LINK_HIGHLIGHT_COLOR = 'rgba(239, 68, 68, 0.9)';
+const BUILDING_ICON_DRAW_SIZE = 12; // Slightly increased icon size
+const MIN_LINK_WIDTH = 0.5;
 const MAX_LINK_WIDTH = 7;
-const VALUE_TOLERANCE = 0.01; // Ignore trades below this value
-const LINK_ARROW_LENGTH = 5;
-const LINK_ARROW_REL_POS = 1; // Place arrow at the target end
-const BIDIRECTIONAL_LINK_CURVATURE = 0.25; // Curvature for paired links
+const VALUE_TOLERANCE = 0.1; // Lower tolerance if needed
+const BIDIRECTIONAL_LINK_CURVATURE = 0.25;
 
 // Physics Simulation
-const CHARGE_STRENGTH = -280; // Repulsion force between nodes
-const LINK_DISTANCE = 90;     // Preferred distance between linked nodes
-const CENTER_STRENGTH = 0.01; // Pull towards the center (weak)
-const COLLIDE_PADDING = 2;    // Padding for node collision detection
+// const CHARGE_STRENGTH = -600;
+// const LINK_DISTANCE = 90;
+// const CENTER_STRENGTH = 0.01;
+
+// Particle Configuration
+const MAX_PARTICLES_VISUAL = 20; // Max particles to *show* visually
+const MIN_PARTICLES_FOR_NON_ZERO = 1; // Min particles if weight > 0
+
+// --- Helper to create SVG Data URI ---
+const createSvgDataUri = (svgString: string): string => {
+    const encodedSvg = btoa(unescape(encodeURIComponent(svgString))); // Ensure proper encoding
+    return `data:image/svg+xml;base64,${encodedSvg}`;
+};
 
 // --- Main Component ---
 const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingNetwork, width, height }) => {
     const fgRef = useRef<ForceGraphMethods>();
     const [highlightNodes, setHighlightNodes] = useState<Set<string | number>>(new Set());
-    const [highlightLinks, setHighlightLinks] = useState<Set<LinkObject>>(new Set());
+    const [highlightLinks, setHighlightLinks] = useState<Set<InternalLinkObject>>(new Set()); // Use InternalLinkObject
     const [hoverNode, setHoverNode] = useState<InternalNodeObject | null>(null);
     const [hoverLink, setHoverLink] = useState<InternalLinkObject | null>(null);
+    const [buildingImageNormal, setBuildingImageNormal] = useState<HTMLImageElement | null>(null);
+    const [buildingImageHighlight, setBuildingImageHighlight] = useState<HTMLImageElement | null>(null);
 
-    /**
-     * Memoized processing of raw API data into a format suitable for ForceGraph2D,
-     * including calculation of node sizes and link curvatures.
-     */
+    // Effect to pre-render the icon SVG
+    useEffect(() => {
+        const iconRenderSize = BUILDING_ICON_DRAW_SIZE * 1.5; // Render slightly larger for potential scaling
+        const svgStringNormal = ReactDOMServer.renderToStaticMarkup(
+            <FaBuilding color={NODE_COLORS.building} size={iconRenderSize} />
+        );
+        const svgStringHighlight = ReactDOMServer.renderToStaticMarkup(
+            <FaBuilding color={NODE_COLORS.highlight} size={iconRenderSize} />
+        );
+
+        let isMounted = true;
+        const imgNormal = new Image();
+        const imgHighlight = new Image();
+
+        imgNormal.onload = () => { if (isMounted) setBuildingImageNormal(imgNormal); };
+        imgNormal.onerror = () => { console.error("Failed to load normal building icon image"); };
+        imgNormal.src = createSvgDataUri(svgStringNormal);
+
+        imgHighlight.onload = () => { if (isMounted) setBuildingImageHighlight(imgHighlight); };
+        imgHighlight.onerror = () => { console.error("Failed to load highlight building icon image"); };
+        imgHighlight.src = createSvgDataUri(svgStringHighlight);
+
+        return () => { isMounted = false; };
+    }, []);
+
+
     const graphData = useMemo(() => {
-        if (!tradingNetwork?.nodes || !tradingNetwork?.edges || (tradingNetwork.nodes.length === 0 && tradingNetwork.edges.length === 0)) {
-            return { nodes: [], links: [] };
+         if (!tradingNetwork?.nodes || !tradingNetwork?.edges || (tradingNetwork.nodes.length === 0 && tradingNetwork.edges.length === 0)) {
+            return { nodes: [] as InternalNodeObject[], links: [] as InternalLinkObject[] }; // Ensure types
         }
 
-        // 1. Process Links: Filter, create objects, and identify pairs for curvature
+        // Process Links first to find nodes that actually participate
         const links: InternalLinkObject[] = [];
+        const nodesPresentInLinks = new Set<string>(); // Use Set for efficient lookup
+
         tradingNetwork.edges
             .filter(edge => edge.length === 3 && typeof edge[2] === 'number' && edge[2] > VALUE_TOLERANCE && edge[0] && edge[1])
             .forEach((edgeTuple) => {
@@ -95,194 +127,174 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                     target: targetId,
                     value: edgeTuple[2],
                     baseColor: LINK_COLOR,
-                    curvature: 0, // Initialize curvature
+                    curvature: 0 // Initialize curvature
                 });
+                nodesPresentInLinks.add(sourceId); // Add nodes involved in valid links
+                nodesPresentInLinks.add(targetId);
             });
 
-        // 2. Assign Curvature: Assign the same positive curvature to bidirectional pairs
+        // Assign Curvature for bidirectional links
         const curvatureAssignedIndices = new Set<number>();
         links.forEach((link, currentIndex) => {
             if (curvatureAssignedIndices.has(currentIndex)) return; // Skip if already processed
 
-            const sourceId = String(link.source);
-            const targetId = String(link.target);
-
             const reverseLinkIndex = links.findIndex(
                 (revLink, revIndex) =>
-                    String(revLink.source) === targetId &&
-                    String(revLink.target) === sourceId &&
+                    revLink.source === link.target && // Direct comparison works if IDs are strings
+                    revLink.target === link.source &&
                     !curvatureAssignedIndices.has(revIndex)
             );
 
             if (reverseLinkIndex !== -1) {
-                // Assign the same positive curvature to both links in the pair
                 links[currentIndex].curvature = BIDIRECTIONAL_LINK_CURVATURE;
                 links[reverseLinkIndex].curvature = BIDIRECTIONAL_LINK_CURVATURE;
-
                 curvatureAssignedIndices.add(currentIndex);
                 curvatureAssignedIndices.add(reverseLinkIndex);
             }
         });
 
-        // 3. Process Nodes: Calculate degrees and determine node properties
-        const nodeDegrees: Record<string, number> = {};
-        links.forEach(link => {
-            const sourceId = String(link.source);
-            const targetId = String(link.target);
-            nodeDegrees[sourceId] = (nodeDegrees[sourceId] || 0) + 1;
-            nodeDegrees[targetId] = (nodeDegrees[targetId] || 0) + 1;
-        });
+        // Process Nodes, filtering by those present in valid links
+        const nodes: InternalNodeObject[] = tradingNetwork.nodes
+            .filter(nodeIdStr => nodesPresentInLinks.has(String(nodeIdStr))) // Filter nodes
+            .map((nodeIdStr: string) => {
+                const id = String(nodeIdStr);
+                const baseColor = NODE_COLORS.building;
+                const visualSize = BUILDING_ICON_DRAW_SIZE;
+                const val = visualSize / 2 + 1; // Physics size slightly larger than half visual
+                return { id, baseColor, val, visualSize };
+            });
 
-        const nodes: InternalNodeObject[] = tradingNetwork.nodes.map((nodeIdStr: string) => {
-            const id = String(nodeIdStr);
-            const type = id.toLowerCase().includes('grid') ? 'grid' : 'building';
-            const baseColor = type === 'grid' ? NODE_COLORS.grid : NODE_COLORS.building;
-            const val = type === 'grid'
-                ? GRID_NODE_SIZE
-                : Math.max(MIN_NODE_SIZE, Math.min(MAX_NODE_SIZE, MIN_NODE_SIZE + (nodeDegrees[id] || 0) * 0.7));
-            return { id, type, baseColor, val };
-        });
+        // Ensure graphData always returns nodes and links arrays
+        return { nodes, links };
 
-        // 4. Filter Nodes (Optional): Remove nodes that have no links
-        const linkedNodeIds = new Set<string>(Object.keys(nodeDegrees));
-        const filteredNodes = nodes.filter(node => linkedNodeIds.has(String(node.id)));
-        // If you want to display nodes from the input list even if they have no trades, use `nodes` instead of `filteredNodes`.
+    }, [tradingNetwork]); // Dependency: raw tradingNetwork data
 
-        return { nodes: filteredNodes, links };
-
-    }, [tradingNetwork]);
-
-    /**
-     * Memoized calculation of the maximum link value for scaling link widths linearly.
-     */
     const maxLinkValue = useMemo(() => {
         if (!graphData.links || graphData.links.length === 0) return 1;
-        // Ensure the minimum value considered is 1 to avoid division issues with very small values
-        return Math.max(...graphData.links.map(l => l.value), 1);
-    }, [graphData.links]);
+        return Math.max(...graphData.links.map(l => l.value));
+    }, [graphData.links]); // Dependency: the processed links
 
-    /**
-     * Calculates the visual width of a link based on its value, scaled linearly.
-     */
     const calculateLinkWidth = useCallback((link: InternalLinkObject): number => {
-        // Prevent division by zero or negative scale if maxLinkValue is somehow non-positive
-        if (maxLinkValue <= 0) return MIN_LINK_WIDTH;
-
         const scale = Math.max(0, Math.min(1, link.value / maxLinkValue));
-        // Ensure a minimum visible width even for very small values (but larger than 0)
-        return Math.max(0.1, MIN_LINK_WIDTH + scale * (MAX_LINK_WIDTH - MIN_LINK_WIDTH));
-    }, [maxLinkValue]);
+        // Ensure width is at least MIN_LINK_WIDTH
+        return MIN_LINK_WIDTH + scale * (MAX_LINK_WIDTH - MIN_LINK_WIDTH);
+    }, [maxLinkValue]); // Dependency: the calculated maxLinkValue
 
-    /**
-     * Handles node hover events to highlight the node and its connected links/neighbors.
-     */
     const handleNodeHover = useCallback((node: NodeObject | null) => {
         const newHighlightNodes = new Set<string | number>();
-        const newHighlightLinks = new Set<LinkObject>();
+        const newHighlightLinks = new Set<InternalLinkObject>(); // Use InternalLinkObject
         const internalNode = node as InternalNodeObject | null;
 
         if (internalNode) {
-            const nodeId = String(internalNode.id);
+            const nodeId = internalNode.id; // ID is already correct type
             newHighlightNodes.add(nodeId);
             graphData.links.forEach((link) => {
-                const sourceId = String(link.source);
-                const targetId = String(link.target);
-                if (sourceId === nodeId || targetId === nodeId) {
+                // Direct comparison should work if node IDs and link source/target are same type
+                if (link.source === nodeId || link.target === nodeId) {
                     newHighlightLinks.add(link);
-                    newHighlightNodes.add(sourceId);
-                    newHighlightNodes.add(targetId);
+                    newHighlightNodes.add(link.source);
+                    newHighlightNodes.add(link.target);
                 }
             });
         }
         setHoverNode(internalNode);
         setHighlightNodes(newHighlightNodes);
-        setHighlightLinks(newHighlightLinks);
-        setHoverLink(null); // Clear link hover when hovering node
-    }, [graphData.links]); // Depends on graphData.links
+        setHighlightLinks(newHighlightLinks); // Update with Set<InternalLinkObject>
+        setHoverLink(null);
+    }, [graphData.links]); // Dependency: graphData.links
 
-    /**
-     * Handles link hover events to highlight the link and its connected nodes.
-     */
     const handleLinkHover = useCallback((link: LinkObject | null) => {
         const newHighlightNodes = new Set<string | number>();
-        const newHighlightLinks = new Set<LinkObject>();
+        const newHighlightLinks = new Set<InternalLinkObject>(); // Use InternalLinkObject
         const internalLink = link as InternalLinkObject | null;
 
         if (internalLink) {
             newHighlightLinks.add(internalLink);
-            const sourceId = String(internalLink.source);
-            const targetId = String(internalLink.target);
-            newHighlightNodes.add(sourceId);
-            newHighlightNodes.add(targetId);
+            newHighlightNodes.add(internalLink.source);
+            newHighlightNodes.add(internalLink.target);
         }
         setHoverLink(internalLink);
         setHighlightNodes(newHighlightNodes);
-        setHighlightLinks(newHighlightLinks);
-        setHoverNode(null); // Clear node hover when hovering link
+        setHighlightLinks(newHighlightLinks); // Update with Set<InternalLinkObject>
+        setHoverNode(null);
     }, []); // No external dependencies needed here
 
     /**
-     * Custom drawing function for nodes, rendered on the canvas.
+     * Custom drawing function using ctx.drawImage for building icons.
      */
     const drawNode = useCallback((node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
-        const internalNode = node as InternalNodeObject; // Assume node passed will conform
-        const nodeId = String(internalNode.id);
-        const label = nodeId;
-        const size = internalNode.val || MIN_NODE_SIZE;
+        const internalNode = node as InternalNodeObject;
+        const nodeId = internalNode.id;
+        const visualSize = internalNode.visualSize;
         const isHighlighted = highlightNodes.has(nodeId);
-        const color = isHighlighted ? NODE_COLORS.highlight : (internalNode.baseColor || NODE_COLORS.building);
+        const nodeX = internalNode.x ?? 0; // Use nullish coalescing for safety
+        const nodeY = internalNode.y ?? 0;
 
-        // Draw main node circle
-        ctx.beginPath();
-        ctx.arc(node.x!, node.y!, size, 0, 2 * Math.PI, false);
-        ctx.fillStyle = color;
-        ctx.fill();
-
-        // Draw outline
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.lineWidth = 1 / globalScale;
-        ctx.stroke();
-
-        // Draw thicker highlight outline if needed
-        if (isHighlighted) {
-            ctx.strokeStyle = NODE_COLORS.highlight;
-            ctx.lineWidth = 2.5 / globalScale;
-            ctx.stroke();
+        const imgToDraw = isHighlighted ? buildingImageHighlight : buildingImageNormal;
+        if (imgToDraw?.complete && imgToDraw.naturalWidth > 0) {
+            ctx.drawImage(
+                imgToDraw,
+                nodeX - visualSize / 2, // Center the image
+                nodeY - visualSize / 2,
+                visualSize, // Draw at the node's visualSize
+                visualSize
+            );
+        } else {
+             // Fallback or do nothing if image not ready
+             // console.warn("Building image not ready for node:", nodeId);
         }
 
-        // Draw label inside node if large enough
-        const labelThreshold = 3;
-        if (size > labelThreshold) {
-            const fontSize = Math.min(14, Math.max(8, size * 0.6)) / globalScale; // Responsive font size
-            ctx.font = `bold ${fontSize}px Sans-Serif`;
+        // --- Draw Node Label (Optional) ---
+        // Consider drawing labels only when zoomed in or for highlighted nodes
+        const labelThresholdScale = 5; // Adjust scale at which labels appear
+        const isHovered = hoverNode?.id === nodeId;
+        if (isHighlighted || isHovered || globalScale > labelThresholdScale) {
+            const labelYOffset = (visualSize / 2) + 8 / globalScale; // Offset below the node/icon
+            const fontSize = Math.max(6, 12 / globalScale); // Dynamic font size
+            ctx.font = `${fontSize}px Sans-Serif`;
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // White text
-            ctx.fillText(String(label), node.x!, node.y!);
+            ctx.textBaseline = 'top'; // Align text baseline to the top, below the node
+            ctx.fillStyle = isHighlighted ? NODE_COLORS.highlight : 'rgba(50, 50, 50, 0.9)';
+            ctx.fillText(String(nodeId), nodeX, nodeY + labelYOffset);
         }
-    }, [highlightNodes]); // Depends on highlightNodes for styling
+    }, [highlightNodes, hoverNode, buildingImageNormal, buildingImageHighlight]);
 
-    /**
-     * Effect to zoom and center the graph when data changes.
-     */
+    // Zoom to fit effect
     useEffect(() => {
-        if (fgRef.current && graphData.nodes.length > 0) {
-            // Use a short timeout to allow the physics engine to stabilize slightly
+         if (fgRef.current && graphData.nodes.length > 0) {
             const timer = setTimeout(() => {
-                fgRef.current?.zoomToFit(400, 60); // Adjust duration and padding as needed
-            }, 150);
-            return () => clearTimeout(timer); // Cleanup timer on unmount or data change
+                // Adjust padding as needed
+                fgRef.current?.zoomToFit(600, 10); // 600ms duration, 60px padding
+            }, 500); // Slightly longer delay to allow layout to settle more
+            return () => clearTimeout(timer);
         }
-    }, [graphData]); // Re-run when graphData object reference changes
+    }, [graphData.nodes]); // Depend only on nodes array presence
+
 
     // --- Render Logic ---
-    if (!graphData.nodes.length) {
-        return (
-            <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
-                <p>{!tradingNetwork ? "Loading trading data..." : "No trading network data available."}</p>
-            </div>
-        );
+    if (!buildingImageNormal || !buildingImageHighlight) {
+         // Optionally show a loading state until images are ready
+         return (
+              <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', background: '#f9fafb' }}>
+                 <p>Loading assets...</p>
+             </div>
+         );
     }
+    if (graphData.nodes.length === 0 && graphData.links.length === 0 && tradingNetwork) {
+         return (
+              <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
+                 <p>No trading data to display (or all trades below tolerance).</p>
+             </div>
+         );
+    }
+     if (!tradingNetwork) {
+         return (
+             <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
+                 <p>Loading network data...</p>
+             </div>
+         );
+     }
+
 
     return (
         <div style={{ position: 'relative', width, height, border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden', background: '#f9fafb' }}>
@@ -293,39 +305,51 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                 height={height}
                 // Node Configuration
                 nodeId="id"
-                nodeVal="val" // Use calculated size property
+                nodeVal="val" // Use 'val' for physics size calculation
                 nodeCanvasObject={drawNode}
-                nodeCanvasObjectMode={() => 'after'} // Draw labels on top
+                nodeCanvasObjectMode={() => "replace"} // Important for custom drawing
                 onNodeHover={handleNodeHover}
                  // Link Configuration
                 linkSource="source"
                 linkTarget="target"
-                linkColor={(link) => highlightLinks.has(link as LinkObject) ? LINK_HIGHLIGHT_COLOR : (link as InternalLinkObject).baseColor || LINK_COLOR}
-                linkWidth={(link) => {
-                    const baseWidth = calculateLinkWidth(link as InternalLinkObject);
-                    return highlightLinks.has(link as LinkObject) ? baseWidth * 1.3 : baseWidth;
-                 }}
+                linkColor={(link) => highlightLinks.has(link as InternalLinkObject) ? LINK_HIGHLIGHT_COLOR : (link as InternalLinkObject).baseColor}
+                linkWidth={link => calculateLinkWidth(link as InternalLinkObject)}
                 linkCurvature={(link) => (link as InternalLinkObject).curvature || 0}
-                linkDirectionalArrowLength={LINK_ARROW_LENGTH}
-                linkDirectionalArrowRelPos={LINK_ARROW_REL_POS}
+                linkDirectionalParticles={(linkInput: LinkObject) => {
+                    const link = linkInput as InternalLinkObject;
+                    const w = link.value || 0;
+
+                    // Use maxLinkValue calculated earlier (guaranteed >= 1)
+                    if (w <= 0) { // Handles tolerance filtering implicitly
+                        return 0;
+                    }
+
+                    const weightProportion = w / maxLinkValue;
+
+                    const calculatedParticles = weightProportion * MAX_PARTICLES_VISUAL;
+
+                    return Math.max(MIN_PARTICLES_FOR_NON_ZERO, Math.round(calculatedParticles));
+                }}
+                linkDirectionalParticleWidth={3} // Adjust particle size if needed
+                linkDirectionalParticleSpeed={0.006} // Adjust particle speed (default is 0.01)
                 onLinkHover={handleLinkHover}
                  // Physics & Interaction Configuration
                 enableZoomInteraction={true}
                 enablePanInteraction={true}
                 enableNodeDrag={true}
-                cooldownTicks={200} // Adjust settling time if needed
-                warmupTicks={50}    // Initial layout ticks
-                d3Force={(forceName: string) => {
-                    // Standard forces for layout
-                    if (forceName === 'link') return d3.forceLink().id((d: any) => String(d.id)).distance(LINK_DISTANCE);
-                    if (forceName === 'charge') return d3.forceManyBody().strength(CHARGE_STRENGTH);
-                    if (forceName === 'center') return d3.forceCenter().strength(CENTER_STRENGTH);
-                    if (forceName === 'collide') return d3.forceCollide().radius((d: NodeObject) => ((d as InternalNodeObject).val || MIN_NODE_SIZE) + COLLIDE_PADDING);
-                 }}
+                cooldownTicks={150} // Adjust as needed
+                warmupTicks={50}
+                // d3Force={(forceName: string) => {
+                //     console.log(`>>> d3Force called for: ${forceName}`);
+                //     if (forceName === 'link') return d3.forceLink().id((d: any) => d.id).distance(LINK_DISTANCE); // Use d.id
+                //     if (forceName === 'charge') return d3.forceManyBody().strength(CHARGE_STRENGTH);
+                //     if (forceName === 'center') return d3.forceCenter().strength(CENTER_STRENGTH);
+                // }}
+
             />
             {/* Tooltip Display */}
             {(hoverNode || hoverLink) && (
-                <div style={{
+                 <div style={{
                     position: 'absolute', bottom: '10px', right: '10px',
                     background: 'rgba(40, 40, 40, 0.9)', color: 'white',
                     padding: '8px 12px', borderRadius: '4px', fontSize: '12px',
@@ -334,18 +358,17 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                     textAlign: 'right'
                  }}>
                    {hoverNode && (
-                        <div>
+                        <>
                             <div style={{ fontWeight: 'bold' }}>Node: {String(hoverNode.id)}</div>
-                            <div>Type: {hoverNode.type}</div>
-                        </div>
+                        </>
                     )}
                     {hoverLink && !hoverNode && (
-                         <div>
+                         <>
                              <div style={{ fontWeight: 'bold' }}>Trade</div>
                              <div>From: {String(hoverLink.source)}</div>
                              <div>To: {String(hoverLink.target)}</div>
                              <div>Amount: {formatNumber(hoverLink.value)} kWh</div>
-                         </div>
+                         </>
                     )}
                 </div>
             )}
