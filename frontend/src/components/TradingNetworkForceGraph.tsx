@@ -412,8 +412,8 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                 linkDirectionalParticleSpeed={0.006}
                 onLinkHover={handleLinkHover}
                  // Physics & Interaction Configuration
-                enableZoomInteraction={true}
-                enablePanInteraction={true}
+                enableZoomInteraction={false}
+                enablePanInteraction={false}
                 enableNodeDrag={!isLayoutPhaseComplete} // Disable dragging when static
                 warmupTicks={INITIAL_WARMUP_TICKS}      // Initial layout burst
                 cooldownTicks={Infinity}               // Keep simulation running for particles
