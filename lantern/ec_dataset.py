@@ -7,7 +7,7 @@ This module contains the ECDataset class, which is used to manage and manipulate
 datasets for energy communities.
 """
 
-from .models import SimulationResult, EnergyMetrics, CostMetrics, MarketMetrics, TradingNetwork, Profiles
+from .models import SimulationResult, EnergyMetrics, CostMetrics, TradingNetwork, Profiles
 from .battery import Battery
 from .constants import BATTERY_SIZE, P2P_PRICE, GRID_BUY_PRICE, GRID_SELL_PRICE, NetworkAlloc, APT_BLOCK_SIZE, RANDOM_SEED
 from .market_solution import MarketSolution
@@ -303,10 +303,6 @@ class ECDataset:
                 total_production=float(self.getProductionVolume()),
                 total_grid_export=float(self.getGridFeedInVolume()),
                 total_charging_volume=float(self.getChargeVolume()),
-            ),
-            market_metrics=MarketMetrics(
-                ratio_fulfilled_demand=float(self.getTradingVolume() / self.getDemandVolume()) if self.getDemandVolume() != 0 else 0,
-                ratio_sold_supply=float(self.getTradingVolume() / self.getSupplyVolumeImprecise()) if self.getSupplyVolumeImprecise() != 0 else 0,
             ),
             cost_metrics=CostMetrics(
                 cost_with_lec=float(sum(self.computePricePerMember(True)) * numDaysInSim / numDaysComputed / (100.0 * self.numParticipants * APT_BLOCK_SIZE)),

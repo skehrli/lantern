@@ -68,10 +68,6 @@ interface CostMetricsData {
     cost_without_lec: number;
 }
 
-interface MarketMetricsData {
-    ratio_fulfilled_demand: number;
-    ratio_sold_supply: number;
-}
 
 interface ProfileData {
     load_profile: number[];
@@ -95,7 +91,6 @@ interface TradingNetworkData {
 interface SimulationResult {
     energy_metrics: EnergyMetricsData;
     cost_metrics: CostMetricsData;
-    market_metrics: MarketMetricsData;
     profiles: ProfileData;
     trading_network: TradingNetworkData | null; // Optional field
     warnings: string[];

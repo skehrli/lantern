@@ -12,7 +12,6 @@ from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
 from typing import List, Any, Optional, Dict, Tuple, Union
 import networkx as nx
-import numpy as np
 
 
 class SimulationParams(BaseModel):
@@ -38,11 +37,6 @@ class EnergyMetrics(BaseModel):
     total_production: float
     total_grid_export: float
     total_charging_volume: float
-
-
-class MarketMetrics(BaseModel):
-    ratio_fulfilled_demand: float
-    ratio_sold_supply: float
 
 
 class CostMetrics(BaseModel):
@@ -79,7 +73,6 @@ class TradingNetwork(BaseModel):
 class SimulationResult(BaseModel):
     energy_metrics: EnergyMetrics
     cost_metrics: CostMetrics
-    market_metrics: MarketMetrics
     profiles: Profiles
     trading_network: Optional[TradingNetwork] = None
     warnings: List[str] = []
