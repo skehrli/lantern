@@ -81,7 +81,6 @@ interface ProfileData {
 // --- Interface for Trading Network Data ---
 interface TradingNetworkNode {
     id: string | number; // e.g., 'building_1', 'grid'
-    type: 'building' | 'grid';
 }
 interface TradingNetworkLink {
     source: string; // id of source node
@@ -92,7 +91,6 @@ interface TradingNetworkData {
     links: TradingNetworkLink[];
     nodes: TradingNetworkNode[];
 }
-// --- End Trading Network Data Interface ---
 
 interface SimulationResult {
     energy_metrics: EnergyMetricsData;
@@ -838,6 +836,8 @@ function App() {
                                         <h3>{t('results.resultsContainer.tradingNetworkHeading')}</h3>
                                         <TradingNetworkForceGraph
                                             tradingNetwork={currentResult.trading_network}
+                                            width={350}
+                                            height={GRAPH_CHART_HEIGHT * 2 + 20}
                                         />
                                     </div>
                                 )}
