@@ -31,11 +31,12 @@ interface InternalNodeObject extends NodeObject {
     visualSize: number; // Drawing size
     fx?: number;
     fy?: number;
+    x?: number; // Need x/y for initial layout before fixing
+    y?: number;
 }
 
 // --- Helper Functions ---
 const formatNumber = (num: number | null | undefined, decimals: number = 1): string => {
-    // ... (formatNumber remains the same)
     if (num == null || isNaN(num)) { return 'N/A'; }
     const fixedNum = num.toFixed(decimals);
     const parts = fixedNum.split('.');
@@ -51,14 +52,18 @@ const NODE_COLORS = {
     labelDefault: 'rgba(50, 50, 50, 0.9)',
 };
 const LINK_COLOR_BASE = 'rgba(156, 163, 175, 0.4)';
+
 const LINK_COLOR_HIGHLIGHT = 'rgba(251, 146, 60, 1)'; // Vibrant orange for highlighted links
 const LINK_COLOR_FADED = 'rgba(200, 200, 200, 0.2)'; // Very faded grey for non-neighbor links
+const LINK_COLOR_OUTGOING = 'rgba(76, 175, 80, 0.75)'; // Muted Green (e.g., Material Green 500)
+const LINK_COLOR_INCOMING = 'rgba(211, 47, 47, 0.75)'; // Muted Red (e.g., Material Red 700)
+const PARTICLE_COLOR_OUTGOING = LINK_COLOR_OUTGOING;
+const PARTICLE_COLOR_INCOMING = LINK_COLOR_INCOMING;
 
 const PARTICLE_COLOR_DEFAULT = NODE_COLORS.building;
 const PARTICLE_COLOR_HIGHLIGHT = LINK_COLOR_HIGHLIGHT;
-// Particles on faded links will be hidden by setting count to 0
 
-const NODE_FADE_OPACITY = 0.2; // Opacity for non-neighbor nodes
+const NODE_FADE_OPACITY = 0.2;
 const BUILDING_ICON_DRAW_SIZE = 12;
 const MIN_LINK_WIDTH = 0.7;
 const MAX_LINK_WIDTH = 5;
@@ -73,12 +78,12 @@ const ENGINE_TICKS_BEFORE_FIX = INITIAL_WARMUP_TICKS + 40;
 const MAX_PARTICLES_VISUAL = 15;
 const MIN_PARTICLES_FOR_NON_ZERO = 1;
 const PARTICLE_WIDTH_DEFAULT = 2;
-const PARTICLE_WIDTH_HIGHLIGHT = 3.5;
+const PARTICLE_WIDTH_HIGHLIGHT = 5;
 
 // Interaction Configuration
 const ZOOM_TRANSITION_MS = 500;
-const FOCUSED_ZOOM_LEVEL = 2.5;
-const ZOOM_OUT_PADDING = 5;
+const ZOOM_OUT_PADDING = 4; // Padding for general zoomToFit (pixels)
+const NEIGHBOR_ZOOM_PADDING = 20; // Padding around neighbors box (in graph units)
 
 // --- Helper to create SVG Data URI ---
 const createSvgDataUri = (svgString: string): string => {
@@ -89,14 +94,13 @@ const createSvgDataUri = (svgString: string): string => {
 // --- Main Component ---
 const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingNetwork, width, height }) => {
     const fgRef = useRef<ForceGraphMethods>();
-    const [visibleNodes, setVisibleNodes] = useState<Set<string | number>>(new Set()); // Nodes to keep fully visible (clicked + neighbors)
+    // visibleNodes now contains the IDs of the clicked node + its direct neighbors
+    const [visibleNodes, setVisibleNodes] = useState<Set<string | number>>(new Set());
     const [highlightLinks, setHighlightLinks] = useState<Set<InternalLinkObject>>(new Set());
-    const [hoverNode, setHoverNode] = useState<InternalNodeObject | null>(null);
-    const [clickedNodeId, setClickedNodeId] = useState<string | number | null>(null); // Track the *single* clicked node
+    const [clickedNodeId, setClickedNodeId] = useState<string | number | null>(null);
 
     const [buildingImageNormal, setBuildingImageNormal] = useState<HTMLImageElement | null>(null);
 
-    // State for layout fixing
     const [isLayoutPhaseComplete, setIsLayoutPhaseComplete] = useState(false);
     const [internalGraphData, setInternalGraphData] = useState<{ nodes: InternalNodeObject[], links: InternalLinkObject[] }>({ nodes: [], links: [] });
     const fixAppliedRef = useRef(false);
@@ -109,11 +113,14 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         fixAppliedRef.current = false;
         engineTicksRef.current = 0;
         setClickedNodeId(null);
-        setVisibleNodes(new Set()); // Clear visible nodes
+        setVisibleNodes(new Set());
         setHighlightLinks(new Set());
-        setHoverNode(null);
         console.log("Resetting state for new data.");
-    }, [tradingNetwork]);
+        // Ensure zoom resets if graph data changes while zoomed in
+        if (fgRef.current) {
+            fgRef.current.zoomToFit(0, ZOOM_OUT_PADDING); // Reset instantly
+        }
+    }, [tradingNetwork]); // Dependency only on tradingNetwork
 
     // Pre-render icons
     useEffect(() => {
@@ -134,7 +141,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
     // Process data
     useEffect(() => {
-        // ... (data processing logic remains the same)
         if (!tradingNetwork?.nodes || !tradingNetwork?.edges || (tradingNetwork.nodes.length === 0 && tradingNetwork.edges.length === 0)) {
             console.log("No valid data, setting empty graph.");
             setInternalGraphData({ nodes: [], links: [] });
@@ -202,7 +208,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     }, [internalGraphData.links]);
 
     const calculateLinkWidth = useCallback((link: InternalLinkObject): number => {
-        // Don't adjust width based on highlight, keep it consistent
         const scale = Math.max(0, Math.min(1, link.value / maxLinkValue));
         return MIN_LINK_WIDTH + scale * (MAX_LINK_WIDTH - MIN_LINK_WIDTH);
     }, [maxLinkValue]);
@@ -211,77 +216,68 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
     const updateHighlightsAndVisibility = useCallback((node: InternalNodeObject | null) => {
         const newHighlightLinks = new Set<InternalLinkObject>();
-        const newVisibleNodes = new Set<string | number>(); // Changed name
+        const newVisibleNodes = new Set<string | number>(); // Nodes to include in zoom calc & keep full opacity
 
         if (node) {
             const nodeId = node.id;
-            newVisibleNodes.add(nodeId); // Clicked node is visible
+            newVisibleNodes.add(nodeId); // Clicked node itself is visible
             internalGraphData.links.forEach((link) => {
-                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                const sourceObj = link.source as NodeObject;
+                const targetObj = link.target as NodeObject;
+                const sourceId = sourceObj.id ?? link.source; // Use ID if object, else raw value
+                const targetId = targetObj.id ?? link.target; // Use ID if object, else raw value
 
                 if (sourceId === nodeId || targetId === nodeId) {
-                    newHighlightLinks.add(link); // Connected link is highlighted
-                    // Add neighbors connected by these links to the visible set
-                    newVisibleNodes.add(String(sourceId));
-                    newVisibleNodes.add(String(targetId));
+                    newHighlightLinks.add(link);
+                    // Add the *other* node connected by this link to the visible set
+                    const neighborId = sourceId === nodeId ? targetId : sourceId;
+                    newVisibleNodes.add(String(neighborId)); // Ensure it's a string or number matching node IDs
                 }
             });
         }
         setHighlightLinks(newHighlightLinks);
-        setVisibleNodes(newVisibleNodes); // Set the visible nodes state
+        setVisibleNodes(newVisibleNodes); // Set the IDs of the clicked node and its neighbors
+        console.log("Visible nodes set:", Array.from(newVisibleNodes));
 
     }, [internalGraphData.links]);
 
-    // Handle HOVER
-    const handleNodeHover = useCallback((node: NodeObject | null) => {
-        setHoverNode(node as InternalNodeObject | null);
-    }, []);
-
-    // Handle CLICK
     const handleNodeClick = useCallback((node: NodeObject | null) => {
         const internalNode = node as InternalNodeObject | null;
         if (internalNode) {
-            // If clicking the *same* node again, treat it as deselect (like background click)
             if (internalNode.id === clickedNodeId) {
                  handleBackgroundClick();
                  return;
             }
             setClickedNodeId(internalNode.id);
-            updateHighlightsAndVisibility(internalNode); // Use updated function
-            setHoverNode(internalNode);
+            updateHighlightsAndVisibility(internalNode);
             console.log("Node clicked, setting focus:", internalNode.id);
         } else {
              handleBackgroundClick();
         }
-    }, [clickedNodeId, updateHighlightsAndVisibility]); // Added clickedNodeId dependency
+    }, [clickedNodeId, updateHighlightsAndVisibility]); // Added updateHighlightsAndVisibility
 
-    // Handle background click
     const handleBackgroundClick = useCallback(() => {
         console.log("Background/Deselect clicked, clearing focus.");
         setClickedNodeId(null);
         setHighlightLinks(new Set());
-        setVisibleNodes(new Set()); // Clear visible nodes
-        setHoverNode(null);
+        setVisibleNodes(new Set()); // Clear visible nodes set
     }, []);
 
     // --- Node Drawing ---
     const drawNode = useCallback((node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
         const internalNode = node as InternalNodeObject;
         const nodeId = internalNode.id;
-        const isVisible = !clickedNodeId || visibleNodes.has(nodeId); // Is visible if no node is clicked OR if it's in the visible set
-        const isLabelHighlighted = clickedNodeId && visibleNodes.has(nodeId); // Label is highlighted only if a node is clicked AND this node is visible
-        const isHoveredDirectly = hoverNode?.id === nodeId;
+        // Node is fully visible if nothing is clicked OR it's the clicked node or one of its neighbors
+        const isFullyVisible = !clickedNodeId || visibleNodes.has(nodeId);
+        const isLabelHighlighted = clickedNodeId && visibleNodes.has(nodeId);
 
         const visualSize = internalNode.visualSize;
         const nodeX = internalNode.x ?? 0;
         const nodeY = internalNode.y ?? 0;
 
-        // --- Adjust Opacity for Fading ---
         const originalAlpha = ctx.globalAlpha;
-        ctx.globalAlpha = isVisible ? originalAlpha : NODE_FADE_OPACITY;
+        ctx.globalAlpha = isFullyVisible ? originalAlpha : NODE_FADE_OPACITY;
 
-        // --- Draw Node ---
         const imgToDraw = buildingImageNormal;
         if (imgToDraw?.complete && imgToDraw.naturalWidth > 0) {
             ctx.drawImage(
@@ -292,36 +288,28 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                 visualSize
             );
         } else {
-            // Fallback drawing
-            ctx.fillStyle = internalNode.baseColor; // Use base color even when faded
+            ctx.fillStyle = internalNode.baseColor;
             ctx.beginPath();
             ctx.arc(nodeX, nodeY, visualSize / 2, 0, 2 * Math.PI, false);
             ctx.fill();
         }
 
-        // --- Reset Opacity ---
-        ctx.globalAlpha = originalAlpha;
+        ctx.globalAlpha = originalAlpha; // Reset alpha for label drawing
 
-        // --- Draw Label ---
-        // Show label if it should be highlighted (visible neighbor when node clicked),
-        // or if directly hovered, or if zoomed in enough. Don't show labels for faded nodes.
         const labelThresholdScale = 5;
-        if (isVisible && (isLabelHighlighted || isHoveredDirectly || globalScale > labelThresholdScale)) {
-             const labelYOffset = (visualSize / 2) + 8 / globalScale;
+        // Only draw label if the node is fully visible
+        if (isFullyVisible && (isLabelHighlighted || globalScale > labelThresholdScale)) {
              const fontSize = Math.max(6, 12 / globalScale);
              ctx.font = `${fontSize}px Sans-Serif`;
              ctx.textAlign = 'center';
              ctx.textBaseline = 'top';
-             // Use highlight color for label if needed, otherwise default
              ctx.fillStyle = isLabelHighlighted ? NODE_COLORS.labelHighlight : NODE_COLORS.labelDefault;
-             ctx.fillText(String(nodeId), nodeX, nodeY + labelYOffset);
         }
-    }, [clickedNodeId, visibleNodes, hoverNode, buildingImageNormal]); // Added clickedNodeId, visibleNodes
+    }, [clickedNodeId, visibleNodes, buildingImageNormal]); // Added visibleNodes
 
 
     // --- Engine Tick Handler to Fix Positions ---
     const handleEngineTick = useCallback(() => {
-        // ... (engine tick logic remains the same)
         engineTicksRef.current += 1;
         const currentTicks = engineTicksRef.current;
 
@@ -332,56 +320,126 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
             internalGraphData.nodes.length > 0
         ) {
             console.log(`Engine tick ${currentTicks}: Met conditions (>= ${ENGINE_TICKS_BEFORE_FIX}), attempting to fix node positions.`);
-            fixAppliedRef.current = true;
+            fixAppliedRef.current = true; // Set flag immediately
 
-            setInternalGraphData(prevData => {
-                if (prevData.nodes.length === 0) {
-                     console.warn("Attempted to fix positions, but nodes array is empty.");
-                    return prevData;
+            // Create a temporary copy to avoid race conditions with state updates
+            const currentNodes = internalGraphData.nodes;
+            let allNodesHaveCoords = true;
+
+            // Check if all nodes have coordinates BEFORE trying to update state
+            for (const node of currentNodes) {
+                if (typeof node.x !== 'number' || typeof node.y !== 'number') {
+                    console.warn(`Node ${node.id} has invalid coordinates (x:${node.x}, y:${node.y}) at fixing time. Delaying fix.`);
+                    allNodesHaveCoords = false;
+                    fixAppliedRef.current = false; // Reset flag to try again on next tick
+                    break;
                 }
-                console.log("Applying fx/fy based on current node positions.");
-                const updatedNodes = prevData.nodes.map(node => {
-                    if (typeof node.x !== 'number' || typeof node.y !== 'number') {
-                         console.warn(`Node ${node.id} has invalid coordinates at fixing time. Skipping fix.`);
-                         return node;
+            }
+
+            if (allNodesHaveCoords) {
+                console.log("All nodes have valid coordinates. Applying fx/fy based on current positions.");
+                setInternalGraphData(prevData => {
+                    // Double-check node array length inside updater
+                    if (prevData.nodes.length === 0) {
+                        console.warn("Attempted to fix positions, but nodes array is empty in state updater.");
+                        return prevData;
                     }
-                    return {
+                    const updatedNodes = prevData.nodes.map(node => ({
                         ...node,
+                        // Use the already validated x/y from the outer scope check
                         fx: node.x,
                         fy: node.y,
-                    };
+                    }));
+                    return { ...prevData, nodes: updatedNodes };
                 });
-                return { ...prevData, nodes: updatedNodes };
-            });
-            setIsLayoutPhaseComplete(true);
-            console.log("Layout phase marked as complete.");
+                setIsLayoutPhaseComplete(true);
+                console.log("Layout phase marked as complete.");
+            }
         }
-    }, [isLayoutPhaseComplete, internalGraphData.nodes]);
+    }, [isLayoutPhaseComplete, internalGraphData.nodes]); // Keep dependency on internalGraphData.nodes
 
 
     // --- Effect to Handle Zooming on Focus Change ---
     useEffect(() => {
         const fg = fgRef.current;
-        if (!fg || !isLayoutPhaseComplete) return;
-
-        if (clickedNodeId !== null) {
-            const nodeToFocus = internalGraphData.nodes.find(n => n.id === clickedNodeId);
-            if (nodeToFocus && typeof nodeToFocus.fx === 'number' && typeof nodeToFocus.fy === 'number') {
-                console.log(`Focusing on node ${clickedNodeId} at (${nodeToFocus.fx}, ${nodeToFocus.fy})`);
-                fg.centerAt(nodeToFocus.fx, nodeToFocus.fy, ZOOM_TRANSITION_MS);
-                fg.zoom(FOCUSED_ZOOM_LEVEL, ZOOM_TRANSITION_MS);
-            } else {
-                 console.warn(`Could not find node ${clickedNodeId} or its fixed position to focus.`);
-            }
-        } else {
-             // Only zoom out if the layout phase is actually complete
-             if (isLayoutPhaseComplete) {
-                 console.log("Focus cleared, zooming out to fit.");
-                 fg.zoomToFit(ZOOM_TRANSITION_MS, ZOOM_OUT_PADDING);
-             }
+        // Wait for layout completion AND for the graph dimensions to be available
+        if (!fg || !isLayoutPhaseComplete || width <= 0 || height <= 0) {
+            // console.log(`Zoom effect skipped: fg=${!!fg}, layoutComplete=${isLayoutPhaseComplete}, w=${width}, h=${height}`);
+            return;
         }
 
-    }, [clickedNodeId, isLayoutPhaseComplete, internalGraphData.nodes]);
+        if (clickedNodeId !== null) {
+            // --- Calculate Bounding Box for Clicked Node + Neighbors ---
+            const nodesToConsider = internalGraphData.nodes.filter(n => visibleNodes.has(n.id));
+
+            if (nodesToConsider.length > 0) {
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+                let validCoordsFound = false;
+
+                nodesToConsider.forEach(node => {
+                    // Use FIXED coordinates for zoom calculation
+                    if (typeof node.fx === 'number' && typeof node.fy === 'number') {
+                        minX = Math.min(minX, node.fx);
+                        maxX = Math.max(maxX, node.fx);
+                        minY = Math.min(minY, node.fy);
+                        maxY = Math.max(maxY, node.fy);
+                        validCoordsFound = true;
+                    } else {
+                         console.warn(`Node ${node.id} missing fixed coordinates (fx/fy) during zoom calculation.`);
+                    }
+                });
+
+                if (validCoordsFound) {
+                    const centerX = (minX + maxX) / 2;
+                    const centerY = (minY + maxY) / 2;
+
+                    // Handle case with a single node (or all nodes at the same point)
+                    const boxWidth = (nodesToConsider.length === 1 || maxX === minX) ? 0 : maxX - minX;
+                    const boxHeight = (nodesToConsider.length === 1 || maxY === minY) ? 0 : maxY - minY;
+
+                    // Ensure minimum dimensions to avoid infinite zoom with padding only
+                    const paddedWidth = Math.max(1, boxWidth) + 2 * NEIGHBOR_ZOOM_PADDING;
+                    const paddedHeight = Math.max(1, boxHeight) + 2 * NEIGHBOR_ZOOM_PADDING;
+
+                    // Calculate required zoom to fit the padded box
+                    // zoom = graphCanvasSize / worldSize
+                    const zoomX = width / paddedWidth;
+                    const zoomY = height / paddedHeight;
+                    const targetZoom = Math.min(zoomX, zoomY); // Use the smaller zoom level to ensure full visibility
+
+                    console.log(`Zooming to fit neighbors. Center: (${centerX.toFixed(1)}, ${centerY.toFixed(1)}), Box: ${boxWidth.toFixed(1)}x${boxHeight.toFixed(1)}, Target Zoom: ${targetZoom.toFixed(2)}`);
+
+                    fg.centerAt(centerX, centerY, ZOOM_TRANSITION_MS);
+                    fg.zoom(targetZoom, ZOOM_TRANSITION_MS);
+
+                } else {
+                    // Fallback: Center on the clicked node if coords are missing (should be rare after layout complete)
+                     console.warn("Could not calculate neighbor bounds due to missing fixed coordinates. Centering on clicked node.");
+                     const nodeToFocus = internalGraphData.nodes.find(n => n.id === clickedNodeId);
+                      if (nodeToFocus && typeof nodeToFocus.fx === 'number' && typeof nodeToFocus.fy === 'number') {
+                          fg.centerAt(nodeToFocus.fx, nodeToFocus.fy, ZOOM_TRANSITION_MS);
+                          fg.zoom(1.5, ZOOM_TRANSITION_MS); // Default zoom level if calculation fails
+                      } else {
+                           console.warn(`Could not find node ${clickedNodeId} or its fixed position for fallback focus.`);
+                           fg.zoomToFit(ZOOM_TRANSITION_MS, ZOOM_OUT_PADDING); // Zoom out completely as last resort
+                      }
+                }
+
+            } else {
+                 // This case should ideally not happen if clickedNodeId is set, as visibleNodes should contain at least the clicked node.
+                 console.warn("Clicked node ID is set, but no nodes found in visibleNodes set for zooming.");
+                 fg.zoomToFit(ZOOM_TRANSITION_MS, ZOOM_OUT_PADDING); // Zoom out if something went wrong
+            }
+
+        } else {
+             // Zoom out when no node is clicked (and layout is complete)
+             console.log("Focus cleared, zooming out to fit graph.");
+             fg.zoomToFit(ZOOM_TRANSITION_MS, ZOOM_OUT_PADDING);
+        }
+
+    // Dependencies: React to changes in focus, layout completion, the set of visible nodes,
+    // the node data itself (for fx/fy), and the graph dimensions.
+    }, [clickedNodeId, isLayoutPhaseComplete, internalGraphData.nodes, visibleNodes, width, height]);
 
 
     // --- Render Logic ---
@@ -391,9 +449,11 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
      if (tradingNetwork === null) {
         return (<div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' }}><p>Loading network data...</p></div>);
     }
+     // Check after processing, before rendering graph
      if (internalGraphData.nodes.length === 0 && internalGraphData.links.length === 0) {
          return (<div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px' }}><p>No trading data to display (or all trades below tolerance).</p></div>);
-    }
+     }
+
 
     return (
         <div style={{ position: 'relative', width, height, border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden', background: '#f9fafb' }}>
@@ -405,9 +465,8 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                 // Node Configuration
                 nodeId="id"
                 nodeVal="val"
-                nodeCanvasObject={drawNode} // Updated drawNode handles fading
+                nodeCanvasObject={drawNode}
                 nodeCanvasObjectMode={() => "replace"}
-                onNodeHover={handleNodeHover}
                 onNodeClick={handleNodeClick}
                 onBackgroundClick={handleBackgroundClick}
                 // Link Configuration
@@ -415,12 +474,35 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                 linkTarget="target"
                 linkColor={(linkInput: LinkObject) => {
                     const link = linkInput as InternalLinkObject;
+
                     if (!clickedNodeId) {
                         return link.baseColor; // Default color if nothing clicked
                     }
-                    return highlightLinks.has(link)
-                        ? LINK_COLOR_HIGHLIGHT // Highlight color for connected links
-                        : LINK_COLOR_FADED;    // Faded color for non-connected links
+
+                    // Check if the link is connected to the clicked node
+                    if (!highlightLinks.has(link)) {
+                        return LINK_COLOR_FADED;    // Faded color for non-connected links
+                    }
+
+                    // --- Link is highlighted, determine direction relative to clickedNodeId ---
+                    // Resolve source/target IDs robustly (could be string/number or object)
+                    const sourceId = typeof link.source === 'object' && link.source.id !== undefined
+                                        ? link.source.id
+                                        : link.source;
+                    const targetId = typeof link.target === 'object' && link.target.id !== undefined
+                                        ? link.target.id
+                                        : link.target;
+
+                    if (String(sourceId) === String(clickedNodeId)) {
+                        return LINK_COLOR_OUTGOING; // Outgoing from the clicked node
+                    } else if (String(targetId) === String(clickedNodeId)) {
+                        return LINK_COLOR_INCOMING; // Incoming to the clicked node
+                    } else {
+                        // This case shouldn't ideally happen if highlightLinks is correctly populated
+                        // based on source OR target matching clickedNodeId.
+                        console.warn("Highlighted link not directly connected to clicked node?", link, clickedNodeId);
+                        return LINK_COLOR_HIGHLIGHT; // Fallback highlight if logic somehow fails
+                    }
                 }}
                 linkWidth={link => calculateLinkWidth(link as InternalLinkObject)}
                 linkCurvature={(link) => (link as InternalLinkObject).curvature || 0}
@@ -441,33 +523,42 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                 linkDirectionalParticleWidth={(link) => highlightLinks.has(link as InternalLinkObject)
                                                         ? PARTICLE_WIDTH_HIGHLIGHT
                                                         : PARTICLE_WIDTH_DEFAULT
-                                                    } // Width applies only if particles > 0
-                linkDirectionalParticleColor={(link) => highlightLinks.has(link as InternalLinkObject)
-                                                        ? PARTICLE_COLOR_HIGHLIGHT
-                                                        : PARTICLE_COLOR_DEFAULT // Color applies only if particles > 0
                                                     }
+                linkDirectionalParticleColor={(linkInput: LinkObject) => {
+                    const link = linkInput as InternalLinkObject;
+
+                    // If no node is clicked or the link isn't highlighted, use default
+                    // (Particles will be 0 anyway for faded links, but set a color regardless)
+                    if (!clickedNodeId || !highlightLinks.has(link)) {
+                        return PARTICLE_COLOR_DEFAULT;
+                    }
+
+                    // --- Link is highlighted, determine particle color based on direction ---
+                     const sourceId = typeof link.source === 'object' && link.source.id !== undefined
+                                        ? link.source.id
+                                        : link.source;
+                    const targetId = typeof link.target === 'object' && link.target.id !== undefined
+                                        ? link.target.id
+                                        : link.target;
+
+                    if (String(sourceId) === String(clickedNodeId)) {
+                        return PARTICLE_COLOR_OUTGOING; // Outgoing particles
+                    } else if (String(targetId) === String(clickedNodeId)) {
+                        return PARTICLE_COLOR_INCOMING; // Incoming particles
+                    } else {
+                        // Fallback
+                        return PARTICLE_COLOR_HIGHLIGHT;
+                    }
+                }}
                 linkDirectionalParticleSpeed={0.006}
                  // Physics & Interaction Configuration
-                enableZoomInteraction={true}
-                enablePanInteraction={true}
-                enableNodeDrag={!isLayoutPhaseComplete}
+                enableZoomInteraction={false}
+                enablePanInteraction={false}
+                enableNodeDrag={!isLayoutPhaseComplete} // Allow dragging only before layout is fixed
                 warmupTicks={INITIAL_WARMUP_TICKS}
-                cooldownTicks={Infinity}
-                onEngineTick={handleEngineTick}
+                cooldownTicks={Infinity} // Keep engine running (needed for particles, zoom/pan)
+                onEngineTick={handleEngineTick} // Handle fixing positions
             />
-            {/* Tooltip Display */}
-            {hoverNode && (
-                 <div style={{
-                    position: 'absolute', bottom: '10px', right: '10px',
-                    background: 'rgba(40, 40, 40, 0.9)', color: 'white',
-                    padding: '8px 12px', borderRadius: '4px', fontSize: '12px',
-                    maxWidth: '250px', pointerEvents: 'none',
-                    boxShadow: '0 2px 5px rgba(0,0,0,0.3)', zIndex: 10,
-                    textAlign: 'right'
-                  }}>
-                    <div style={{ fontWeight: 'bold' }}>Node: {String(hoverNode.id)}</div>
-                </div>
-            )}
         </div>
     );
 };
