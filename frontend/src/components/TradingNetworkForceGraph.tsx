@@ -29,7 +29,10 @@ interface InternalLinkObject extends LinkObject {
     value: number;
     baseColor: string;
     curvature: number;
+    // Add index signature if react-force-graph adds properties like __indexColor, etc.
+    [key: string]: any; // Allows for properties added by the library
 }
+
 
 interface InternalNodeObject extends NodeObject {
     id: string | number;
@@ -53,6 +56,12 @@ interface PopupData {
     popupHeight: number; // Store actual height for bounds check during drag
 }
 
+// --- Link Tooltip Data Structure ---
+interface LinkTooltipData {
+    link: InternalLinkObject;
+    x: number; // screen x position relative to container
+    y: number; // screen y position relative to container
+}
 
 // --- Constants ---
 // Visual Styling
@@ -62,7 +71,7 @@ const NODE_COLORS = {
 const LINK_COLOR_BASE = 'rgba(156, 163, 175, 0.4)';
 const LINK_COLOR_HIGHLIGHT = '#82ca9d';
 const LINK_COLOR_FADED = 'rgba(200, 200, 200, 0.3)';
-const LINK_COLOR_OUTGOING = '#82ca9d'; 
+const LINK_COLOR_OUTGOING = '#82ca9d';
 const LINK_COLOR_INCOMING = '#facc15';
 const PARTICLE_COLOR_DEFAULT = LINK_COLOR_OUTGOING;
 const PARTICLE_COLOR_OUTGOING = PARTICLE_COLOR_DEFAULT;
@@ -100,10 +109,10 @@ const POPUP_BAR_COLORS = {
     selfconsumption_volume: '#a3e635',
     grid_import: '#9ca3af',
     market_purchase_volume: '#facc15',
-    discharging_volume: '#65a30d',    
-    grid_export: '#9ca3af',           
+    discharging_volume: '#65a30d',
+    grid_export: '#9ca3af',
     market_sell_volume: '#82ca9d',
-    charging_volume: '#65a30d',       
+    charging_volume: '#65a30d',
 };
 const POPUP_BAR_HEIGHT = '8px'; // Height of the bars
 
@@ -114,6 +123,10 @@ const POPUP_ESTIMATED_WIDTH = 220; // Estimate for *initial* placement calculati
 const POPUP_ESTIMATED_HEIGHT = 180; // Estimate for *initial* placement calculation
 const CONTAINER_EDGE_MARGIN = 10; // Minimum space from container edge for popup
 
+// --- Link Tooltip Configuration ---
+const LINK_TOOLTIP_OFFSET_X = 10;
+const LINK_TOOLTIP_OFFSET_Y = 10;
+
 
 // --- Helper to create SVG Data URI ---
 const createSvgDataUri = (svgString: string): string => {
@@ -121,6 +134,12 @@ const createSvgDataUri = (svgString: string): string => {
     const encodedSvg = btoa(unescape(encodeURIComponent(svgString)));
     return `data:image/svg+xml;base64,${encodedSvg}`;
 };
+
+// --- Helper to format link capacity ---
+const formatLinkValue = (value: number | undefined | null): string => {
+    if (value === undefined || value === null || isNaN(value)) return "N/A";
+    return `${value.toFixed(1)} kWh`;
+}
 
 // --- Main Component ---
 const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingNetwork, individualMetrics, width, height }) => {
@@ -144,6 +163,10 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     const popupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const [isDraggingPopup, setIsDraggingPopup] = useState(false);
     const dragStartOffsetRef = useRef({ x: 0, y: 0 });
+
+    // --- Link Hover State ---
+    const [hoveredLinkData, setHoveredLinkData] = useState<LinkTooltipData | null>(null);
+    const mousePositionRef = useRef<{ x: number; y: number } | null>(null); // Use ref to avoid re-renders on mouse move
 
     // --- Memoized Calculations ---
     const maxIndividualMetricValue = useMemo(() => {
@@ -207,12 +230,33 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         setVisibleNodes(newVisibleNodes);
     }, [internalGraphData.links]);
 
+    // --- Event Handlers ---
+
+    // Track mouse position within the container
+    const handleContainerMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+        if (containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            mousePositionRef.current = {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top
+            };
+            // Update tooltip position if a link is currently hovered
+            setHoveredLinkData(prev => {
+                if (prev && mousePositionRef.current) {
+                    return { ...prev, x: mousePositionRef.current.x, y: mousePositionRef.current.y };
+                }
+                return prev;
+            });
+        }
+    }, []); // No dependencies needed
+
     const handleBackgroundClick = useCallback(() => {
         if (isDraggingPopup) return;
         setClickedNodeId(null);
         setHighlightLinks(new Set());
         setVisibleNodes(new Set());
         setPopupData(null);
+        setHoveredLinkData(null); // Clear link tooltip
         if (popupTimeoutRef.current) {
             clearTimeout(popupTimeoutRef.current);
             popupTimeoutRef.current = null;
@@ -223,13 +267,15 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         const internalNode = node as InternalNodeObject | null;
         const fg = fgRef.current;
 
+        setHoveredLinkData(null); // Clear link tooltip on node click
+
         if (popupTimeoutRef.current) clearTimeout(popupTimeoutRef.current);
         setPopupData(null);
 
         if (internalNode && fg && tradingNetwork?.nodes && individualMetrics && width > 0 && height > 0) {
             const nodeId = internalNode.id;
             if (nodeId === clickedNodeId) {
-                handleBackgroundClick();
+                handleBackgroundClick(); // This already clears hoveredLinkData
                 return;
             }
             setClickedNodeId(nodeId);
@@ -237,6 +283,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
             popupTimeoutRef.current = setTimeout(() => {
                  if (!fgRef.current) return;
+                 // ... (rest of popup positioning logic remains the same)
                  const currentFg = fgRef.current;
                  const stats: NodeStats = {
                     selfconsumption_volume: individualMetrics.individual_selfconsumption_volume?.[Number(nodeId)],
@@ -276,11 +323,27 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                  popupTimeoutRef.current = null;
             }, POPUP_DELAY_MS);
         } else {
-             handleBackgroundClick();
+             handleBackgroundClick(); // This already clears hoveredLinkData
         }
     }, [clickedNodeId, updateHighlightsAndVisibility, handleBackgroundClick, tradingNetwork?.nodes, individualMetrics, isLayoutPhaseComplete, width, height]);
 
+
+    // Handle hovering over links
+    const handleLinkHover = useCallback((link: LinkObject | null) => {
+        if (link && mousePositionRef.current) {
+            setHoveredLinkData({
+                link: link as InternalLinkObject,
+                x: mousePositionRef.current.x,
+                y: mousePositionRef.current.y,
+            });
+        } else {
+            setHoveredLinkData(null);
+        }
+    }, []); // Depends only on setHoveredLinkData
+
+
     // --- Popup Drag Handlers ---
+    // (These remain unchanged)
     const handlePopupMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
         if (!popupRef.current || !popupData || !containerRef.current) return;
         setIsDraggingPopup(true);
@@ -317,6 +380,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     }, [isDraggingPopup]);
 
     // Effect to add/remove global mouse listeners for dragging
+    // (Remains unchanged)
     useEffect(() => {
         if (isDraggingPopup) {
             window.addEventListener('mousemove', handleMouseMove);
@@ -332,6 +396,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     }, [isDraggingPopup, handleMouseMove, handleMouseUp]);
 
     // --- Helper for Zoom Calculation ---
+    // (Remains unchanged)
     const calculateAndApplyZoom = useCallback((nodesToZoom: InternalNodeObject[], centerNode?: InternalNodeObject) => {
         const fg = fgRef.current;
         if (!fg || nodesToZoom.length === 0 || width <= 0 || height <= 0) return;
@@ -366,7 +431,9 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         }
     }, [width, height]);
 
+
     // --- Engine Tick Handler to Fix Positions ---
+    // (Remains largely unchanged, added calculateAndApplyZoom dep)
     const handleEngineTick = useCallback(() => {
         engineTicksRef.current += 1;
         const currentTicks = engineTicksRef.current;
@@ -408,6 +475,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
 
     // --- Effect to Handle Zooming on Focus Change (After Layout is Complete) ---
+    // (Remains unchanged, added calculateAndApplyZoom dep)
     useEffect(() => {
         const fg = fgRef.current;
         if (!fg || !isLayoutPhaseComplete || width <= 0 || height <= 0) return;
@@ -424,7 +492,9 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         }
     }, [clickedNodeId, isLayoutPhaseComplete, width, height, calculateAndApplyZoom, internalGraphData.nodes, visibleNodes]); // Added missing dependencies
 
+
     // --- Effect to Reset State on Data Change ---
+    // (Added clearing for hoveredLinkData)
     useEffect(() => {
         setIsLayoutPhaseComplete(false);
         fixAppliedRef.current = false;
@@ -433,6 +503,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         setVisibleNodes(new Set());
         setHighlightLinks(new Set());
         setPopupData(null);
+        setHoveredLinkData(null); // Clear link tooltip
         if (popupTimeoutRef.current) {
             clearTimeout(popupTimeoutRef.current);
             popupTimeoutRef.current = null;
@@ -443,11 +514,13 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     }, [tradingNetwork]);
 
     // --- Effect to Cleanup Popup Timeout ---
+    // (Remains unchanged)
     useEffect(() => {
         return () => { if (popupTimeoutRef.current) clearTimeout(popupTimeoutRef.current); };
     }, []);
 
     // --- Effect to Pre-render Icons ---
+    // (Remains unchanged)
     useEffect(() => {
         const iconRenderSize = BUILDING_ICON_DRAW_SIZE * 1.5;
         const svgStringNormal = ReactDOMServer.renderToStaticMarkup( <FaBuilding color={NODE_COLORS.building} size={iconRenderSize} /> );
@@ -460,6 +533,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     }, []);
 
     // --- Effect to Process Input Data ---
+    // (Remains unchanged)
     useEffect(() => {
         if (!tradingNetwork?.nodes || !tradingNetwork?.edges || (tradingNetwork.nodes.length === 0 && tradingNetwork.edges.length === 0)) {
             setInternalGraphData({ nodes: [], links: [] });
@@ -501,50 +575,48 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     }, [tradingNetwork]);
 
     // --- Stat Item Renderer ---
+    // (Remains unchanged)
     const renderStatItem = (
         _value: number | undefined | null, key: keyof NodeStats, label: string
     ): JSX.Element | null => {
         const value = _value ?? 0;
         if (Math.abs(value) <= VALUE_TOLERANCE) return null;
-        const barWidthPercent = maxIndividualMetricValue > 0 ? Math.min(100, (value / maxIndividualMetricValue) * 100 + 3) : 0;
+        const barWidthPercent = maxIndividualMetricValue > 0 ? Math.min(100, (value / maxIndividualMetricValue) * 100 + 3): 0;
         const formattedValue = formatStat(value);
         const labelColumnWidth = '95px'; // Keep this definition
-        // console.log(barWidthPercent)
 
         return (
             <div
                 key={key}
                 className="stat-item"
                 style={{
-                    display: 'flex',        // Use Flexbox for the row
-                    alignItems: 'center',   // Vertically align items in the center
-                    gap: '8px',             // Keep the gap
-                    width: '100%'           // Ensure it takes full width
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    width: '100%'
                 }}
-                title={`${label}: ${formattedValue}`} // Keep tooltip on the row
+                title={`${label}: ${formattedValue}`}
             >
-                {/* Label Span: Give it a fixed width and prevent shrinking */}
                 <span style={{
-                    width: labelColumnWidth,   // Set fixed width for the label part
-                    flexShrink: 0,             // Prevent the label from shrinking if space is tight
+                    width: labelColumnWidth,
+                    flexShrink: 0,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     textAlign: 'right',
                     color: '#555',
                     fontSize: '11px',
-                    position: 'relative', // Allow manual positioning
-                    top: '-7px',          // Nudge down by 1px (adjust 1px, 1.5px, 2px as needed)
+                    position: 'relative',
+                    top: '-7px',
                 }}>
                     {label}:
                 </span>
-                {/* Bar Container */}
                 <div
                     className="bar-container"
                     style={{
                         flex: 1,
                         height: POPUP_BAR_HEIGHT,
-                        backgroundColor: 'white', // <-- CHANGED TO WHITE
+                        backgroundColor: 'white',
                         borderRadius: '4px',
                         overflow: 'hidden'
                     }}
@@ -566,7 +638,9 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         );
     };
 
+
     // --- Memoized Callbacks for ForceGraph Props ---
+    // (Most remain unchanged)
     const nodeCanvasObject = useCallback((node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
         const internalNode = node as InternalNodeObject;
         const nodeId = internalNode.id;
@@ -650,6 +724,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         return speed;
     }, [maxLinkValue]);
 
+
     // --- Render Logic ---
      if (!buildingImageNormal) return (
         <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', background: '#f9fafb' }}>
@@ -668,7 +743,12 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
      );
 
     return (
-        <div ref={containerRef} style={{ position: 'relative', width, height, border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden', background: '#f9fafb' }}>
+        // Add onMouseMove to the container
+        <div
+            ref={containerRef}
+            onMouseMove={handleContainerMouseMove} // <-- Add mouse tracking here
+            style={{ position: 'relative', width, height, border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden', background: '#f9fafb' }}
+        >
              <ForceGraph2D
                 ref={fgRef}
                 graphData={internalGraphData}
@@ -700,15 +780,18 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                 // Event Handlers
                 onNodeClick={handleNodeClick}
                 onBackgroundClick={handleBackgroundClick}
+                onLinkHover={handleLinkHover} // <-- Add link hover handler
             />
-            {/* --- Draggable Popup --- */}
+
+            {/* --- Draggable Node Popup --- */}
+            {/* (Node popup rendering logic remains the same) */}
             {popupData && (
                 <div ref={popupRef} className="node-popup" style={{ position: 'absolute', left: `${popupData.finalLeft}px`, top: `${popupData.finalTop}px`, pointerEvents: 'auto', zIndex: 10, background: 'rgba(255, 255, 255, 0.97)', padding: '0', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', fontSize: '12px', color: '#333', minWidth: '200px', maxWidth: '280px', opacity: 1, transition: 'opacity 0.2s ease-in-out', cursor: isDraggingPopup ? 'grabbing' : 'default', maxHeight: `calc(100% - ${2 * CONTAINER_EDGE_MARGIN}px)`, overflowY: 'auto', userSelect: 'none' }} >
                     <h4 onMouseDown={handlePopupMouseDown} style={{ margin: '0', padding: '10px 15px', fontSize: '14px', fontWeight: '600', borderBottom: '1px solid #eee', textAlign: 'center', cursor: 'move', backgroundColor: '#f8f9fa', borderTopLeftRadius: '6px', borderTopRightRadius: '6px', color: '#495057' }} >
                         {popupData.name}
                     </h4>
                      <div className="popup-stats" style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '12px 15px' }}>
-                         <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' /* Slightly darker gray */ }}>
+                         <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' }}>
                              Consumed Energy Sources
                          </div>
                          {renderStatItem(popupData.stats.selfconsumption_volume, 'selfconsumption_volume', 'From Solar')}
@@ -727,7 +810,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                              ? <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '6px 0', width: '100%' }} />
                              : null
                         }
-                         <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' /* Slightly darker gray */ }}>
+                         <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' }}>
                              Produced Energy Destinations
                          </div>
                          {renderStatItem(popupData.stats.selfconsumption_volume, 'selfconsumption_volume', 'Self-Consumed')}
@@ -737,7 +820,31 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                      </div>
                 </div>
             )}
-            {/* End Popup */}
+            {/* End Node Popup */}
+
+            {/* --- Link Hover Tooltip --- */}
+            {hoveredLinkData && (
+                <div style={{
+                    position: 'absolute',
+                    left: `${hoveredLinkData.x + LINK_TOOLTIP_OFFSET_X}px`,
+                    top: `${hoveredLinkData.y + LINK_TOOLTIP_OFFSET_Y}px`,
+                    background: 'rgba(0, 0, 0, 0.8)', // Dark background
+                    color: 'white',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '11px',
+                    pointerEvents: 'none', // Important: Prevent tooltip from blocking mouse events
+                    zIndex: 20, // Ensure it's above the graph canvas, potentially below node popup if needed
+                    whiteSpace: 'nowrap',
+                    boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                    // Prevent going off-screen (simple version)
+                    transform: `translate(${ (hoveredLinkData.x + 200 > width) ? '-100%' : '0' }, ${ (hoveredLinkData.y + 50 > height) ? '-100%' : '0' })`
+                }}>
+                    Amount Traded: {formatLinkValue(hoveredLinkData.link.value)}
+                </div>
+            )}
+            {/* End Link Tooltip */}
+
         </div>
     );
 };
