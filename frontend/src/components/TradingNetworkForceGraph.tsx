@@ -506,7 +506,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     ): JSX.Element | null => {
         const value = _value ?? 0;
         if (Math.abs(value) <= VALUE_TOLERANCE) return null;
-        const barWidthPercent = maxIndividualMetricValue > 0 ? (value / maxIndividualMetricValue) * 100 : 0;
+        const barWidthPercent = maxIndividualMetricValue > 0 ? Math.min(100, (value / maxIndividualMetricValue) * 100 + 3) : 0;
         const formattedValue = formatStat(value);
         const labelColumnWidth = '95px'; // Keep this definition
         // console.log(barWidthPercent)
