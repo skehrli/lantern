@@ -117,8 +117,6 @@ const POPUP_BAR_COLORS = {
 const POPUP_BAR_HEIGHT = '8px'; // Height of the bars
 
 // --- Popup Placement & Dragging Configuration ---
-const POPUP_OFFSET_Y = 15; // Initial desired vertical gap between node and popup
-const POPUP_OFFSET_X = 0; // Initial horizontal offset (0 for centering attempt)
 const POPUP_ESTIMATED_WIDTH = 220; // Estimate for *initial* placement calculation
 const POPUP_ESTIMATED_HEIGHT = 180; // Estimate for *initial* placement calculation
 const CONTAINER_EDGE_MARGIN = 10; // Minimum space from container edge for popup
@@ -283,8 +281,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
             popupTimeoutRef.current = setTimeout(() => {
                  if (!fgRef.current) return;
-                 // ... (rest of popup positioning logic remains the same)
-                 const currentFg = fgRef.current;
                  const stats: NodeStats = {
                     selfconsumption_volume: individualMetrics.individual_selfconsumption_volume?.[Number(nodeId)],
                     grid_import: individualMetrics.individual_grid_import?.[Number(nodeId)],
@@ -294,22 +290,9 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                     market_sell_volume: individualMetrics.individual_market_sell_volume?.[Number(nodeId)],
                     charging_volume: individualMetrics.individual_charging_volume?.[Number(nodeId)],
                  };
-                 const nodeX = isLayoutPhaseComplete ? (internalNode.fx ?? internalNode.x ?? 0) : (internalNode.x ?? 0);
-                 const nodeY = isLayoutPhaseComplete ? (internalNode.fy ?? internalNode.y ?? 0) : (internalNode.y ?? 0);
-                 const { x: screenX, y: screenY } = currentFg.graph2ScreenCoords(nodeX, nodeY);
 
-                 let idealTop = screenY - POPUP_ESTIMATED_HEIGHT - POPUP_OFFSET_Y;
-                 if (idealTop < CONTAINER_EDGE_MARGIN) {
-                     idealTop = screenY + POPUP_OFFSET_Y + internalNode.visualSize;
-                 }
-                 idealTop = Math.min(idealTop, height - POPUP_ESTIMATED_HEIGHT - CONTAINER_EDGE_MARGIN);
-                 idealTop = Math.max(CONTAINER_EDGE_MARGIN, idealTop);
-                 let finalTop = idealTop;
-
-                 let idealLeft = screenX - (POPUP_ESTIMATED_WIDTH / 2) + POPUP_OFFSET_X;
-                 idealLeft = Math.max(CONTAINER_EDGE_MARGIN, idealLeft);
-                 idealLeft = Math.min(idealLeft, width - POPUP_ESTIMATED_WIDTH - CONTAINER_EDGE_MARGIN);
-                 let finalLeft = idealLeft;
+                 let finalTop = CONTAINER_EDGE_MARGIN;
+                 let finalLeft = CONTAINER_EDGE_MARGIN;
 
                  setPopupData({
                      nodeId: internalNode.id,
@@ -786,8 +769,32 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
             {/* --- Draggable Node Popup --- */}
             {/* (Node popup rendering logic remains the same) */}
             {popupData && (
-                <div ref={popupRef} className="node-popup" onMouseDown={handlePopupMouseDown} style={{ position: 'absolute', left: `${popupData.finalLeft}px`, top: `${popupData.finalTop}px`, pointerEvents: 'auto', zIndex: 10, background: 'rgba(255, 255, 255, 0.97)', padding: '0', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', fontSize: '12px', color: '#333', minWidth: '200px', maxWidth: '280px', opacity: 1, transition: 'opacity 0.2s ease-in-out', cursor: isDraggingPopup ? 'grabbing' : 'default', maxHeight: `calc(100% - ${2 * CONTAINER_EDGE_MARGIN}px)`, overflowY: 'auto', userSelect: 'none' }} >
-                     <div className="popup-stats" style={{ display: 'flex', flexDirection: 'column', gap: '0px', padding: '5px 10px' }}>
+                <div
+                    ref={popupRef}
+                    className="node-popup"
+                    onMouseDown={handlePopupMouseDown}
+                    style={{
+                        position: 'absolute',
+                        left: `${popupData.finalLeft}px`,
+                        top: `${popupData.finalTop}px`,
+                        pointerEvents: 'auto',
+                        zIndex: 10,
+                        background: 'rgba(255, 255, 255, 0.97)',
+                        padding: '0',
+                        borderRadius: '6px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        fontSize: '12px',
+                        color: '#333',
+                        minWidth: '200px',
+                        maxWidth: '280px',
+                        opacity: 0.95,
+                        transition: 'opacity 0.2s ease-in-out',
+                        cursor: isDraggingPopup ? 'grabbing' : 'default',
+                        maxHeight: `calc(100% - ${2 * CONTAINER_EDGE_MARGIN}px)`,
+                        overflowY: 'auto',
+                        userSelect: 'none'
+                    }} >
+                     <div className="popup-stats" style={{ display: 'flex', flexDirection: 'column', gap: '0px', padding: '8px 10px 0px 10px' }}>
                          <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' }}>
                              Consumed Energy Sources
                          </div>
@@ -804,7 +811,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                              ( (Math.abs(popupData.stats.charging_volume ?? 0) > VALUE_TOLERANCE) ||
                                (Math.abs(popupData.stats.market_sell_volume ?? 0) > VALUE_TOLERANCE) ||
                                (Math.abs(popupData.stats.grid_export ?? 0) > VALUE_TOLERANCE) )
-                             ? <hr style={{ border: 'none', borderTop: '5px solid #eee', margin: '0px 0', width: '100%' }} />
+                             ? <hr style={{ border: 'none', borderTop: '5px solid transparent', margin: '0px 0', width: '100%' }} />
                              : null
                         }
                          <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' }}>
