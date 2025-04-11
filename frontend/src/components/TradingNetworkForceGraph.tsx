@@ -45,7 +45,7 @@ const NODE_COLORS = {
 const LINK_COLOR_BASE = 'rgba(156, 163, 175, 0.4)';
 
 const LINK_COLOR_HIGHLIGHT = 'rgba(251, 146, 60, 1)'; // Vibrant orange for highlighted links
-const LINK_COLOR_FADED = 'rgba(200, 200, 200, 0.2)'; // Very faded grey for non-neighbor links
+const LINK_COLOR_FADED = 'rgba(200, 200, 200, 0.3)'; // Very faded grey for non-neighbor links
 const LINK_COLOR_OUTGOING = 'rgba(76, 175, 80, 0.75)'; // Muted Green (e.g., Material Green 500)
 const LINK_COLOR_INCOMING = 'rgba(211, 47, 47, 0.75)'; // Muted Red (e.g., Material Red 700)
 const PARTICLE_COLOR_OUTGOING = LINK_COLOR_OUTGOING;
@@ -54,7 +54,7 @@ const PARTICLE_COLOR_INCOMING = LINK_COLOR_INCOMING;
 const PARTICLE_COLOR_DEFAULT = NODE_COLORS.building;
 const PARTICLE_COLOR_HIGHLIGHT = LINK_COLOR_HIGHLIGHT;
 
-const NODE_FADE_OPACITY = 0.2;
+const NODE_FADE_OPACITY = 0.3;
 const BUILDING_ICON_DRAW_SIZE = 12;
 const MIN_LINK_WIDTH = 0.5;
 const MAX_LINK_WIDTH = 5;
