@@ -310,7 +310,7 @@ class ECDataset:
                 individual_market_purchase_volume=self.getBuyVolumePerMember(),
                 individual_discharging_volume=self.getDischargeVolumePerMember(),
                 individual_grid_export=self.getGridFeedInVolumePerMember(),
-                individual_market_sell_volue=self.getSellVolumePerMember(),
+                individual_market_sell_volume=self.getSellVolumePerMember(),
                 individual_charging_volume=self.getChargeVolumePerMember(),
             ),
             cost_metrics=CostMetrics(

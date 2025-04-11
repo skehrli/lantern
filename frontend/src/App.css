@@ -934,3 +934,64 @@ body {
   font-size: 0.9rem;
   line-height: 1.5;
 }
+
+/* --- Node Popup Styling --- */
+.node-popup {
+  background-color: rgba(40, 42, 54, 0.95); /* Dark semi-transparent */
+  color: #f8f8f2; /* Light text */
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  min-width: 180px; /* Ensure it has some width */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(3px); /* Frosted glass effect (if supported) */
+  opacity: 0; /* Start hidden for transition */
+}
+
+/* Style the popup title */
+.popup-title {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #8be9fd; /* Cyan accent */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 6px;
+}
+
+/* Container for stats */
+.popup-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* Spacing between stat lines */
+}
+
+/* Individual stat line */
+.stat-item {
+  display: flex;
+  justify-content: space-between; /* Align label left, value right */
+  align-items: center;
+}
+
+/* Style the label part of the stat */
+.stat-item span:first-child {
+  color: #bd93f9; /* Purple accent for labels */
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+/* Style the value part of the stat */
+.stat-item span:last-child {
+  font-weight: 600;
+  color: #f1fa8c; /* Yellow accent for values */
+}
+
+/* Divider line */
+.stat-divider {
+  border: none;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.15);
+  margin: 8px 0; /* Spacing around divider */
+}

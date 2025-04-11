@@ -12,6 +12,16 @@ interface TradingNetworkGraphProps {
     height: number;
 }
 
+interface NodeStats {
+    selfconsumption_volume: number;
+    grid_import: number;
+    market_purchase_volume: number;
+    discharging_volume: number;
+    grid_export: number;
+    market_sell_volume: number;
+    charging_volume: number;
+}
+
 // --- Internal Data Structures ---
 interface InternalLinkObject extends LinkObject {
     source: string | number;
@@ -71,9 +81,11 @@ const PARTICLE_MIN_SPEED = 0.003;
 const PARTICLE_MAX_SPEED = 0.01;
 
 // Interaction Configuration
-const ZOOM_TRANSITION_MS = 500;
+const ZOOM_TRANSITION_MS = 400;
 const ZOOM_OUT_PADDING = 4; // Padding for general zoomToFit (pixels)
 const NEIGHBOR_ZOOM_PADDING = 20; // Padding around neighbors box (in graph units)
+const POPUP_DELAY_MS = ZOOM_TRANSITION_MS;
+
 
 // --- Helper to create SVG Data URI ---
 const createSvgDataUri = (svgString: string): string => {
@@ -82,7 +94,7 @@ const createSvgDataUri = (svgString: string): string => {
 };
 
 // --- Main Component ---
-const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingNetwork, width, height }) => {
+const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingNetwork, individualMetrics, width, height }) => {
     const fgRef = useRef<ForceGraphMethods>();
     const [visibleNodes, setVisibleNodes] = useState<Set<string | number>>(new Set());
     const [highlightLinks, setHighlightLinks] = useState<Set<InternalLinkObject>>(new Set());
@@ -94,6 +106,16 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     const [internalGraphData, setInternalGraphData] = useState<{ nodes: InternalNodeObject[], links: InternalLinkObject[] }>({ nodes: [], links: [] });
     const fixAppliedRef = useRef(false);
     const engineTicksRef = useRef(0);
+
+    const [popupData, setPopupData] = useState<{
+        nodeId: string | number;
+        x: number;
+        y: number;
+        stats: NodeStats;
+        name: string;
+    } | null>(null);
+
+    const popupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Reset state on data change
     useEffect(() => {
@@ -109,6 +131,15 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
             fgRef.current.zoomToFit(0, ZOOM_OUT_PADDING);
         }
     }, [tradingNetwork]);
+
+    // cleanup timeout when component unmounted
+    useEffect(() => {
+        return () => {
+            if (popupTimeoutRef.current) {
+                clearTimeout(popupTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Pre-render icons
     useEffect(() => {
@@ -202,8 +233,12 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         return MIN_LINK_WIDTH + scale * (MAX_LINK_WIDTH - MIN_LINK_WIDTH);
     }, [maxLinkValue]);
 
-    // --- Interaction Handlers ---
+    const formatStat = (num: number | undefined): string => {
+        if (num === undefined || num === null || isNaN(num)) return "N/A";
+        return num.toFixed(1) + ' kWh';
+    }
 
+    // --- Interaction Handlers ---
     const updateHighlightsAndVisibility = useCallback((node: InternalNodeObject | null) => {
         const newHighlightLinks = new Set<InternalLinkObject>();
         const newVisibleNodes = new Set<string | number>();
@@ -227,35 +262,80 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         }
         setHighlightLinks(newHighlightLinks);
         setVisibleNodes(newVisibleNodes);
-        // console.log("Visible nodes set:", Array.from(newVisibleNodes));
-
     }, [internalGraphData.links]); // Depends only on link data
 
-    // --- MOVED handleBackgroundClick Definition BEFORE handleNodeClick ---
     const handleBackgroundClick = useCallback(() => {
-        // console.log("Background/Deselect clicked, clearing focus.");
         setClickedNodeId(null);
         setHighlightLinks(new Set());
         setVisibleNodes(new Set());
+        setPopupData(null);
+        if (popupTimeoutRef.current) {
+            clearTimeout(popupTimeoutRef.current);
+            popupTimeoutRef.current = null;
+        }
     }, []); // No dependencies needed, setters are stable
 
     const handleNodeClick = useCallback((node: NodeObject | null) => {
         const internalNode = node as InternalNodeObject | null;
-        if (internalNode) {
-            // If clicking the already selected node, deselect it (treat as background click)
-            if (internalNode.id === clickedNodeId) {
-                 handleBackgroundClick(); // Now defined and initialized
-                 return;
+        const fg = fgRef.current;
+
+        if (popupTimeoutRef.current) {
+            clearTimeout(popupTimeoutRef.current);
+            popupTimeoutRef.current = null;
+        }
+        setPopupData(null);
+
+        if (internalNode && fg && tradingNetwork?.nodes && individualMetrics) {
+            const nodeId = internalNode.id;
+            if (nodeId === clickedNodeId) {
+                handleBackgroundClick();
+                return;
             }
-            // Otherwise, select the new node
-            setClickedNodeId(internalNode.id);
+            setClickedNodeId(nodeId);
             updateHighlightsAndVisibility(internalNode);
-            // console.log("Node clicked, setting focus:", internalNode.id);
+
+            popupTimeoutRef.current = setTimeout(() => {
+                if (!fgRef.current) {
+                    console.warn("Graph ref missing when popup timeout fired.");
+                    return;
+                }
+                const originalNodeIndex = tradingNetwork.nodes.findIndex(
+                    idStr => String(idStr) === String(internalNode.id)
+                );
+
+                if (originalNodeIndex === -1) {
+                    console.warn(`Clicked node ID ${internalNode.id} not found in original tradingNetwork.nodes list.`);
+                    handleBackgroundClick(); // Deselect if data is inconsistent
+                    return;
+                }
+                const stats: NodeStats = {
+                    selfconsumption_volume: individualMetrics.individual_selfconsumption_volume?.[Number(nodeId)],
+                    grid_import: individualMetrics.individual_grid_import?.[Number(nodeId)],
+                    market_purchase_volume: individualMetrics.individual_market_purchase_volume?.[Number(nodeId)],
+                    discharging_volume: individualMetrics.individual_discharging_volume?.[Number(nodeId)],
+                    grid_export: individualMetrics.individual_grid_export?.[Number(nodeId)],
+                    market_sell_volume: individualMetrics.individual_market_sell_volume?.[Number(nodeId)],
+                    charging_volume: individualMetrics.individual_charging_volume?.[Number(nodeId)],
+                };
+
+                const nodeX = isLayoutPhaseComplete ? (internalNode.fx ?? internalNode.x ?? 0) : (internalNode.x ?? 0);
+                const nodeY = isLayoutPhaseComplete ? (internalNode.fy ?? internalNode.y ?? 0) : (internalNode.y ?? 0);
+                const { x: screenX, y: screenY } = fg.graph2ScreenCoords(nodeX, nodeY);
+
+                setPopupData({
+                    nodeId: internalNode.id,
+                    x: screenX - 9,
+                    y: screenY - 15,
+                    stats: stats,
+                    name: `Building ${internalNode.id}`
+                })
+                popupTimeoutRef.current = null;
+            }, POPUP_DELAY_MS);
         } else {
              // Clicked on background (or null node passed)
-             handleBackgroundClick(); // Now defined and initialized
+             handleBackgroundClick();
         }
-    }, [clickedNodeId, updateHighlightsAndVisibility, handleBackgroundClick]); // Dependencies are correct
+    }, [clickedNodeId, updateHighlightsAndVisibility, handleBackgroundClick, tradingNetwork?.nodes, individualMetrics, isLayoutPhaseComplete]); // Dependencies are correct
 
     // --- Node Drawing ---
     const drawNode = useCallback((node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
@@ -530,6 +610,76 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                 cooldownTicks={Infinity} // Keep simulation running for particles/interaction
                 onEngineTick={handleEngineTick} // Hook into simulation steps for fixing layout
             />
+            {/* --- The Popup --- */}
+            {popupData && (
+                <div
+                    className="node-popup"
+                    style={{
+                        // Position relative to the container div
+                        position: 'absolute',
+                        // Offset slightly from the node's center screen coordinates
+                        left: `${popupData.x + 10}px`,
+                        top: `${popupData.y}px`,
+                        // Translate to position it nicely (e.g., above and to the right)
+                        // transform: `translate(5px, -105%)`, // Adjust as needed
+                        // A slightly different positioning: centered above the node
+                        transform: `translate(-50%, calc(-100% - 15px))`, // Centered horizontally, 15px above node
+                        pointerEvents: 'none', // Prevent popup from blocking clicks on graph
+                        zIndex: 10, // Ensure it's above the canvas
+                        // Opacity transition for appearance
+                        opacity: 1,
+                        transition: 'opacity 0.2s ease-in-out',
+                    }}
+                >
+                    <h4 className="popup-title">{popupData.name}</h4>
+                <div className="popup-stats">
+                        {/* Use ternary operator for conditional rendering */}
+                        {(popupData.stats.selfconsumption_volume !== undefined && popupData.stats.selfconsumption_volume !== null && Math.abs(popupData.stats.selfconsumption_volume) > VALUE_TOLERANCE)
+                            ? <div className="stat-item"><span>Self-Consumed:</span> <span>{formatStat(popupData.stats.selfconsumption_volume)}</span></div>
+                            : null}
+
+                        {(popupData.stats.discharging_volume !== undefined && popupData.stats.discharging_volume !== null && Math.abs(popupData.stats.discharging_volume) > VALUE_TOLERANCE)
+                            ? <div className="stat-item"><span>From Battery:</span> <span>{formatStat(popupData.stats.discharging_volume)}</span></div>
+                            : null}
+
+                        {(popupData.stats.market_purchase_volume !== undefined && popupData.stats.market_purchase_volume !== null && Math.abs(popupData.stats.market_purchase_volume) > VALUE_TOLERANCE)
+                            ? <div className="stat-item"><span>From Market:</span> <span>{formatStat(popupData.stats.market_purchase_volume)}</span></div>
+                            : null}
+
+                        {(popupData.stats.grid_import !== undefined && popupData.stats.grid_import !== null && Math.abs(popupData.stats.grid_import) > VALUE_TOLERANCE)
+                            ? <div className="stat-item"><span>From Grid:</span> <span>{formatStat(popupData.stats.grid_import)}</span></div>
+                            : null}
+
+                        {/* Conditionally render the divider (condition remains the same, just check if it's needed) */}
+                        {(
+                            (popupData.stats.charging_volume !== undefined && popupData.stats.charging_volume !== null && Math.abs(popupData.stats.charging_volume) > VALUE_TOLERANCE) ||
+                            (popupData.stats.market_sell_volume !== undefined && popupData.stats.market_sell_volume !== null && Math.abs(popupData.stats.market_sell_volume) > VALUE_TOLERANCE) ||
+                            (popupData.stats.grid_export !== undefined && popupData.stats.grid_export !== null && Math.abs(popupData.stats.grid_export) > VALUE_TOLERANCE)
+                        ) && ( // Also check if any "From" stats were shown above
+                             (popupData.stats.selfconsumption_volume !== undefined && popupData.stats.selfconsumption_volume !== null && Math.abs(popupData.stats.selfconsumption_volume) > VALUE_TOLERANCE) ||
+                             (popupData.stats.discharging_volume !== undefined && popupData.stats.discharging_volume !== null && Math.abs(popupData.stats.discharging_volume) > VALUE_TOLERANCE) ||
+                             (popupData.stats.market_purchase_volume !== undefined && popupData.stats.market_purchase_volume !== null && Math.abs(popupData.stats.market_purchase_volume) > VALUE_TOLERANCE) ||
+                             (popupData.stats.grid_import !== undefined && popupData.stats.grid_import !== null && Math.abs(popupData.stats.grid_import) > VALUE_TOLERANCE)
+                        ) && (
+                            <hr className="stat-divider" />
+                        )}
+
+                        {/* Use ternary operator for "To/Production" stats */}
+                        {(popupData.stats.charging_volume !== undefined && popupData.stats.charging_volume !== null && Math.abs(popupData.stats.charging_volume) > VALUE_TOLERANCE)
+                            ? <div className="stat-item"><span>To Battery:</span> <span>{formatStat(popupData.stats.charging_volume)}</span></div>
+                            : null}
+
+                        {(popupData.stats.market_sell_volume !== undefined && popupData.stats.market_sell_volume !== null && Math.abs(popupData.stats.market_sell_volume) > VALUE_TOLERANCE)
+                            ? <div className="stat-item"><span>To Market:</span> <span>{formatStat(popupData.stats.market_sell_volume)}</span></div>
+                            : null}
+
+                        {(popupData.stats.grid_export !== undefined && popupData.stats.grid_export !== null && Math.abs(popupData.stats.grid_export) > VALUE_TOLERANCE)
+                            ? <div className="stat-item"><span>To Grid:</span> <span>{formatStat(popupData.stats.grid_export)}</span></div>
+                            : null}
+                    </div>
+                </div>
+            )}
+            {/* End Popup */}
         </div>
     );
 };

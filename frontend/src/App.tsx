@@ -42,7 +42,6 @@ const PROFILE_CHART_HEIGHT = 300; // Height for Load/Gen profile chart
 const GRAPH_CHART_HEIGHT = 300; // Height for Force Graph
 const VALUE_TOLERANCE = 0.01; // Threshold for ignoring small values in charts/calcs
 
-
 // --- Interfaces ---
 interface SimulationParams {
     community_size: number;
@@ -69,7 +68,7 @@ export interface IndividualMetricsData {
     individual_market_purchase_volume: number[];
     individual_discharging_volume: number[];
     individual_grid_export: number[];
-    individual_market_sell_volue: number[];
+    individual_market_sell_volume: number[];
     individual_charging_volume: number[];
 }
 
@@ -341,11 +340,6 @@ const CostComparison: React.FC<CostComparisonProps> = ({ withLec, withoutLec }) 
     if (withLec === null || withoutLec === null) {
         return <p>{t('costComparison.notAvailable')}</p>;
     }
-
-    // Handle potentially negative costs (profits) for scaling
-    const maxValue = Math.max(withLec, withoutLec, 0); // Find highest cost (or 0 if both are profits)
-    const minValue = Math.min(withLec, withoutLec, 0); // Find lowest cost/highest profit
-    const range = Math.max(maxValue - minValue, VALUE_TOLERANCE); // Avoid division by zero
 
     // Calculate width percentage based on positive cost values relative to max cost
     const calculateWidth = (cost: number) => {

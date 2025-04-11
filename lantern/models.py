@@ -45,7 +45,7 @@ class IndividualMetrics(BaseModel):
     individual_market_purchase_volume: List[float]
     individual_discharging_volume: List[float]
     individual_grid_export: List[float]
-    individual_market_sell_volue: List[float]
+    individual_market_sell_volume: List[float]
     individual_charging_volume: List[float]
 
 
