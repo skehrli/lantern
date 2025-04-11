@@ -786,11 +786,8 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
             {/* --- Draggable Node Popup --- */}
             {/* (Node popup rendering logic remains the same) */}
             {popupData && (
-                <div ref={popupRef} className="node-popup" style={{ position: 'absolute', left: `${popupData.finalLeft}px`, top: `${popupData.finalTop}px`, pointerEvents: 'auto', zIndex: 10, background: 'rgba(255, 255, 255, 0.97)', padding: '0', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', fontSize: '12px', color: '#333', minWidth: '200px', maxWidth: '280px', opacity: 1, transition: 'opacity 0.2s ease-in-out', cursor: isDraggingPopup ? 'grabbing' : 'default', maxHeight: `calc(100% - ${2 * CONTAINER_EDGE_MARGIN}px)`, overflowY: 'auto', userSelect: 'none' }} >
-                    <h4 onMouseDown={handlePopupMouseDown} style={{ margin: '0', padding: '10px 15px', fontSize: '14px', fontWeight: '600', borderBottom: '1px solid #eee', textAlign: 'center', cursor: 'move', backgroundColor: '#f8f9fa', borderTopLeftRadius: '6px', borderTopRightRadius: '6px', color: '#495057' }} >
-                        {popupData.name}
-                    </h4>
-                     <div className="popup-stats" style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '12px 15px' }}>
+                <div ref={popupRef} className="node-popup" onMouseDown={handlePopupMouseDown} style={{ position: 'absolute', left: `${popupData.finalLeft}px`, top: `${popupData.finalTop}px`, pointerEvents: 'auto', zIndex: 10, background: 'rgba(255, 255, 255, 0.97)', padding: '0', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', fontSize: '12px', color: '#333', minWidth: '200px', maxWidth: '280px', opacity: 1, transition: 'opacity 0.2s ease-in-out', cursor: isDraggingPopup ? 'grabbing' : 'default', maxHeight: `calc(100% - ${2 * CONTAINER_EDGE_MARGIN}px)`, overflowY: 'auto', userSelect: 'none' }} >
+                     <div className="popup-stats" style={{ display: 'flex', flexDirection: 'column', gap: '0px', padding: '5px 10px' }}>
                          <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' }}>
                              Consumed Energy Sources
                          </div>
@@ -807,7 +804,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                              ( (Math.abs(popupData.stats.charging_volume ?? 0) > VALUE_TOLERANCE) ||
                                (Math.abs(popupData.stats.market_sell_volume ?? 0) > VALUE_TOLERANCE) ||
                                (Math.abs(popupData.stats.grid_export ?? 0) > VALUE_TOLERANCE) )
-                             ? <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '6px 0', width: '100%' }} />
+                             ? <hr style={{ border: 'none', borderTop: '5px solid #eee', margin: '0px 0', width: '100%' }} />
                              : null
                         }
                          <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' }}>
