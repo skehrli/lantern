@@ -38,6 +38,16 @@ class EnergyMetrics(BaseModel):
     total_grid_export: float
     total_charging_volume: float
 
+    
+class IndividualMetrics(BaseModel):
+    individual_selfconsumption_volume: List[float]
+    individual_grid_import: List[float]
+    individual_market_purchase_volume: List[float]
+    individual_discharging_volume: List[float]
+    individual_grid_export: List[float]
+    individual_market_sell_volue: List[float]
+    individual_charging_volume: List[float]
+
 
 class CostMetrics(BaseModel):
     cost_with_lec: float
@@ -72,6 +82,7 @@ class TradingNetwork(BaseModel):
 
 class SimulationResult(BaseModel):
     energy_metrics: EnergyMetrics
+    individual_metrics: IndividualMetrics
     cost_metrics: CostMetrics
     profiles: Profiles
     trading_network: Optional[TradingNetwork] = None

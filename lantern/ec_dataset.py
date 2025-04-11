@@ -7,7 +7,7 @@ This module contains the ECDataset class, which is used to manage and manipulate
 datasets for energy communities.
 """
 
-from .models import SimulationResult, EnergyMetrics, CostMetrics, TradingNetwork, Profiles
+from .models import SimulationResult, EnergyMetrics, IndividualMetrics, CostMetrics, TradingNetwork, Profiles
 from .battery import Battery
 from .constants import BATTERY_SIZE, P2P_PRICE, GRID_BUY_PRICE, GRID_SELL_PRICE, NetworkAlloc, APT_BLOCK_SIZE, RANDOM_SEED
 from .market_solution import MarketSolution
@@ -16,7 +16,7 @@ import pandas as pd
 import numpy as np
 import networkx as nx
 import numpy.typing as npt
-from typing import List, Optional, Self, Any
+from typing import List, Optional, Self
 
 
 def get_daily_profile(data: pd.DataFrame) -> List[float]:
@@ -304,6 +304,15 @@ class ECDataset:
                 total_grid_export=float(self.getGridFeedInVolume()),
                 total_charging_volume=float(self.getChargeVolume()),
             ),
+            individual_metrics=IndividualMetrics(
+                individual_selfconsumption_volume=self.getSelfConsumptionVolumePerMember(),
+                individual_grid_import=self.getGridPurchaseVolumePerMember(),
+                individual_market_purchase_volume=self.getBuyVolumePerMember(),
+                individual_discharging_volume=self.getDischargeVolumePerMember(),
+                individual_grid_export=self.getGridFeedInVolumePerMember(),
+                individual_market_sell_volue=self.getSellVolumePerMember(),
+                individual_charging_volume=self.getChargeVolumePerMember(),
+            ),
             cost_metrics=CostMetrics(
                 cost_with_lec=float(sum(self.computePricePerMember(True)) * numDaysInSim / numDaysComputed / (100.0 * self.numParticipants * APT_BLOCK_SIZE)),
                 cost_without_lec=float(
@@ -382,6 +391,18 @@ class ECDataset:
             - self.getDischargeVolume(),
         )
 
+    def getGridFeedInVolumePerMember(self: Self) -> np.ndarray:
+        """
+        Returns the per-member energy fed into the grid over the timeframe of the dataset.
+        """
+        return self.production.sum() - self.getSelfConsumptionVolumePerMember() - self.getSellVolumePerMember() - self.getChargeVolumePerMember()
+
+    def getGridPurchaseVolumePerMember(self: Self) -> np.ndarray:
+        """
+        Returns the per-member energy purchased from the grid over the timeframe of the dataset.
+        """
+        return self.consumption.sum() - self.getSelfConsumptionVolumePerMember() - self.getBuyVolumePerMember() - self.getDischargeVolumePerMember()
+
     def compareProductionWithConsumption(self: Self) -> tuple[int, int]:
         return (self.supply > 0).sum().sum(), (self.demand > 0).sum().sum()
 
@@ -390,6 +411,12 @@ class ECDataset:
         Returns the volume of self-consumed energy over the timeframe of the dataset.
         """
         return self.production.sum().sum() - self.supply.sum().sum()
+
+    def getSelfConsumptionVolumePerMember(self: Self) -> float:
+        """
+        Returns the volume of self-consumed energy per member over the timeframe of the dataset.
+        """
+        return self.production.sum() - self.supply.sum()
 
     def getTradingVolume(self: Self) -> float:
         """

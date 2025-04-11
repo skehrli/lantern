@@ -63,6 +63,17 @@ interface EnergyMetricsData {
     total_charging_volume: number;
 }
 
+
+interface IndividualMetricsData {
+    individual_selfconsumption_volume: number[];
+    individual_grid_import: number[];
+    individual_market_purchase_volume: number[];
+    individual_discharging_volume: number[];
+    individual_grid_export: number[];
+    individual_market_sell_volue: number[];
+    individual_charging_volume: number[];
+}
+
 interface CostMetricsData {
     cost_with_lec: number;
     cost_without_lec: number;
@@ -90,6 +101,7 @@ interface TradingNetworkData {
 
 interface SimulationResult {
     energy_metrics: EnergyMetricsData;
+    individual_metrics: IndividualMetricsData;
     cost_metrics: CostMetricsData;
     profiles: ProfileData;
     trading_network: TradingNetworkData | null; // Optional field
