@@ -58,24 +58,22 @@ interface PopupData {
 // Visual Styling
 const NODE_COLORS = {
     building: 'rgba(59, 130, 246, 0.95)', // Standard blue
-    labelHighlight: 'rgba(239, 68, 68, 1)', // Red for highlighted labels
-    labelDefault: 'rgba(50, 50, 50, 0.9)',
 };
 const LINK_COLOR_BASE = 'rgba(156, 163, 175, 0.4)';
-const LINK_COLOR_HIGHLIGHT = 'rgba(251, 146, 60, 1)'; // Vibrant orange for highlighted links
-const LINK_COLOR_FADED = 'rgba(200, 200, 200, 0.3)'; // Very faded grey for non-neighbor links
-const LINK_COLOR_OUTGOING = 'rgba(76, 175, 80, 0.75)'; // Muted Green (e.g., Material Green 500)
-const LINK_COLOR_INCOMING = 'rgba(211, 47, 47, 0.75)'; // Muted Red (e.g., Material Red 700)
-const PARTICLE_COLOR_OUTGOING = LINK_COLOR_OUTGOING;
+const LINK_COLOR_HIGHLIGHT = '#82ca9d';
+const LINK_COLOR_FADED = 'rgba(200, 200, 200, 0.3)';
+const LINK_COLOR_OUTGOING = '#82ca9d'; 
+const LINK_COLOR_INCOMING = '#facc15';
+const PARTICLE_COLOR_DEFAULT = LINK_COLOR_OUTGOING;
+const PARTICLE_COLOR_OUTGOING = PARTICLE_COLOR_DEFAULT;
 const PARTICLE_COLOR_INCOMING = LINK_COLOR_INCOMING;
-const PARTICLE_COLOR_DEFAULT = NODE_COLORS.building;
 const PARTICLE_COLOR_FADED = LINK_COLOR_FADED;
-const PARTICLE_COLOR_HIGHLIGHT = LINK_COLOR_HIGHLIGHT;
+const PARTICLE_COLOR_HIGHLIGHT = LINK_COLOR_OUTGOING;
 
 const NODE_FADE_OPACITY = 0.3;
 const BUILDING_ICON_DRAW_SIZE = 12;
-const MIN_LINK_WIDTH = 0.5;
-const MAX_LINK_WIDTH = 5;
+const MIN_LINK_WIDTH = 0.8;
+const MAX_LINK_WIDTH = 7;
 const VALUE_TOLERANCE = 0.1; // Values below this are treated as zero for display/logic
 const BIDIRECTIONAL_LINK_CURVATURE = 0.25;
 
@@ -86,8 +84,8 @@ const ENGINE_TICKS_BEFORE_FIX = INITIAL_WARMUP_TICKS + 40; // Ticks before fixin
 // Particle Configuration
 const MAX_PARTICLES_VISUAL = 10;          // Max particles for the link with the highest value
 const MIN_PARTICLES_FOR_NON_ZERO = 1;     // Min particles if value > VALUE_TOLERANCE
-const PARTICLE_WIDTH_DEFAULT = 3;
-const PARTICLE_WIDTH_HIGHLIGHT = 5;
+const PARTICLE_WIDTH_DEFAULT = 4;
+const PARTICLE_WIDTH_HIGHLIGHT = 6;
 const PARTICLE_MIN_SPEED = 0.003;          // Speed for links with near-zero value
 const PARTICLE_MAX_SPEED = 0.01;           // Speed for link with max value
 
@@ -99,13 +97,13 @@ const NEIGHBOR_ZOOM_PADDING = 20; // Padding around neighbors box (in graph unit
 // Popup Configuration
 const POPUP_DELAY_MS = ZOOM_TRANSITION_MS; // Delay opening popup until zoom finishes
 const POPUP_BAR_COLORS = {
-    selfconsumption_volume: '#2ecc71', // Green
-    grid_import: '#e74c3c',            // Red
-    market_purchase_volume: '#f39c12', // Orange
-    discharging_volume: '#3498db',     // Blue
-    grid_export: '#c0392b',            // Darker Red
-    market_sell_volume: '#d35400',    // Darker Orange
-    charging_volume: '#2980b9',       // Darker Blue
+    selfconsumption_volume: '#a3e635',
+    grid_import: '#9ca3af',
+    market_purchase_volume: '#facc15',
+    discharging_volume: '#65a30d',    
+    grid_export: '#9ca3af',           
+    market_sell_volume: '#82ca9d',
+    charging_volume: '#65a30d',       
 };
 const POPUP_BAR_HEIGHT = '8px'; // Height of the bars
 
@@ -710,6 +708,9 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                         {popupData.name}
                     </h4>
                      <div className="popup-stats" style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '12px 15px' }}>
+                         <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' /* Slightly darker gray */ }}>
+                             Consumed Energy Sources
+                         </div>
                          {renderStatItem(popupData.stats.selfconsumption_volume, 'selfconsumption_volume', 'From Solar')}
                          {renderStatItem(popupData.stats.discharging_volume, 'discharging_volume', 'From Battery')}
                          {renderStatItem(popupData.stats.market_purchase_volume, 'market_purchase_volume', 'From Market')}
@@ -726,6 +727,9 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                              ? <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '6px 0', width: '100%' }} />
                              : null
                         }
+                         <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' /* Slightly darker gray */ }}>
+                             Produced Energy Destinations
+                         </div>
                          {renderStatItem(popupData.stats.selfconsumption_volume, 'selfconsumption_volume', 'Self-Consumed')}
                          {renderStatItem(popupData.stats.charging_volume, 'charging_volume', 'To Battery')}
                          {renderStatItem(popupData.stats.market_sell_volume, 'market_sell_volume', 'To Market')}
