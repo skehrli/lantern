@@ -455,7 +455,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         let isMounted = true;
         const imgNormal = new Image();
         imgNormal.onload = () => { if (isMounted) setBuildingImageNormal(imgNormal); };
-        imgNormal.onerror = () => { console.error("Failed to load normal building icon from SVG data URI"); }; // Keep error log
+        imgNormal.onerror = () => { console.error("Failed to load normal building icon from SVG data URI"); };
         imgNormal.src = createSvgDataUri(svgStringNormal);
         return () => { isMounted = false; };
     }, []);
@@ -539,29 +539,29 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                 }}>
                     {label}:
                 </span>
-
-                {/* Bar Container: Let it take the remaining space */}
+                {/* Bar Container */}
                 <div
                     className="bar-container"
                     style={{
-                        flex: 1,                   // Allow the bar container to grow and fill remaining space
+                        flex: 1,
                         height: POPUP_BAR_HEIGHT,
-                        backgroundColor: '#e9ecef',
+                        backgroundColor: 'white', // <-- CHANGED TO WHITE
                         borderRadius: '4px',
                         overflow: 'hidden'
                     }}
-                    title={formattedValue} // Tooltip also useful here if hovering just the bar
+                    title={formattedValue}
                 >
-                    <div
-                        className="bar"
-                        style={{
-                            width: `${barWidthPercent}%`,
-                            height: '100%',
-                            backgroundColor: POPUP_BAR_COLORS[key] || '#bdc3c7',
-                            borderRadius: '4px',
-                            transition: 'width 0.2s ease-out'
-                        }}
-                    />
+                     <div
+                         className="popup-stat-bar"
+                         style={{
+                             width: `${barWidthPercent}%`,
+                             height: '100%',
+                             backgroundColor: POPUP_BAR_COLORS[key] || '#bdc3c7',
+                             borderRadius: '4px',
+                             transition: 'width 0.2s ease-out',
+                             display: 'block',
+                         }}
+                     />
                 </div>
             </div>
         );
