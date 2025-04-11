@@ -69,6 +69,7 @@ const LINK_COLOR_INCOMING = 'rgba(211, 47, 47, 0.75)'; // Muted Red (e.g., Mater
 const PARTICLE_COLOR_OUTGOING = LINK_COLOR_OUTGOING;
 const PARTICLE_COLOR_INCOMING = LINK_COLOR_INCOMING;
 const PARTICLE_COLOR_DEFAULT = NODE_COLORS.building;
+const PARTICLE_COLOR_FADED = LINK_COLOR_FADED;
 const PARTICLE_COLOR_HIGHLIGHT = LINK_COLOR_HIGHLIGHT;
 
 const NODE_FADE_OPACITY = 0.3;
@@ -622,21 +623,17 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     const memoizedLinkDirectionalParticleWidth = useCallback((linkInput: LinkObject) => {
         const link = linkInput as InternalLinkObject;
         const isHighlighted = clickedNodeId && highlightLinks.has(link);
-        if (!clickedNodeId) {
-             return PARTICLE_WIDTH_DEFAULT;
-        } else {
-            return isHighlighted ? PARTICLE_WIDTH_HIGHLIGHT : 0;
-        }
+        return isHighlighted ? PARTICLE_WIDTH_HIGHLIGHT : PARTICLE_WIDTH_DEFAULT;
     }, [clickedNodeId, highlightLinks]);
 
     const memoizedLinkDirectionalParticleColor = useCallback((linkInput: LinkObject) => {
-        const link = linkInput as InternalLinkObject;
-        const isHighlighted = clickedNodeId && highlightLinks.has(link);
         if (!clickedNodeId) {
             return PARTICLE_COLOR_DEFAULT;
         }
+        const link = linkInput as InternalLinkObject;
+        const isHighlighted = clickedNodeId && highlightLinks.has(link);
         if (!isHighlighted) {
-             return 'rgba(0,0,0,0)'; // Transparent
+             return PARTICLE_COLOR_FADED;
         }
         const sourceId = typeof link.source === 'object' && link.source !== null ? (link.source as NodeObject).id : link.source;
         const targetId = typeof link.target === 'object' && link.target !== null ? (link.target as NodeObject).id : link.target;
