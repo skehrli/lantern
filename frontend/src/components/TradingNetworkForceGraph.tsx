@@ -2,15 +2,12 @@ import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react'
 import ForceGraph2D, { NodeObject, LinkObject, ForceGraphMethods } from 'react-force-graph-2d';
 import { FaBuilding } from 'react-icons/fa6';
 import ReactDOMServer from 'react-dom/server';
+import {IndividualMetricsData, TradingNetworkData} from '../App';
 
 // --- Component Props ---
-interface ApiTradingNetworkData {
-    nodes: string[];
-    edges: [string, string, number][];
-}
-
 interface TradingNetworkGraphProps {
-    tradingNetwork: ApiTradingNetworkData | null;
+    tradingNetwork: TradingNetworkData | null;
+    individualMetrics: IndividualMetricsData;
     width: number;
     height: number;
 }

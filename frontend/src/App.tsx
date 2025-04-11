@@ -63,8 +63,7 @@ interface EnergyMetricsData {
     total_charging_volume: number;
 }
 
-
-interface IndividualMetricsData {
+export interface IndividualMetricsData {
     individual_selfconsumption_volume: number[];
     individual_grid_import: number[];
     individual_market_purchase_volume: number[];
@@ -94,7 +93,7 @@ interface TradingNetworkLink {
     target: string; // id of target node
     value: number; // Amount of energy traded
 }
-interface TradingNetworkData {
+export interface TradingNetworkData {
     links: TradingNetworkLink[];
     nodes: TradingNetworkNode[];
 }
@@ -843,6 +842,7 @@ function App() {
                                         <h3>{t('results.resultsContainer.tradingNetworkHeading')}</h3>
                                         <TradingNetworkForceGraph
                                             tradingNetwork={currentResult.trading_network}
+                                            individualMetrics={currentResult.individual_metrics}
                                             width={350}
                                             height={GRAPH_CHART_HEIGHT * 2 + 20}
                                         />
