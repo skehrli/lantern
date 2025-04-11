@@ -523,7 +523,7 @@ body {
   /* Match wrapper? Should be same or less */
   display: flex;
   align-items: center;
-  padding: 0 0.75rem;
+  padding: 0 0.1rem;
   transition: width 0.4s ease-in-out;
   box-sizing: border-box;
   position: relative;
@@ -965,27 +965,8 @@ body {
 .popup-stats {
   display: flex;
   flex-direction: column;
-  gap: 4px; /* Spacing between stat lines */
-}
-
-/* Individual stat line */
-.stat-item {
-  display: flex;
-  justify-content: space-between; /* Align label left, value right */
-  align-items: center;
-}
-
-/* Style the label part of the stat */
-.stat-item span:first-child {
-  color: #bd93f9; /* Purple accent for labels */
-  margin-right: 8px;
-  font-weight: 500;
-}
-
-/* Style the value part of the stat */
-.stat-item span:last-child {
-  font-weight: 600;
-  color: #f1fa8c; /* Yellow accent for values */
+  gap: 6px; /* Spacing between stat lines */
+  padding: 12px 15px
 }
 
 /* Divider line */

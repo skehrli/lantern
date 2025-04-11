@@ -286,7 +286,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         if (!popupRef.current || !popupData || !containerRef.current) return;
         setIsDraggingPopup(true);
         const popupRect = popupRef.current.getBoundingClientRect();
-        const containerRect = containerRef.current.getBoundingClientRect();
         const initialClientX = event.clientX;
         const initialClientY = event.clientY;
         dragStartOffsetRef.current = {
@@ -502,23 +501,70 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         setInternalGraphData({ nodes, links });
     }, [tradingNetwork]);
 
-
     // --- Stat Item Renderer ---
     const renderStatItem = (
         _value: number | undefined | null, key: keyof NodeStats, label: string
     ): JSX.Element | null => {
         const value = _value ?? 0;
         if (Math.abs(value) <= VALUE_TOLERANCE) return null;
-        const barWidthPercent = maxIndividualMetricValue > 0 ? (Math.abs(value) / maxIndividualMetricValue) * 100 : 0;
+        const barWidthPercent = maxIndividualMetricValue > 0 ? (value / maxIndividualMetricValue) * 100 : 0;
         const formattedValue = formatStat(value);
-        const labelColumnWidth = '95px';
+        const labelColumnWidth = '95px'; // Keep this definition
+        // console.log(barWidthPercent)
+
         return (
-            <div key={key} className="stat-item" style={{ display: 'grid', gridTemplateColumns: `${labelColumnWidth} 1fr`, alignItems: 'center', gap: '8px', width: '100%' }} title={`${label}: ${formattedValue}`}>
-                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right', width: '100%', color: '#555', fontSize: '11px' }}>{label}:</span>
-                <div className="bar-container" style={{ height: POPUP_BAR_HEIGHT, backgroundColor: '#e9ecef', borderRadius: '4px', overflow: 'hidden' }} title={formattedValue}>
-                    <div className="bar" style={{ width: `${barWidthPercent}%`, height: '100%', backgroundColor: POPUP_BAR_COLORS[key] || '#bdc3c7', borderRadius: '4px', transition: 'width 0.2s ease-out' }} />
+            <div
+                key={key}
+                className="stat-item"
+                style={{
+                    display: 'flex',        // Use Flexbox for the row
+                    alignItems: 'center',   // Vertically align items in the center
+                    gap: '8px',             // Keep the gap
+                    width: '100%'           // Ensure it takes full width
+                }}
+                title={`${label}: ${formattedValue}`} // Keep tooltip on the row
+            >
+                {/* Label Span: Give it a fixed width and prevent shrinking */}
+                <span style={{
+                    width: labelColumnWidth,   // Set fixed width for the label part
+                    flexShrink: 0,             // Prevent the label from shrinking if space is tight
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    textAlign: 'right',
+                    color: '#555',
+                    fontSize: '11px',
+                    position: 'relative', // Allow manual positioning
+                    top: '-7px',          // Nudge down by 1px (adjust 1px, 1.5px, 2px as needed)
+                }}>
+                    {label}:
+                </span>
+
+                {/* Bar Container: Let it take the remaining space */}
+                <div
+                    className="bar-container"
+                    style={{
+                        flex: 1,                   // Allow the bar container to grow and fill remaining space
+                        height: POPUP_BAR_HEIGHT,
+                        backgroundColor: '#e9ecef',
+                        borderRadius: '4px',
+                        overflow: 'hidden'
+                    }}
+                    title={formattedValue} // Tooltip also useful here if hovering just the bar
+                >
+                    <div
+                        className="bar"
+                        style={{
+                            width: `${barWidthPercent}%`,
+                            height: '100%',
+                            backgroundColor: POPUP_BAR_COLORS[key] || '#bdc3c7',
+                            borderRadius: '4px',
+                            transition: 'width 0.2s ease-out'
+                        }}
+                    />
                 </div>
-            </div> );
+            </div>
+        );
     };
 
     // --- Memoized Callbacks for ForceGraph Props ---
@@ -667,7 +713,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                         {popupData.name}
                     </h4>
                      <div className="popup-stats" style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '12px 15px' }}>
-                         {renderStatItem(popupData.stats.selfconsumption_volume, 'selfconsumption_volume', 'Self-Consumed')}
+                         {renderStatItem(popupData.stats.selfconsumption_volume, 'selfconsumption_volume', 'From Solar')}
                          {renderStatItem(popupData.stats.discharging_volume, 'discharging_volume', 'From Battery')}
                          {renderStatItem(popupData.stats.market_purchase_volume, 'market_purchase_volume', 'From Market')}
                          {renderStatItem(popupData.stats.grid_import, 'grid_import', 'From Grid')}
@@ -683,6 +729,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                              ? <hr style={{ border: 'none', borderTop: '1px solid #eee', margin: '6px 0', width: '100%' }} />
                              : null
                         }
+                         {renderStatItem(popupData.stats.selfconsumption_volume, 'selfconsumption_volume', 'Self-Consumed')}
                          {renderStatItem(popupData.stats.charging_volume, 'charging_volume', 'To Battery')}
                          {renderStatItem(popupData.stats.market_sell_volume, 'market_sell_volume', 'To Market')}
                          {renderStatItem(popupData.stats.grid_export, 'grid_export', 'To Grid')}
