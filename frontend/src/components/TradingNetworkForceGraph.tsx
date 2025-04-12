@@ -51,6 +51,7 @@ interface PopupData {
     finalLeft: number; // Current left position (can be updated by dragging)
     finalTop: number;  // Current top position (can be updated by dragging)
     stats: NodeStats;
+    has_pv: boolean;
     name: string;
     popupWidth: number; // Store actual width for bounds check during drag
     popupHeight: number; // Store actual height for bounds check during drag
@@ -282,6 +283,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
             popupTimeoutRef.current = setTimeout(() => {
                  if (!fgRef.current) return;
+                 const nodeHasPv = individualMetrics.has_pv?.[Number(nodeId)] ?? false;
                  const stats: NodeStats = {
                     selfconsumption_volume: individualMetrics.individual_selfconsumption_volume?.[Number(nodeId)],
                     grid_import: individualMetrics.individual_grid_import?.[Number(nodeId)],
@@ -300,6 +302,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                      finalLeft: finalLeft,
                      finalTop: finalTop,
                      stats: stats,
+                     has_pv: nodeHasPv,
                      name: `Building ${internalNode.id}`,
                      popupWidth: POPUP_ESTIMATED_WIDTH,
                      popupHeight: POPUP_ESTIMATED_HEIGHT
@@ -793,36 +796,67 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                         overflowY: 'auto',
                         userSelect: 'none'
                     }} >
-                     <div className="popup-stats" style={{ display: 'flex', flexDirection: 'column', gap: '0px', padding: '8px 10px 0px 10px' }}>
-                         <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' }}>
-                             Consumed Energy Sources
-                         </div>
-                         {renderStatItem(popupData.stats.selfconsumption_volume, 'selfconsumption_volume', 'From Solar')}
-                         {renderStatItem(popupData.stats.discharging_volume, 'discharging_volume', 'From Battery')}
-                         {renderStatItem(popupData.stats.market_purchase_volume, 'market_purchase_volume', 'From Market')}
-                         {renderStatItem(popupData.stats.grid_import, 'grid_import', 'From Grid')}
-                        {
-                             ( (Math.abs(popupData.stats.selfconsumption_volume ?? 0) > VALUE_TOLERANCE) ||
+                    <div className="popup-stats" style={{ display: 'flex', flexDirection: 'column', gap: '0px', padding: '5px 10px 0px 10px' /* Added bottom padding */ }}>
+                         {/* --- Consumed Section (Always show title if data exists) --- */}
+                         {
+                             // Only show title if there's at least one consumption item > tolerance
+                             ( (Math.abs(popupData.stats.selfconsumption_volume ?? 0) > VALUE_TOLERANCE && popupData.has_pv) || // "From Solar" only counts if node has PV
                                (Math.abs(popupData.stats.discharging_volume ?? 0) > VALUE_TOLERANCE) ||
                                (Math.abs(popupData.stats.market_purchase_volume ?? 0) > VALUE_TOLERANCE) ||
                                (Math.abs(popupData.stats.grid_import ?? 0) > VALUE_TOLERANCE) )
-                             &&
-                             ( (Math.abs(popupData.stats.charging_volume ?? 0) > VALUE_TOLERANCE) ||
+                             ? (
+                                 <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' }}>
+                                     Consumed Energy Sources
+                                 </div>
+                               ) : null
+                         }
+                         {/* Conditionally render "From Solar" only if node has PV */}
+                         {popupData.has_pv && renderStatItem(popupData.stats.selfconsumption_volume, 'selfconsumption_volume', 'From Solar')}
+                         {renderStatItem(popupData.stats.discharging_volume, 'discharging_volume', 'From Battery')}
+                         {renderStatItem(popupData.stats.market_purchase_volume, 'market_purchase_volume', 'From Market')}
+                         {renderStatItem(popupData.stats.grid_import, 'grid_import', 'From Grid')}
+
+                        {/* --- Conditional Separator --- */}
+                        {
+                            popupData.has_pv && // Separator only relevant if PV exists (meaning Production section might show)
+                            // Check if there's anything significant in the *rendered* consumption section
+                            ( ( (Math.abs(popupData.stats.selfconsumption_volume ?? 0) > VALUE_TOLERANCE && popupData.has_pv) || // "From Solar" only counted if node has PV
+                               (Math.abs(popupData.stats.discharging_volume ?? 0) > VALUE_TOLERANCE) ||
+                               (Math.abs(popupData.stats.market_purchase_volume ?? 0) > VALUE_TOLERANCE) ||
+                               (Math.abs(popupData.stats.grid_import ?? 0) > VALUE_TOLERANCE) ) )
+                             && // And check if there's anything significant in the (potential) production section
+                            ( ( (Math.abs(popupData.stats.selfconsumption_volume ?? 0) > VALUE_TOLERANCE) || // Self-consumption as DESTINATION always counts if > tolerance
+                               (Math.abs(popupData.stats.charging_volume ?? 0) > VALUE_TOLERANCE) ||
                                (Math.abs(popupData.stats.market_sell_volume ?? 0) > VALUE_TOLERANCE) ||
-                               (Math.abs(popupData.stats.grid_export ?? 0) > VALUE_TOLERANCE) )
-                             ? <hr style={{ border: 'none', borderTop: '5px solid transparent', margin: '0px 0', width: '100%' }} />
+                               (Math.abs(popupData.stats.grid_export ?? 0) > VALUE_TOLERANCE) ) )
+                             ? <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '8px 0', width: '100%' }} /> // Adjusted margin and style
                              : null
                         }
-                         <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' }}>
-                             Produced Energy Destinations
-                         </div>
-                         {renderStatItem(popupData.stats.selfconsumption_volume, 'selfconsumption_volume', 'Self-Consumed')}
-                         {renderStatItem(popupData.stats.charging_volume, 'charging_volume', 'To Battery')}
-                         {renderStatItem(popupData.stats.market_sell_volume, 'market_sell_volume', 'To Market')}
-                         {renderStatItem(popupData.stats.grid_export, 'grid_export', 'To Grid')}
+
+                        {/* --- Conditional Produced Section --- */}
+                        { popupData.has_pv && ( // Only render this section if the node has PV
+                            <> {/* Use fragment for grouping */}
+                                {
+                                    // Only show title if there's at least one production item > tolerance
+                                    ( (Math.abs(popupData.stats.selfconsumption_volume ?? 0) > VALUE_TOLERANCE) ||
+                                      (Math.abs(popupData.stats.charging_volume ?? 0) > VALUE_TOLERANCE) ||
+                                      (Math.abs(popupData.stats.market_sell_volume ?? 0) > VALUE_TOLERANCE) ||
+                                      (Math.abs(popupData.stats.grid_export ?? 0) > VALUE_TOLERANCE) )
+                                    ? (
+                                        <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '11.5px', color: '#3b82f6' /* Green color for production */ }}>
+                                             Produced Energy Destinations
+                                        </div>
+                                       ) : null
+                                }
+                                 {renderStatItem(popupData.stats.selfconsumption_volume, 'selfconsumption_volume', 'Self-Consumed')}
+                                 {renderStatItem(popupData.stats.charging_volume, 'charging_volume', 'To Battery')}
+                                 {renderStatItem(popupData.stats.market_sell_volume, 'market_sell_volume', 'To Market')}
+                                 {renderStatItem(popupData.stats.grid_export, 'grid_export', 'To Grid')}
+                             </>
+                        )}
                      </div>
-                </div>
-            )}
+                 </div>
+             )}
             {/* End Node Popup */}
 
             {/* --- Link Hover Tooltip --- */}
