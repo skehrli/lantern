@@ -396,13 +396,13 @@ class ECDataset:
         """
         Returns the per-member energy fed into the grid over the timeframe of the dataset.
         """
-        return max(0, self.production.sum() - self.getSelfConsumptionVolumePerMember() - self.getSellVolumePerMember() - self.getChargeVolumePerMember())
+        return np.maximum(0, self.production.sum() - self.getSelfConsumptionVolumePerMember() - self.getSellVolumePerMember() - self.getChargeVolumePerMember())
 
     def getGridPurchaseVolumePerMember(self: Self) -> np.ndarray:
         """
         Returns the per-member energy purchased from the grid over the timeframe of the dataset.
         """
-        return max(0, self.consumption.sum() - self.getSelfConsumptionVolumePerMember() - self.getBuyVolumePerMember() - self.getDischargeVolumePerMember())
+        return np.maximum(0, self.consumption.sum() - self.getSelfConsumptionVolumePerMember() - self.getBuyVolumePerMember() - self.getDischargeVolumePerMember())
 
     def compareProductionWithConsumption(self: Self) -> tuple[int, int]:
         return (self.supply > 0).sum().sum(), (self.demand > 0).sum().sum()
