@@ -47,6 +47,7 @@ class IndividualMetrics(BaseModel):
     individual_grid_export: List[float]
     individual_market_sell_volume: List[float]
     individual_charging_volume: List[float]
+    has_pv: List[bool]
 
 
 class CostMetrics(BaseModel):

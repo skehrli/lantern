@@ -70,6 +70,7 @@ export interface IndividualMetricsData {
     individual_grid_export: number[];
     individual_market_sell_volume: number[];
     individual_charging_volume: number[];
+    has_pv: boolean[];
 }
 
 interface CostMetricsData {

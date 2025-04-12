@@ -312,6 +312,7 @@ class ECDataset:
                 individual_grid_export=self.getGridFeedInVolumePerMember(),
                 individual_market_sell_volume=self.getSellVolumePerMember(),
                 individual_charging_volume=self.getChargeVolumePerMember(),
+                has_pv=[x > 0 for x in self.production.sum()],
             ),
             cost_metrics=CostMetrics(
                 cost_with_lec=float(sum(self.computePricePerMember(True)) * numDaysInSim / numDaysComputed / (100.0 * self.numParticipants * APT_BLOCK_SIZE)),

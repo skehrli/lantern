@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react';
 import ForceGraph2D, { NodeObject, LinkObject, ForceGraphMethods } from 'react-force-graph-2d';
-import { FaBuilding } from 'react-icons/fa6';
 import ReactDOMServer from 'react-dom/server';
+import { PiHouseSimpleFill, PiSolarRoofBold } from 'react-icons/pi';
 import {IndividualMetricsData, TradingNetworkData} from '../App'; // Adjust the path if necessary
 
 // --- Component Props ---
@@ -29,13 +29,13 @@ interface InternalLinkObject extends LinkObject {
     value: number;
     baseColor: string;
     curvature: number;
-    // Add index signature if react-force-graph adds properties like __indexColor, etc.
     [key: string]: any; // Allows for properties added by the library
 }
 
 
 interface InternalNodeObject extends NodeObject {
     id: string | number;
+    has_pv: boolean;
     baseColor: string;
     val: number; // Physics size
     visualSize: number; // Drawing size
@@ -150,6 +150,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     const [clickedNodeId, setClickedNodeId] = useState<string | number | null>(null);
 
     const [buildingImageNormal, setBuildingImageNormal] = useState<HTMLImageElement | null>(null);
+    const [solarRoofImageNormal, setSolarRoofImageNormal] = useState<HTMLImageElement | null>(null);
 
     const [isLayoutPhaseComplete, setIsLayoutPhaseComplete] = useState(false);
     const [internalGraphData, setInternalGraphData] = useState<{ nodes: InternalNodeObject[], links: InternalLinkObject[] }>({ nodes: [], links: [] });
@@ -326,7 +327,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
 
     // --- Popup Drag Handlers ---
-    // (These remain unchanged)
     const handlePopupMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
         if (!popupRef.current || !popupData || !containerRef.current) return;
         setIsDraggingPopup(true);
@@ -363,7 +363,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     }, [isDraggingPopup]);
 
     // Effect to add/remove global mouse listeners for dragging
-    // (Remains unchanged)
     useEffect(() => {
         if (isDraggingPopup) {
             window.addEventListener('mousemove', handleMouseMove);
@@ -379,7 +378,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     }, [isDraggingPopup, handleMouseMove, handleMouseUp]);
 
     // --- Helper for Zoom Calculation ---
-    // (Remains unchanged)
     const calculateAndApplyZoom = useCallback((nodesToZoom: InternalNodeObject[], centerNode?: InternalNodeObject) => {
         const fg = fgRef.current;
         if (!fg || nodesToZoom.length === 0 || width <= 0 || height <= 0) return;
@@ -416,7 +414,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
 
     // --- Engine Tick Handler to Fix Positions ---
-    // (Remains largely unchanged, added calculateAndApplyZoom dep)
     const handleEngineTick = useCallback(() => {
         engineTicksRef.current += 1;
         const currentTicks = engineTicksRef.current;
@@ -458,7 +455,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
 
     // --- Effect to Handle Zooming on Focus Change (After Layout is Complete) ---
-    // (Remains unchanged, added calculateAndApplyZoom dep)
     useEffect(() => {
         const fg = fgRef.current;
         if (!fg || !isLayoutPhaseComplete || width <= 0 || height <= 0) return;
@@ -497,26 +493,31 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     }, [tradingNetwork]);
 
     // --- Effect to Cleanup Popup Timeout ---
-    // (Remains unchanged)
     useEffect(() => {
         return () => { if (popupTimeoutRef.current) clearTimeout(popupTimeoutRef.current); };
     }, []);
 
     // --- Effect to Pre-render Icons ---
-    // (Remains unchanged)
     useEffect(() => {
-        const iconRenderSize = BUILDING_ICON_DRAW_SIZE * 1.5;
-        const svgStringNormal = ReactDOMServer.renderToStaticMarkup( <FaBuilding color={NODE_COLORS.building} size={iconRenderSize} /> );
         let isMounted = true;
+        const iconRenderSize = BUILDING_ICON_DRAW_SIZE * 1.5;
+        // Pre-render building icon
+        const buildingSvgString = ReactDOMServer.renderToStaticMarkup( <PiHouseSimpleFill color={NODE_COLORS.building} size={iconRenderSize} /> );
         const imgNormal = new Image();
         imgNormal.onload = () => { if (isMounted) setBuildingImageNormal(imgNormal); };
         imgNormal.onerror = () => { console.error("Failed to load normal building icon from SVG data URI"); };
-        imgNormal.src = createSvgDataUri(svgStringNormal);
+        imgNormal.src = createSvgDataUri(buildingSvgString);
+
+        const solarSvgString = ReactDOMServer.renderToStaticMarkup( <PiSolarRoofBold color={NODE_COLORS.building} size={iconRenderSize} /> );
+        const imgSolar = new Image();
+        imgSolar.onload = () => { if (isMounted) setSolarRoofImageNormal(imgSolar); };
+        imgSolar.onerror = () => { console.error("Failed to load solar roof icon from SVG data URI"); };
+        imgSolar.src = createSvgDataUri(solarSvgString);
+
         return () => { isMounted = false; };
-    }, []);
+     }, []);
 
     // --- Effect to Process Input Data ---
-    // (Remains unchanged)
     useEffect(() => {
         if (!tradingNetwork?.nodes || !tradingNetwork?.edges || (tradingNetwork.nodes.length === 0 && tradingNetwork.edges.length === 0)) {
             setInternalGraphData({ nodes: [], links: [] });
@@ -552,13 +553,13 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                 const baseColor = NODE_COLORS.building;
                 const visualSize = BUILDING_ICON_DRAW_SIZE;
                 const val = visualSize / 2 + 1;
-                return { id, baseColor, val, visualSize };
+                const has_pv = individualMetrics?.has_pv?.[Number(nodeIdStr)] ?? false;
+                return { id, baseColor, val, visualSize, has_pv };
             });
         setInternalGraphData({ nodes, links });
     }, [tradingNetwork]);
 
     // --- Stat Item Renderer ---
-    // (Remains unchanged)
     const renderStatItem = (
         _value: number | undefined | null, key: keyof NodeStats, label: string
     ): JSX.Element | null => {
@@ -623,7 +624,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
 
     // --- Memoized Callbacks for ForceGraph Props ---
-    // (Most remain unchanged)
     const nodeCanvasObject = useCallback((node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
         const internalNode = node as InternalNodeObject;
         const nodeId = internalNode.id;
@@ -633,9 +633,9 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         const nodeY = internalNode.y ?? 0;
         const originalAlpha = ctx.globalAlpha;
         ctx.globalAlpha = isFullyVisible ? originalAlpha : NODE_FADE_OPACITY;
-        const imgToDraw = buildingImageNormal;
-        if (imgToDraw?.complete && imgToDraw.naturalWidth > 0) {
-            ctx.drawImage(imgToDraw, nodeX - visualSize / 2, nodeY - visualSize / 2, visualSize, visualSize);
+        const iconToUse = internalNode.has_pv ? solarRoofImageNormal : buildingImageNormal; // MODIFY: Choose icon based on has_pv
+        if (iconToUse?.complete && iconToUse.naturalWidth > 0) { // MODIFY: Use the chosen icon
+            ctx.drawImage(iconToUse, nodeX - visualSize / 2, nodeY - visualSize / 2, visualSize, visualSize); // MODIFY: Use the chosen icon
         } else {
             ctx.fillStyle = internalNode.baseColor;
             ctx.beginPath();
@@ -710,7 +710,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
     // --- Render Logic ---
      if (!buildingImageNormal) return (
-        <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', background: '#f9fafb' }}>
+        <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', background: '#f9fafb' }}> // MODIFY: Check both images
             <p>Loading assets...</p>
         </div>
     );
@@ -767,7 +767,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
             />
 
             {/* --- Draggable Node Popup --- */}
-            {/* (Node popup rendering logic remains the same) */}
             {popupData && (
                 <div
                     ref={popupRef}
