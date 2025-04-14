@@ -32,7 +32,6 @@ Make sure that the names of the files are `load.pkl` and `pv.pkl` for the load a
 The columns of the dataframes must be timestamps and the rows are the measurements for each household respectively in kWh.
 Make sure your dataframe looks something like this:
 
-`
 timestamp  2024-01-01 00:00:00+01:00  ...  2024-12-31 22:00:00+01:00
 id                                    ...
 1                              2.080  ...                      0.067
@@ -46,7 +45,6 @@ id                                    ...
 1468                           0.463  ...                      0.301
 1476                           0.060  ...                      0.145
 1478                           0.247  ...                      0.300
-`
 
 The timeframe is not important (although at most a calendar year), but the measurements should be hourly. If your dataset has more frequent measurements,
 sum them to hourly timestamps, and if they're less frequent, interpolate the missing ones.
