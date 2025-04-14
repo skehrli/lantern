@@ -197,6 +197,22 @@ const ResultSelector: React.FC<ResultSelectorProps> = ({ history, selectedIndex,
                     );
                 })}
             </select>
+            <button
+                type="button"
+                onClick={() => onSelect(Math.max(0, (selectedIndex ?? 0) - 1))}
+                disabled={!history.length || (selectedIndex ?? 0) <= 0}
+                aria-label="Previous Result"
+            >
+                ←
+            </button>
+            <button
+                type="button"
+                onClick={() => onSelect(Math.min(history.length - 1, (selectedIndex ?? 0) + 1))}
+                disabled={!history.length || (selectedIndex ?? 0) >= history.length - 1}
+                aria-label="Next Result"
+            >
+                →
+            </button>
         </div>
     );
 };
