@@ -33,17 +33,29 @@ The columns of the dataframes must be timestamps and the rows are the measuremen
 Make sure your dataframe looks something like this:
 
 `timestamp  2024-01-01 00:00:00+01:00  ...  2024-12-31 22:00:00+01:00`
+
 `id                                    ...                           `
+
 `1                              2.080  ...                      0.067`
+
 `2                              0.270  ...                      0.268`
+
 `5                              0.051  ...                      0.196`
+
 `6                              0.242  ...                      0.304`
+
 `15                             0.026  ...                      0.043`
+
 `...                              ...  ...                        ...`
+
 `1464                           0.040  ...                      0.027`
+
 `1466                           0.303  ...                      0.172`
+
 `1468                           0.463  ...                      0.301`
+
 `1476                           0.060  ...                      0.145`
+
 `1478                           0.247  ...                      0.300`
 
 The timeframe is not important (although at most a calendar year), but the measurements should be hourly. If your dataset has more frequent measurements,
