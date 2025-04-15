@@ -85,16 +85,16 @@ interface ProfileData {
 }
 
 // --- Interface for Trading Network Data ---
-interface TradingNetworkNode {
+export interface TradingNetworkNode {
     id: string | number; // e.g., 'building_1', 'grid'
 }
-interface TradingNetworkLink {
+export interface TradingNetworkLink {
     source: string; // id of source node
     target: string; // id of target node
     value: number; // Amount of energy traded
 }
 export interface TradingNetworkData {
-    links: TradingNetworkLink[];
+    edges: TradingNetworkLink[];
     nodes: TradingNetworkNode[];
 }
 
@@ -103,7 +103,7 @@ interface SimulationResult {
     individual_metrics: IndividualMetricsData;
     cost_metrics: CostMetricsData;
     profiles: ProfileData;
-    trading_network: TradingNetworkData | null; // Optional field
+    trading_network: TradingNetworkData;
     warnings: string[];
     errors: string[];
 }
@@ -269,7 +269,7 @@ const EnergyPieChart: React.FC<EnergyPieChartProps> = ({ type, metrics }) => {
 
     }, [metrics, type, t]); // Recalculate only when metrics or type change
 
-    const renderCustomizedLabel = useCallback(({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+    const renderCustomizedLabel = useCallback(({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
         if (percent == null || isNaN(percent) || percent < 0.03) return null; // Hide labels for very small slices
 
         const radius = innerRadius + (outerRadius - innerRadius) * 0.6; // Position label inside slice
@@ -590,17 +590,9 @@ function App() {
                 const data: SimulationResult = JSON.parse(responseBody);
                 console.log('Received simulation result:', data);
 
-                // Basic validation of received structure
-                if (!data || !data.cost_metrics || !data.energy_metrics || !data.profiles) { // removed trading_network check for now !data.trading_network
+                if (!data || !data.cost_metrics || !data.energy_metrics || !data.profiles) {
                     throw new Error('Received incomplete or invalid data structure from server.');
                 }
-                // Add specific check for trading_network if it's crucial
-                if (data.trading_network === undefined) {
-                    console.warn("API response did not include 'trading_network' field.");
-                    // Optionally set it to null or an empty structure if needed downstream
-                    data.trading_network = null;
-                }
-
 
                 setResultsHistory(prevHistory => {
                     const newEntry: SimulationHistoryEntry = {

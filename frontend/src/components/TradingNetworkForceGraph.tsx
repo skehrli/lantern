@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useMemo, useState, useCallback } from 'react'
 import ForceGraph2D, { NodeObject, LinkObject, ForceGraphMethods } from 'react-force-graph-2d';
 import ReactDOMServer from 'react-dom/server';
 import { PiHouseSimpleFill, PiSolarRoofBold } from 'react-icons/pi';
-import {IndividualMetricsData, TradingNetworkData} from '../App'; // Adjust the path if necessary
+import { TradingNetworkNode, TradingNetworkLink, IndividualMetricsData, TradingNetworkData} from '../App'; // Adjust the path if necessary
 
 // --- Component Props ---
 interface TradingNetworkGraphProps {
@@ -13,7 +13,7 @@ interface TradingNetworkGraphProps {
 }
 
 interface NodeStats {
-    selfconsumption_volume: number | undefined; // Allow undefined
+    selfconsumption_volume: number | undefined;
     grid_import: number | undefined;
     market_purchase_volume: number | undefined;
     discharging_volume: number | undefined;
@@ -24,12 +24,12 @@ interface NodeStats {
 
 // --- Internal Data Structures ---
 interface InternalLinkObject extends LinkObject {
-    source: string | number | NodeObject; // Allow NodeObject after stabilization
-    target: string | number | NodeObject; // Allow NodeObject after stabilization
+    source: string | number | InternalNodeObject;
+    target: string | number | InternalNodeObject;
     value: number;
     baseColor: string;
     curvature: number;
-    [key: string]: any; // Allows for properties added by the library
+    [key: string]: any;
 }
 
 
@@ -142,7 +142,7 @@ const formatLinkValue = (value: number | undefined | null): string => {
 
 // --- Main Component ---
 const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingNetwork, individualMetrics, width, height }) => {
-    const fgRef = useRef<ForceGraphMethods>();
+    const fgRef = useRef<ForceGraphMethods<InternalNodeObject, InternalLinkObject>>(undefined);
     const containerRef = useRef<HTMLDivElement>(null);
     const popupRef = useRef<HTMLDivElement>(null);
 
@@ -476,7 +476,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
 
     // --- Effect to Reset State on Data Change ---
-    // (Added clearing for hoveredLinkData)
     useEffect(() => {
         setIsLayoutPhaseComplete(false);
         fixAppliedRef.current = false;
@@ -529,12 +528,21 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
         const links: InternalLinkObject[] = [];
         const nodesPresentInLinks = new Set<string>();
         tradingNetwork.edges
-            .filter(edge => Array.isArray(edge) && edge.length === 3 && typeof edge[2] === 'number' && !isNaN(edge[2]) && edge[2] > VALUE_TOLERANCE && edge[0] != null && edge[1] != null)
-            .forEach((edgeTuple) => {
-                const sourceId = String(edgeTuple[0]);
-                const targetId = String(edgeTuple[1]);
+            .filter((edge: TradingNetworkLink) =>
+                edge &&
+                typeof edge.value === 'number' &&
+                !isNaN(edge.value) &&
+                edge.value > VALUE_TOLERANCE &&
+                edge.source != null &&
+                edge.target != null
+            )
+            .forEach((link: TradingNetworkLink) => {
+                console.log('edgetuple ', link);
+
+                const sourceId = String(link.source);
+                const targetId = String(link.target);
                 if (sourceId === targetId) return;
-                links.push({ source: sourceId, target: targetId, value: edgeTuple[2], baseColor: LINK_COLOR_BASE, curvature: 0 });
+                links.push({ source: sourceId, target: targetId, value: link.value, baseColor: LINK_COLOR_BASE, curvature: 0 });
                 nodesPresentInLinks.add(sourceId);
                 nodesPresentInLinks.add(targetId);
             });
@@ -550,13 +558,13 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
             }
         });
         const nodes: InternalNodeObject[] = tradingNetwork.nodes
-            .filter(nodeIdStr => nodesPresentInLinks.has(String(nodeIdStr)))
-            .map((nodeIdStr: string | number) => {
-                const id = String(nodeIdStr);
+            .filter(node => nodesPresentInLinks.has(String(node.id)))
+            .map((node: TradingNetworkNode) => {
+                const id = String(node.id);
                 const baseColor = NODE_COLORS.building;
                 const visualSize = BUILDING_ICON_DRAW_SIZE;
                 const val = visualSize / 2 + 1;
-                const has_pv = individualMetrics?.has_pv?.[Number(nodeIdStr)] ?? false;
+                const has_pv = individualMetrics?.has_pv?.[Number(id)] ?? false;
                 return { id, baseColor, val, visualSize, has_pv };
             });
         setInternalGraphData({ nodes, links });
@@ -565,12 +573,12 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
     // --- Stat Item Renderer ---
     const renderStatItem = (
         _value: number | undefined | null, key: keyof NodeStats, label: string
-    ): JSX.Element | null => {
+    ): React.JSX.Element | null => {
         const value = _value ?? 0;
         if (Math.abs(value) <= VALUE_TOLERANCE) return null;
         const barWidthPercent = maxIndividualMetricValue > 0 ? Math.min(100, (value / maxIndividualMetricValue) * 100 + 3): 0;
         const formattedValue = formatStat(value);
-        const labelColumnWidth = '95px'; // Keep this definition
+        const labelColumnWidth = '95px';
 
         return (
             <div
@@ -627,7 +635,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
 
 
     // --- Memoized Callbacks for ForceGraph Props ---
-    const nodeCanvasObject = useCallback((node: NodeObject, ctx: CanvasRenderingContext2D, globalScale: number) => {
+    const nodeCanvasObject = useCallback((node: NodeObject, ctx: CanvasRenderingContext2D) => {
         const internalNode = node as InternalNodeObject;
         const nodeId = internalNode.id;
         const isFullyVisible = !clickedNodeId || visibleNodes.has(nodeId);
@@ -729,10 +737,9 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
      );
 
     return (
-        // Add onMouseMove to the container
         <div
             ref={containerRef}
-            onMouseMove={handleContainerMouseMove} // <-- Add mouse tracking here
+            onMouseMove={handleContainerMouseMove}
             style={{ position: 'relative', width, height, border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden', background: '#f9fafb' }}
         >
              <ForceGraph2D
@@ -766,7 +773,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                 // Event Handlers
                 onNodeClick={handleNodeClick}
                 onBackgroundClick={handleBackgroundClick}
-                onLinkHover={handleLinkHover} // <-- Add link hover handler
+                onLinkHover={handleLinkHover}
             />
 
             {/* --- Draggable Node Popup --- */}
