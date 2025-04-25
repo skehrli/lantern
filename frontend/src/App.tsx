@@ -39,7 +39,6 @@ const SEASON_ICONS: Record<string, React.ComponentType<any>> = {
 };
 const CHART_HEIGHT = 300; // Consistent height for Pie charts
 const PROFILE_CHART_HEIGHT = 300; // Height for Load/Gen profile chart
-const GRAPH_CHART_HEIGHT = 300; // Height for Force Graph
 const VALUE_TOLERANCE = 0.01; // Threshold for ignoring small values in charts/calcs
 
 // --- Interfaces ---
@@ -499,7 +498,7 @@ function App() {
     // Callback to update graph dimensions based on container size
     const updateGraphDimensions = useCallback(() => {
         if (networkContainerRef.current) {
-            const element = networkContainerRef.current;
+            const element = networkContainerRef.current as HTMLDivElement;
             const styles = window.getComputedStyle(element); // Get computed styles
 
             const paddingLeft = parseFloat(styles.paddingLeft);
@@ -509,10 +508,10 @@ function App() {
 
             if (!isNaN(paddingLeft) && !isNaN(paddingRight) && !isNaN(paddingTop) && !isNaN(paddingBottom)) {
             
-                const containerWidth = element.offsetWidth; // Includes padding & border
+                const containerWidth = element.offsetWidth;
                 const graphContentWidth = Math.max(0, containerWidth - (paddingLeft + paddingRight));
 
-                const containerHeight = element.offsetHeight; // Measure the actual height
+                const containerHeight = element.offsetHeight;
                 const graphContentHeight = Math.max(0, containerHeight - (paddingTop + paddingBottom + TITLE_APPROX_HEIGHT));
             
                 const finalWidth = graphContentWidth;
@@ -532,19 +531,12 @@ function App() {
     useEffect(() => {
         const currentContainer = networkContainerRef.current;
         
-        // IMPORTANT: Exit early if the container doesn't exist OR if the relevant data isn't there yet.
-        // This prevents trying to measure when the div might not be properly rendered due to the outer conditional.
         if (!currentContainer || !currentResult?.trading_network) {
-            // Optional: Reset dimensions if data disappears? Or just leave them?
-            // setGraphDimensions({ width: 0, height: 0 }); // Consider if needed
             return; 
         }
 
-        // If we get here, the container exists and the data is present.
-        // Measure dimensions now.
         updateGraphDimensions();
 
-        // Observe for subsequent resizes
         const resizeObserver = new ResizeObserver(updateGraphDimensions);
         resizeObserver.observe(currentContainer);
 
@@ -556,7 +548,6 @@ function App() {
             }
             resizeObserver.disconnect();
         };
-    // Add currentResult?.trading_network as a dependency
     }, [updateGraphDimensions, currentResult?.trading_network]);
 
     // --- Event Handlers  ---
