@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis,
@@ -490,6 +490,75 @@ function App() {
         return currentHistoryEntry?.result ?? null;
     }, [currentHistoryEntry]);
 
+    // State and Ref for dynamic graph sizing
+    const networkContainerRef = useRef(null);
+    const [graphDimensions, setGraphDimensions] = useState({ width: 0, height: 0 });
+
+    const TITLE_APPROX_HEIGHT = 40;
+
+    // Callback to update graph dimensions based on container size
+    const updateGraphDimensions = useCallback(() => {
+        if (networkContainerRef.current) {
+            const element = networkContainerRef.current;
+            const styles = window.getComputedStyle(element); // Get computed styles
+
+            const paddingLeft = parseFloat(styles.paddingLeft);
+            const paddingRight = parseFloat(styles.paddingRight);
+            const paddingTop = parseFloat(styles.paddingTop);
+            const paddingBottom = parseFloat(styles.paddingBottom);
+
+            if (!isNaN(paddingLeft) && !isNaN(paddingRight) && !isNaN(paddingTop) && !isNaN(paddingBottom)) {
+            
+                const containerWidth = element.offsetWidth; // Includes padding & border
+                const graphContentWidth = Math.max(0, containerWidth - (paddingLeft + paddingRight));
+
+                const containerHeight = element.offsetHeight; // Measure the actual height
+                const graphContentHeight = Math.max(0, containerHeight - (paddingTop + paddingBottom + TITLE_APPROX_HEIGHT));
+            
+                const finalWidth = graphContentWidth;
+                const finalHeight = Math.max(150, graphContentHeight);
+
+
+                // Update state only if dimensions actually changed
+                if (graphDimensions.width !== finalWidth || graphDimensions.height !== finalHeight) {
+                     setGraphDimensions({ width: finalWidth, height: finalHeight });
+                }
+            } else {
+                console.warn("Could not parse padding for network container. Graph dimensions might be incorrect.");
+            }
+        }
+    }, [graphDimensions.width, graphDimensions.height]); 
+
+    useEffect(() => {
+        const currentContainer = networkContainerRef.current;
+        
+        // IMPORTANT: Exit early if the container doesn't exist OR if the relevant data isn't there yet.
+        // This prevents trying to measure when the div might not be properly rendered due to the outer conditional.
+        if (!currentContainer || !currentResult?.trading_network) {
+            // Optional: Reset dimensions if data disappears? Or just leave them?
+            // setGraphDimensions({ width: 0, height: 0 }); // Consider if needed
+            return; 
+        }
+
+        // If we get here, the container exists and the data is present.
+        // Measure dimensions now.
+        updateGraphDimensions();
+
+        // Observe for subsequent resizes
+        const resizeObserver = new ResizeObserver(updateGraphDimensions);
+        resizeObserver.observe(currentContainer);
+
+        // Cleanup
+        return () => {
+            // Check currentContainer again in cleanup in case it was removed before cleanup runs
+            if (currentContainer) { 
+                resizeObserver.unobserve(currentContainer);
+            }
+            resizeObserver.disconnect();
+        };
+    // Add currentResult?.trading_network as a dependency
+    }, [updateGraphDimensions, currentResult?.trading_network]);
+
     // --- Event Handlers  ---
 
     const handleResultSelection = useCallback((index: number) => {
@@ -628,7 +697,7 @@ function App() {
     }, [params.community_size]);
 
     // --- JSX Structure ---
-    return (
+  return (
         <div className="container">
             <LanguageSwitcher />
 
@@ -644,7 +713,7 @@ function App() {
                         <div className="form-header">
                             <h2>{t('app.title')}</h2>
                             <p>{t('app.subtitle')}</p>
-                            <audio src={explanationAudio} preload="auto" controls /> {/* has to be updated with the audio */}
+                            <audio src={explanationAudio} preload="auto" controls />
                             <p>{t('app.description')}</p>
                         </div>
 
@@ -680,7 +749,7 @@ function App() {
                                         onClick={() => handleParamChange('season', key)}
                                         disabled={isLoading}
                                         aria-pressed={params.season === key}
-                                        aria-label={`${t('form.seasonLabel')}: ${key}`} // More descriptive label
+                                        aria-label={`${t('form.seasonLabel')}: ${key}`}
                                     >
                                         <IconComponent aria-hidden="true" />
                                     </button>
@@ -699,7 +768,7 @@ function App() {
                                     aria-valuemin={0} aria-valuemax={100}
                                     aria-valuenow={params.sd_percentage}
                                     aria-labelledby="sd-label"
-                                    tabIndex={isLoading ? -1 : 0} // Prevent focus when loading
+                                    tabIndex={isLoading ? -1 : 0}
                                 >
                                     <svg className="circle-fill" viewBox="0 0 80 80">
                                         <path d={getCircularPath(params.sd_percentage)} />
@@ -752,10 +821,9 @@ function App() {
                         {/* Explanation Item 1: Community Size */}
                         <div className="explanation-item">
                             <div className="explanation-icon-wrapper">
-                                {/* Buildings Icon SVG */}
                                 <PiCity className="explanation-icon" aria-hidden="true" />
                             </div>
-                            <div> {/* Wrap text for better alignment if using flex on item */}
+                            <div>
                                 <h4>{t('form.explanationCommunitySizeTitle')}</h4>
                                 <p>{t('form.explanationCommunitySizeText')}</p>
                             </div>
@@ -764,7 +832,6 @@ function App() {
                         {/* Explanation Item 2: Season */}
                         <div className="explanation-item">
                             <div className="explanation-icon-wrapper">
-                                {/* Season Icon SVG */}
                                 <BsCloudSun className="explanation-icon" aria-hidden="true" />
                             </div>
                             <div>
@@ -776,7 +843,6 @@ function App() {
                         {/* Explanation Item 3: PV adoption slider */}
                         <div className="explanation-item">
                             <div className="explanation-icon-wrapper">
-                                {/* PV Icon SVG */}
                                 <PiSolarPanelFill className="explanation-icon" aria-hidden="true" />
                             </div>
                             <div>
@@ -788,7 +854,6 @@ function App() {
                         {/* Explanation Item 4: Smart Device Slider */}
                         <div className="explanation-item">
                             <div className="explanation-icon-wrapper">
-                                {/* SD Icon SVG */}
                                 <GiWashingMachine className="explanation-icon" aria-hidden="true" />
                             </div>
                             <div>
@@ -800,7 +865,6 @@ function App() {
                         {/* Explanation Item 5: Battery */}
                         <div className="explanation-item">
                             <div className="explanation-icon-wrapper">
-                                {/* SD Icon SVG */}
                                 <IoIosBatteryFull className="explanation-icon" aria-hidden="true" />
                             </div>
                             <div>
@@ -841,14 +905,21 @@ function App() {
                                 </div>
 
                                 {currentResult.trading_network && (
-                                    <div className="result-tab trading-network-tab-span" key="trading-network">
+                                    <div
+                                        className="result-tab trading-network-tab-span"
+                                        key="trading-network"
+                                        ref={networkContainerRef}
+                                        style={{ position: 'relative', width: '100%', minHeight: '250px', overflow: 'hidden' }}
+                                    >
                                         <h3>{t('results.resultsContainer.tradingNetworkHeading')}</h3>
-                                        <TradingNetworkForceGraph
-                                            tradingNetwork={currentResult.trading_network}
-                                            individualMetrics={currentResult.individual_metrics}
-                                            width={350}
-                                            height={GRAPH_CHART_HEIGHT * 2 + 20}
-                                        />
+                                        {graphDimensions.width > 0 && graphDimensions.height > 0 && ( // Conditional render
+                                            <TradingNetworkForceGraph
+                                                tradingNetwork={currentResult.trading_network}
+                                                individualMetrics={currentResult.individual_metrics}
+                                                width={graphDimensions.width} // Use dynamic width
+                                                height={graphDimensions.height} // Use dynamic height
+                                            />
+                                        )}
                                     </div>
                                 )}
 
@@ -914,7 +985,7 @@ function App() {
 
                                 {/* Warnings Tab (Optional - placed below explanation) */}
                                 {currentResult.warnings && currentResult.warnings.length > 0 && (
-                                    <div className="result-tab warnings-tab"> {/* Add class, maybe style differently */}
+                                    <div className="result-tab warnings-tab">
                                         <h3>{t('explanations.energyFlowText')}</h3>
                                         <ul>
                                             {currentResult.warnings.map((warning, index) => (<li key={`warn-${index}`}>{warning}</li>))}
@@ -924,7 +995,7 @@ function App() {
 
                                 {/* Errors Tab (Optional - might indicate partial success - placed below explanation) */}
                                 {currentResult.errors && currentResult.errors.length > 0 && (
-                                    <div className="result-tab errors-tab"> {/* Add class */}
+                                    <div className="result-tab errors-tab">
                                         <h3>{t('results.errorsTitle')}</h3>
                                         <ul>
                                             {currentResult.errors.map((errMsg, index) => (<li key={`err-${index}`}>{errMsg}</li>))}
@@ -938,10 +1009,9 @@ function App() {
                         !isLoading && resultsHistory.length === 0 && !error && (
                             <p className="no-results-yet">{t('results.noResultsYet')}</p>
                         )
-                        // Could add a specific loading indicator here if desired while isLoading is true
                         || isLoading && ( // Show loading indicator within results area
                             <div className="loading-indicator">
-                                <p>{t('results.loadingResults')}</p> {/* Add a spinner or better visual */}
+                                <p>{t('results.loadingResults')}</p>
                             </div>
                         )
                     )}
@@ -951,7 +1021,6 @@ function App() {
 
             {/* Footer Section */}
             <footer className="footer-banner">
-                {/* Ensure alt text is descriptive or leave empty if purely decorative */}
                 <img src="/logos/hslu.png" alt={t('footer.hsluAlt')} className="footer-logo" />
                 <img src="/logos/lantern.png" alt={t('footer.lanternAlt')} className="footer-logo" />
                 <img src="/logos/persist.png" alt={t('footer.persistAlt')} className="footer-logo" />
