@@ -802,7 +802,7 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                         overflowY: 'auto',
                         userSelect: 'none'
                     }} >
-                    <div className="popup-stats" style={{ display: 'flex', flexDirection: 'column', gap: '0px', padding: '5px 10px 0px 10px' /* Added bottom padding */ }}>
+                    <div className="popup-stats" style={{ display: 'flex', flexDirection: 'column', gap: '0px', padding: '5px 10px 5px 10px' /* Added bottom padding */ }}>
                          {/* --- Consumed Section (Always show title if data exists) --- */}
                          {
                              // Only show title if there's at least one consumption item > tolerance
