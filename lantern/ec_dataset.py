@@ -7,7 +7,7 @@ This module contains the ECDataset class, which is used to manage and manipulate
 datasets for energy communities.
 """
 
-from .models import SimulationResult, EnergyMetrics, IndividualMetrics, CostMetrics, TradingNetwork, Profiles
+from .models import SimulationResult, MarketMetrics, EnergyMetrics, IndividualMetrics, CostMetrics, TradingNetwork, Profiles
 from .battery import Battery
 from .constants import BATTERY_SIZE, P2P_PRICE, GRID_BUY_PRICE, GRID_SELL_PRICE, NetworkAlloc, APT_BLOCK_SIZE, RANDOM_SEED
 from .market_solution import MarketSolution
@@ -293,6 +293,7 @@ class ECDataset:
         numDaysComputed: float = self.numTimesteps * self.timestepDuration / 24
 
         G = getTradingNetwork(self.getGridPurchaseVolume(), self.getGridFeedInVolume())
+        print(f"demand {self.getDemandVolume()} vs supply {self.getSupplyVolume()} vs trading volume {self.getTradingVolume()}")
         return SimulationResult(
             energy_metrics=EnergyMetrics(
                 total_consumption=float(self.getConsumptionVolume()),
@@ -303,6 +304,10 @@ class ECDataset:
                 total_production=float(self.getProductionVolume()),
                 total_grid_export=float(self.getGridFeedInVolume()),
                 total_charging_volume=float(self.getChargeVolume()),
+            ),
+            market_metrics=MarketMetrics(
+              supply_sold=float(100 * self.getTradingVolume() / self.getSupplyVolume()),
+              demand_covered=float(100 * self.getTradingVolume() / self.getDemandVolume()),
             ),
             individual_metrics=IndividualMetrics(
                 individual_selfconsumption_volume=self.getSelfConsumptionVolumePerMember(),

@@ -4,34 +4,45 @@ body {
   color: #1f2937;
   font-family: sans-serif;
   margin: 0;
-  align-items: center;
-  /* has to be removed for smaller screens */
+  /* Ensure full coverage, no default margin */
+  padding-bottom: 70px;
+  /* Add padding to prevent footer overlap */
   background-image: url('./assets/MapImage.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  background-attachment: fixed;
+  /* Keep background fixed during scroll */
+  min-height: 100vh;
+  /* Ensure body takes at least full viewport height */
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+  /* Inherit box-sizing for all elements */
 }
 
 /* Main Layout Container */
 .container {
+  margin: 0 auto;
   padding: 1rem 2rem;
 }
 
 /* --- Form Styles --- */
 .input-form {
-  flex: 0 0 350px;
-  /* Don't grow, don't shrink, base width */
-  max-width: 400px;
+  /* Sizing handled by input-column */
   padding: 1.5rem 2rem;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  box-sizing: border-box;
 }
 
 .form-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #e5e7eb;
 }
@@ -45,10 +56,47 @@ body {
 }
 
 .form-header p {
-  margin: 0;
+  margin: 0.5rem 0;
   color: #4b5563;
   font-size: 0.95rem;
   line-height: 1.5;
+}
+
+/* Audio Player Styling */
+.audio-player-container {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.audio-player-container audio {
+  width: 100%;
+  max-width: 300px;
+  /* Limit width */
+  height: 40px;
+  /* Consistent height */
+  border-radius: 20px;
+  /* Rounded controls */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Style the controls using pseudo-elements (browser support varies) */
+.audio-player-container audio::-webkit-media-controls-panel {
+  background-color: #eef2ff;
+  /* Light blue background */
+  border-radius: 20px;
+}
+
+.audio-player-container audio::-webkit-media-controls-play-button {
+  background-color: #a3e635;
+  /* Green play button */
+  border-radius: 50%;
+  color: #ffffff;
+}
+
+.audio-player-container audio::-webkit-media-controls-current-time-display,
+.audio-player-container audio::-webkit-media-controls-time-remaining-display {
+  color: #3b82f6;
+  font-weight: 500;
 }
 
 .form-group {
@@ -58,20 +106,35 @@ body {
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: bold;
+  font-weight: 600;
+  /* Slightly bolder */
   color: #4b5563;
+  font-size: 0.9rem;
+  /* Smaller label */
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
+  padding: 0.6rem 0.8rem;
+  /* Slightly more padding */
+  border: 1px solid #d1d5db;
+  /* Lighter border */
+  border-radius: 6px;
+  /* Slightly larger radius */
+  background-color: #f9fafb;
+  /* Off-white background */
   color: #1f2937;
-  box-sizing: border-box;
+  font-size: 0.95rem;
 }
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
 
 /* --- Specific Form Component Styles --- */
 
@@ -85,23 +148,20 @@ body {
   height: 36px;
   overflow: hidden;
   width: 100%;
-  box-sizing: border-box;
 }
 
 .size-slider::before {
-  /* Green filled part */
   content: '';
   position: absolute;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  background: #a3e635;
-  /* Green color */
+  background: linear-gradient(to right, #a3e635, #65a30d);
+  /* Green gradient fill */
   border-radius: 18px;
   clip-path: inset(0 var(--clip-percent) 0 0);
-  /* Uses CSS variable from component */
-  transition: clip-path 0.1s ease;
+  transition: clip-path 0.1s ease-out;
 }
 
 .size-slider input[type="range"] {
@@ -113,31 +173,40 @@ body {
   outline: none;
   border: none;
   margin: 0;
-  padding: 0 18px;
-  box-sizing: border-box;
+  padding: 0;
+  /* Remove padding */
   position: relative;
   z-index: 2;
   cursor: pointer;
 }
 
+/* --- Slider Thumb --- */
+/* Webkit (Chrome, Safari, Edge) */
 .size-slider input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 0px;
-  height: 0px;
+  appearance: none;
+  width: 10px;
+  /* Make thumb visible but small */
+  height: 36px;
+  /* Full height */
+  background: rgba(255, 255, 255, 0.3);
+  /* Subtle white indicator */
+  cursor: pointer;
+  border-radius: 0;
+  /* Optional: make it a line */
 }
 
+/* Firefox */
 .size-slider input[type="range"]::-moz-range-thumb {
-  width: 0px;
-  height: 0px;
+  width: 10px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  border-radius: 0;
+  border: none;
 }
 
-.size-slider input[type="range"]::-ms-thumb {
-  width: 0;
-  height: 0;
-}
-
-.size-slider span {
-  /* Value display inside slider */
+.size-slider .size-slider-value {
   position: absolute;
   right: 15px;
   top: 50%;
@@ -145,10 +214,14 @@ body {
   min-width: 25px;
   text-align: right;
   font-weight: bold;
-  color: #374151;
-  z-index: 1;
-  /* Below input, above ::before */
+  color: #ffffff;
+  /* White text */
+  mix-blend-mode: difference;
+  /* Make text visible on both colors */
+  z-index: 3;
+  /* Above fill and thumb */
   pointer-events: none;
+  font-size: 0.9rem;
 }
 
 /* Season Buttons */
@@ -158,7 +231,7 @@ body {
   gap: 0.5rem;
 }
 
-.season-buttons button {
+.season-button {
   width: 60px;
   height: 60px;
   margin: 0;
@@ -170,53 +243,63 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  transition: all 0.2s ease-in-out;
   line-height: 1;
   color: #6b7280;
-  /* Default icon color */
 }
 
-.season-buttons button svg {
-  width: 32px;
-  height: 32px;
+.season-button svg {
+  width: 30px;
+  height: 30px;
+  transition: transform 0.2s ease-in-out;
 }
 
-.season-buttons button.active {
+.season-button.active {
   background-color: #a3e635;
-  /* Active green */
   border-color: #84cc16;
-  /* Darker green border */
-  box-shadow: 0 2px 4px rgba(132, 204, 22, 0.3);
+  box-shadow: 0 4px 8px rgba(132, 204, 22, 0.3);
   color: #3f6212;
-  /* Dark green icon color when active */
+  transform: translateY(-2px);
+  /* Slight lift */
 }
 
-.season-buttons button:not(.active):hover {
+.season-button.active svg {
+  transform: scale(1.1);
+  /* Slightly larger icon */
+}
+
+.season-button:not(.active):hover {
   background-color: #f3f4f6;
   border-color: #9ca3af;
   color: #374151;
-  /* Darker icon color on hover */
+  transform: translateY(-1px);
+}
+
+.season-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Circular Percentage Sliders */
 .circles-row {
   display: flex;
   justify-content: space-around;
-  gap: 2rem;
+  gap: 1.5rem;
   margin: 2rem 0;
 }
 
 .circle-container {
   text-align: center;
   flex: 1;
-  max-width: 120px;
+  max-width: 110px;
 }
 
 .circle-container label {
-  display: block;
   margin-bottom: 0.75rem;
-  font-weight: bold;
-  color: #4b5563;
+  font-size: 0.85rem;
+  /* Slightly smaller */
 }
 
 .circle {
@@ -225,7 +308,6 @@ body {
   height: 80px;
   border-radius: 50%;
   background-color: #e5e7eb;
-  /* Background track color */
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -233,138 +315,203 @@ body {
   cursor: grab;
   user-select: none;
   border: 2px solid #d1d5db;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease;
 }
 
-.circle:active {
+.circle:hover:not(.disabled) {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06), 0 0 0 3px rgba(163, 230, 53, 0.3);
+  /* Add outer glow */
+}
+
+.circle:active:not(.disabled) {
   cursor: grabbing;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.circle.disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .circle span {
-  /* Percentage text */
   position: relative;
   z-index: 2;
   color: #374151;
-  font-weight: bold;
-  font-size: 1rem;
+  font-weight: 600;
+  /* Bolder */
+  font-size: 1.1rem;
 }
 
 .circle-fill {
-  /* SVG container for the progress arc */
   position: absolute;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
   z-index: 1;
+  /* Start arc from top */
 }
 
 .circle-fill path {
   fill: none;
   stroke: #a3e635;
-  /* Green arc color */
   stroke-width: 8;
-  /* Thickness of the arc */
   stroke-linecap: round;
+  transition: stroke-dasharray 0.2s ease;
+  /* Smooth transition if using dasharray method */
 }
 
 /* Action Buttons (Battery and Simulate) */
 .button-group {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  /* Space out buttons */
+  align-items: center;
   gap: 1rem;
   margin-top: 2rem;
 }
 
+/* Common button style (applied via class) */
 .button-group button {
-  /* Common styles */
   height: 48px;
   padding: 0 1.5rem;
   border-radius: 24px;
-  /* Pill shape */
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
+  /* Bolder text */
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  /* Remove default border */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Subtle shadow */
 }
 
+.button-group button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.button-group button:active:not(:disabled) {
+  transform: translateY(0px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.button-group button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+
+/* Battery Toggle Button */
 .battery-button {
-  min-width: 90px;
-  background-color: white;
-  border: 1px solid #ccc;
+  width: 48px;
+  /* Square-ish */
+  height: 48px;
+  padding: 0;
+  /* Remove padding if only icon */
+  background-color: #f3f4f6;
+  /* Light grey */
   color: #6b7280;
-  gap: 0.5rem;
+  border: 1px solid #d1d5db;
 }
 
 .battery-button svg {
+  width: 24px;
+  height: 24px;
   fill: currentColor;
-  /* Icon inherits text color */
 }
 
 .battery-button.active {
   background-color: #ecfccb;
-  /* Very light green */
   border-color: #a3e635;
-  /* Green border */
   color: #4d7c0f;
-  /* Dark green text */
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.battery-button:not(.active):hover {
-  background-color: #f9fafb;
+.battery-button:hover:not(.active):not(:disabled) {
+  background-color: #e5e7eb;
   border-color: #9ca3af;
 }
 
-.button-group button[type="submit"] {
-  /* Simulate button */
-  min-width: 120px;
+/* Run Simulation Button */
+.run-simulation-button {
+  flex-grow: 1;
+  /* Take remaining space */
   background-color: #3b82f6;
-  /* Blue color */
   color: white;
-  border: none;
 }
 
-.button-group button[type="submit"]:hover {
+.run-simulation-button:hover:not(:disabled) {
   background-color: #2563eb;
-  /* Darker blue on hover */
-  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
 }
 
 /* --- Layout for Form and Results --- */
 .flex-container {
   display: flex;
-  flex-wrap: wrap;
-  /* Allow wrapping on smaller screens */
+  flex-wrap: nowrap;
+  /* Prevent wrapping by default */
   justify-content: space-between;
   align-items: flex-start;
   gap: 2rem;
-  margin-top: 2rem;
-  flex-wrap: nowrap;
+  margin-top: 1.5rem;
 }
 
 /* --- Input Column Styling --- */
 .input-column {
-  /* Apply the sizing constraints HERE */
-  flex: 0 0 350px;
-  /* Don't grow, don't shrink, base width */
-  max-width: 400px;
-  /* Max width */
-
-  /* Use flexbox to stack the form and explanation vertically */
+  flex: 0 0 380px;
+  /* Slightly wider base */
+  max-width: 420px;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  /* Space BETWEEN the form and the explanation panel */
+  gap: 1.5rem;
+  /* Reduced gap */
+  /* Add sticky positioning */
+  position: sticky;
+  top: 1.5rem;
+  /* Adjust based on desired spacing from top */
+  height: calc(100vh - 3rem - 70px);
+  /* Full height minus top offset and footer */
+  overflow-y: auto;
+  /* Allow scrolling within the column if content overflows */
+  padding-right: 0.5rem;
+  /* Add padding to avoid scrollbar overlap */
 }
+
+/* Customize scrollbar for input column (Webkit) */
+.input-column::-webkit-scrollbar {
+  width: 6px;
+}
+
+.input-column::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  /* Match body background */
+  border-radius: 3px;
+}
+
+.input-column::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  /* Grey scrollbar */
+  border-radius: 3px;
+}
+
+.input-column::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+  /* Darker grey on hover */
+}
+
 
 /* --- Results Area --- */
 .results-area {
-  flex: 2 1 500px;
-  /* Take remaining space */
+  flex: 1 1 auto;
+  /* Allow to grow and shrink, take remaining space */
+  min-width: 0;
+  /* Prevent flex item overflow issues */
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -373,18 +520,28 @@ body {
 /* Result Dropdown Selector */
 .result-selector-container {
   padding: 0.75rem 1rem;
-  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.9);
+  /* Slightly transparent */
+  backdrop-filter: blur(5px);
+  /* Frosted glass effect */
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-wrap: wrap;
+  /* Allow wrapping if space is tight */
+  position: sticky;
+  top: 0;
+  /* Stick to top of results area */
+  z-index: 10;
+  /* Ensure it's above result tabs */
 }
 
 .result-selector-container label {
   font-weight: 500;
   color: #4b5563;
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .result-selector-container select {
@@ -394,34 +551,69 @@ body {
   background-color: #f9fafb;
   font-weight: 500;
   cursor: pointer;
-  min-width: 120px;
+  flex-grow: 1;
+  /* Allow select to take space */
+  min-width: 200px;
   color: #374151;
 }
 
+.result-selector-container button {
+  background: #e5e7eb;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: inline-flex;  /* Treat button content as flex items */
+  align-items: center;    /* Vertically center the arrow */
+  justify-content: center;/* Horizontally center the arrow */
+  padding: 0;             /* Remove default padding that might interfere */}
+
+.result-selector-container button:hover:not(:disabled) {
+  background: #d1d5db;
+}
+
+.result-selector-container button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
 /* Container for the currently displayed result grid */
-.current-result-display {}
+.current-result-display {
+  /* No specific styles needed currently */
+}
 
 /* Grid for displaying multiple result tabs */
 .results-container {
   display: grid;
+  /* Default to 2 columns, adjust as needed */
   grid-template-columns: repeat(3, 1fr);
-  /* Two equal columns */
   gap: 1.5rem;
   margin: 0;
-  /* Remove potential default margins */
   /* align-items: start; */
 }
 
 /* Styling for individual result tabs */
 .result-tab {
   padding: 1.25rem;
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.95);
+  /* Slightly transparent */
+  backdrop-filter: blur(5px);
+  /* Frosted glass effect */
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  box-sizing: border-box;
   color: #1f2937;
   overflow: hidden;
-  /* Prevent content spillover */
+  display: flex;
+  flex-direction: column;
+  /* Ensure content stacks vertically */
+  min-height: 250px;
+  /* Minimum height for tabs */
 }
 
 .result-tab h3 {
@@ -430,502 +622,412 @@ body {
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #e5e7eb;
   color: #3b82f6;
-  /* Blue title */
-  font-size: 1.1rem;
+  font-size: 1.15rem;
+  /* Slightly larger */
+  font-weight: 600;
   text-align: center;
 }
 
 .result-tab p {
-  margin: 0.6rem 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.2rem 0;
+  /* General paragraph styles within tabs */
+  margin: 0.5rem 0;
   font-size: 0.95rem;
-}
-
-.result-tab p span:first-child {
   color: #4b5563;
-  /* Label color */
+  line-height: 1.5;
 }
 
-.result-tab p span:last-child {
-  font-weight: 500;
-  color: #111827;
-  /* Value color */
-  text-align: right;
-}
 
-/* Make trading network span entire column */
-.trading-network-tab-span {
+/* Span specific tabs if needed */
+.trading-network-tab {
   grid-row: span 2;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  /* Example: make network span 2 columns */
+  min-height: 400px;
+  /* Taller for the graph */
 }
+
+/* Ensure Recharts containers fill their space */
+.result-tab .recharts-responsive-container {
+  flex-grow: 1;
+  /* Allow chart to take available vertical space */
+  min-height: 200px;
+  /* Min height for charts */
+  width: 100%;
+  /* Ensure full width */
+}
+
 
 /* Lists for Warnings/Errors */
 .result-tab ul {
   margin: 0.5rem 0 0 0;
   padding-left: 1.2rem;
   list-style: disc;
+  flex-grow: 1;
+  /* Allow lists to take space */
 }
 
 .result-tab li {
-  margin: 0.25rem 0;
+  margin: 0.3rem 0;
   color: #4b5563;
   font-size: 0.9rem;
 }
 
+.warnings-tab li {
+  color: #b45309;
+  /* Amber/Orange for warnings */
+}
+
+.errors-tab li {
+  color: #b91c1c;
+  /* Red for errors */
+}
+
 /* Placeholder message */
-.no-results-yet {
-  margin-top: 0px;
+.no-results-yet,
+.loading-indicator p {
+  margin-top: 1rem;
+  text-align: center;
+  color: #6b7280;
+  padding: 3rem 1rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(5px);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.loading-indicator {
+  /* Add spinner or animation if desired */
+}
+
+/* --- NEW: Community Outcomes Component Styles --- */
+.community-outcomes-tab {
+  /* Specific styling for the outcomes tab if needed, */
+  /* e.g., different background or padding */
+  padding: 1rem 1.5rem;
+  /* Adjust padding */
+}
+
+.community-outcomes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  /* Space between the three metric sections */
+  flex-grow: 1;
+  /* Allow container to fill tab height */
+  justify-content: space-around;
+  /* Distribute space */
+}
+
+.community-outcomes-loading {
   text-align: center;
   color: #6b7280;
   padding: 2rem;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  font-style: italic;
 }
 
-/* --- Specific Result Components --- */
-
-/* Cost Comparison Bars */
-.cost-comparison {
-  margin-top: 1rem;
+.outcome-metric {
+  /* Common style for Savings, Autarky, Market sections */
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  /* Stack label and value/visual */
+  gap: 0.5rem;
 }
 
-.bar-container {
-  margin-bottom: 1rem;
+.outcome-metric:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
-.bar-label {
-  text-align: left;
-  margin-bottom: 0.4rem;
+/* 1. Savings Metric */
+.savings-metric {
+  flex-direction: row;
+  /* Align icon and text horizontally */
+  align-items: center;
+  gap: 1rem;
+}
+
+.savings-icon-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  /* Prevent icon area from shrinking */
+  width: 60px;
+  height: 60px;
+}
+
+.savings-icon {
+  color: #fbbf24;
+  /* Amber/Gold color for coins */
+  z-index: 2;
+  transition: all 0.3s ease-out;
+  /* Smooth size/opacity transition */
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+  /* Add shadow to icon */
+}
+
+.savings-glow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(251, 191, 36, 0.4) 0%, rgba(251, 191, 36, 0) 70%);
+  z-index: 1;
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  transform-origin: center center;
+}
+
+
+.savings-text-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* Align text to the left */
+}
+
+.savings-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.1rem;
   font-weight: 500;
-  font-size: 0.9em;
-  color: #374151;
 }
 
-.bar-wrapper {
-  background: #e5e7eb;
-  /* Bar track */
-  border-radius: 32px;
-  height: 32px;
+.savings-value-chf {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.savings-value-percent {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.savings-value-percent.positive {
+  color: #16a34a;
+  /* Green for positive savings */
+}
+
+.savings-value-percent.negative {
+  color: #dc2626;
+  /* Red for negative savings (increased cost) */
+}
+
+/* 2. Autarky Metric */
+.autarky-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4b5563;
+  text-align: center;
+  margin-bottom: 0.25rem;
+}
+
+.autarky-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.autarky-bar-background {
+  flex-grow: 1;
+  height: 12px;
+  background-color: #e5e7eb;
+  border-radius: 6px;
   overflow: hidden;
   position: relative;
 }
 
-.bar {
-  /* Colored bar */
+.autarky-bar-fill {
   height: 100%;
-  border-radius: 6px;
-  /* Match wrapper? Should be same or less */
-  display: flex;
-  align-items: center;
-  padding: 0 0.1rem;
-  transition: width 0.4s ease-in-out;
-  box-sizing: border-box;
-  position: relative;
-}
-
-.bar span {
-  /* Text inside bar */
-  color: white;
-  font-weight: 500;
-  font-size: 0.9em;
-  position: absolute;
-  right: 0.75rem;
-  white-space: nowrap;
-}
-
-.lec-bar {
-  /* "With Community" */
   background-color: #a3e635;
-  /* Green */
-}
-
-.lec-bar span {
-  color: #3f6212;
-  /* Dark green text for contrast */
-}
-
-.no-lec-bar {
-  /* "Without Community" */
-  background-color: #9ca3af;
-  /* Gray */
-}
-
-.no-lec-bar span {
-  color: #ffffff;
-  /* White text */
-}
-
-.savings-info {
-  margin-top: 1.5rem;
-  text-align: center;
-  font-weight: 500;
-  color: #059669;
-  /* Green for savings */
-  background-color: #d1fae5;
-  /* Light green background */
-  padding: 0.6rem 1rem;
+  /* Green fill */
   border-radius: 6px;
-  font-size: 0.95em;
+  transition: width 0.4s ease-out;
+  position: absolute;
+  left: 0;
+  top: 0;
 }
+
+.autarky-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+  min-width: 50px;
+  /* Ensure space for percentage */
+  text-align: right;
+}
+
+/* 3. Market Activity Metric */
+.market-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4b5563;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.market-details {
+  display: flex;
+  justify-content: space-around;
+  /* Distribute items */
+  text-align: center;
+  /* Center text within each item */
+  gap: 1rem;
+  /* Space between items */
+  flex-wrap: wrap;
+  /* Allow wrapping if needed */
+}
+
+.market-volume,
+.market-consumption-share,
+.market-production-share {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
+  /* Ensure some minimum width */
+}
+
+
+.detail-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.1rem;
+}
+
+.detail-value {
+  font-size: 1.0rem;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+/* --- REMOVED Old Cost Comparison Styles --- */
+/* .cost-comparison, .bar-container, .bar-label, .bar-wrapper, .bar, */
+/* .lec-bar, .no-lec-bar, .savings-info { */
+/*   /* Styles removed as component is replaced */
+/* } */
+
 
 /* Charts (Recharts adjustments) */
 .result-tab .recharts-responsive-container {
-  min-height: 260px;
-  /* Consistent height for chart containers */
-  margin-top: 1rem;
+  margin-top: 0.5rem;
+  /* Reduced top margin */
 }
+
+.result-tab .recharts-wrapper {
+  /* Ensure chart aligns well */
+  margin: 0 auto;
+}
+
 
 .result-tab .recharts-responsive-container svg {
   display: block;
-  /* Prevents extra space below SVG */
 }
 
 .pie-chart-tab {
-  /* Specific styles for tabs containing pie charts */
-  display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  /* Space title and chart */
 }
 
-.pie-chart-container {
-  /* Wrapper within the tab if needed */
-  margin-top: 0.5rem;
-  border-top: 1px solid #eee;
-  padding-top: 0.5rem;
-}
-
-.pie-chart-container h4 {
-  /* Sub-titles within chart tab */
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #4b5563;
-  font-size: 0.95em;
-}
-
-/* --- Output Explanation Panel Styling (within results grid) --- */
-.output-explanation-panel {
-  /* Make it span both grid columns */
-  grid-column: span 3;
-
-  /* Basic panel styling (match other tabs) */
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  box-sizing: border-box;
-
-  /* Internal layout for title + explanation items */
-  display: flex;
-  /* Use flex to stack title and items-grid */
-  flex-direction: column;
-}
-
-.output-explanation-panel h3 {
-  /* Style the title within this panel */
-  margin-top: 0;
-  margin-bottom: 1.5rem;
-  /* Space below title */
-  padding-bottom: 0.75rem;
-  /* Space under text */
-  border-bottom: 1px solid #e5e7eb;
-  /* Separator line */
-  color: #3b82f6;
-  /* Match form/result titles */
-  font-size: 1.2rem;
-  /* Slightly larger title */
-  text-align: center;
-}
-
-/* --- Grid Container for Explanation Items --- */
-.explanation-items-grid {
-  display: grid;
-  /* Create two equal-width columns */
-  grid-template-columns: repeat(4, 1fr);
-  /* Define gap between grid items (rows and columns) */
-  gap: 1.5rem;
-  /* Adjust spacing as needed */
-  width: 100%;
-  /* Ensure it takes full width of the panel */
-}
-
-/* Styling for explanation items INSIDE the output panel */
-/* These rules reuse/adapt existing .explanation-item styles */
-.output-explanation-panel .explanation-item {
-  margin-bottom: 1.5rem;
-  /* Add space between explanation items */
-  /* Override text-align if needed (default from results banner is center) */
-  text-align: left;
-  flex-direction: row;
-  /* Align icon and text horizontally like mobile results explanation */
-  align-items: flex-start;
-  /* Align icon to the top */
-  gap: 1rem;
-  /* Space between icon and text */
-}
-
-.output-explanation-panel .explanation-icon-wrapper {
-  margin-bottom: 0.5rem;
-}
-
-.output-explanation-panel .explanation-icon {
-  width: 28px;
-  height: 28px;
-  color: #3b82f6;
-}
-
-.output-explanation-panel .explanation-item h4 {
-  margin-top: 0;
-  margin-bottom: 0.6rem;
-  color: #1f2937;
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-
-.output-explanation-panel .explanation-item p {
-  margin: 0;
-  color: #4b5563;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  flex-grow: 1;
-  /* Allow text to take space */
-}
 
 .recharts-legend-wrapper {
-  /* Position usually handled by Recharts props (verticalAlign, align, wrapperStyle) */
+  /* Controlled by Recharts props */
+  padding-top: 10px !important;
+  /* Add space above legend */
 }
 
 .recharts-legend-item {
   margin-right: 10px !important;
-  /* Space between horizontal items */
   margin-bottom: 4px !important;
-  /* Space between vertical items */
-  padding-bottom: 5px;
-  /* Ensure text isn't cut off */
-  font-size: 12px;
+  font-size: 11px !important;
+  /* Slightly smaller legend */
+  cursor: default;
 }
 
 /* Custom Tooltip Style */
 .custom-tooltip {
-  background-color: rgba(255, 255, 255, 0.95);
-  /* Slightly less transparent */
-  border: 1px solid #ccc;
+  background-color: rgba(31, 41, 55, 0.9);
+  /* Darker background */
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 8px 12px;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   font-size: 0.9em;
-  /* Match other text sizes */
+  color: #f3f4f6;
+  /* Light text */
 }
 
 .custom-tooltip p {
   margin: 0;
-  /* Override default paragraph margin */
-  padding: 2px 0;
-  /* Add slight vertical padding */
+  padding: 3px 0;
 }
 
-/* Error Message Styling */
-.error {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background-color: #fee2e2;
-  /* Light red */
-  border: 1px solid #fecaca;
-  /* Red border */
-  border-radius: 8px;
-  color: #b91c1c;
-  /* Dark red text */
-}
-
-/* --- Footer --- */
-.footer-banner {
-  bottom: 0;
-  left: 0;
-  display: flex;
-  justify-content: space-between;
-  /* Space logos evenly */
-  align-items: center;
-  padding: 0.5rem 0;
-  border-top: 1px solid #e5e7eb;
-  position: fixed;
-  width: 100%;
-  height: 50px;
-  background-color: #ffffff;
-  /* Horizontal spacing handled by .container padding */
-}
-
-.footer-banner img:nth-child(2) {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.footer-logo {
-  height: 80%;
-  margin: 0 1rem;
-}
-
-/* --- Responsive Adjustments --- */
-@media (max-width: 992px) {
-
-  /* Adjust breakpoint for tablet/smaller desktop */
-  .flex-container {
-    flex-direction: column;
-    /* Stack form and results */
-    align-items: center;
-    /* Center stacked items */
-  }
-
-  .input-form {
-    flex-basis: auto;
-    /* Allow form to take full width */
-    width: 90%;
-    /* Limit width slightly */
-    max-width: 500px;
-    /* Max width when stacked */
-  }
-
-  .results-area {
-    flex-basis: auto;
-    /* Allow results to take full width */
-    width: 90%;
-    /* Limit width slightly */
-    max-width: 800px;
-    /* Allow results area to be wider */
-  }
-
-  .results-container {
-    grid-template-columns: 1fr;
-    /* Stack result tabs */
-  }
-
-  .results-explanation-banner {
-    grid-template-columns: 1fr;
-    /* Stack explanation items */
-  }
-}
-
-@media (max-width: 768px) {
-
-  /* Adjust breakpoint for mobile */
-  .explanation-item {
-    text-align: left;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .explanation-icon-wrapper {
-    margin-bottom: 0;
-    padding: 0.6rem;
-  }
-
-  .explanation-icon {
-    width: 24px;
-    height: 24px;
-  }
-
-  .footer-banner {
-    flex-direction: column;
-    /* Stack logos */
-    gap: 1.5rem;
-  }
-}
-
-/* --- Input Explanation Panel Styling --- */
-.input-explanation-panel {
+/* --- Explanation Panels Common Styles --- */
+.input-explanation-panel,
+.output-explanation-panel {
   padding: 1.5rem;
-  margin-bottom: 5rem;
   background-color: #ffffff;
-  /* Match result tabs/form */
   border-radius: 12px;
-  /* Match */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  /* Match */
   box-sizing: border-box;
 }
 
-.input-explanation-panel h3 {
+.input-explanation-panel h3,
+.output-explanation-panel h3 {
   margin-top: 0;
   margin-bottom: 1.5rem;
-  /* Space below title */
   padding-bottom: 0.75rem;
-  /* Space under text */
   border-bottom: 1px solid #e5e7eb;
-  /* Separator line */
   color: #3b82f6;
-  /* Match form/result titles */
   font-size: 1.2rem;
-  /* Slightly larger title */
   text-align: center;
-}
-
-/* Adjust spacing for items within this specific panel if needed */
-.input-explanation-panel .explanation-item {
-  margin-bottom: 1.5rem;
-  /* Add space between explanation items */
-  /* Override text-align if needed (default from results banner is center) */
-  text-align: left;
-  flex-direction: row;
-  /* Align icon and text horizontally like mobile results explanation */
-  align-items: flex-start;
-  /* Align icon to the top */
-  gap: 1rem;
-  /* Space between icon and text */
-}
-
-.input-explanation-panel .explanation-item:last-child {
-  margin-bottom: 0;
-  /* Remove margin from last item */
-}
-
-.input-explanation-panel .explanation-icon-wrapper {
-  margin-bottom: 0;
-  /* Remove bottom margin as it's side-by-side now */
-  /* You might want a slightly different background or keep it the same */
-  /* background-color: #eef2ff; */
-  /* Example: Slightly different light blue */
-}
-
-/* Ensure text takes available space */
-.input-explanation-panel .explanation-item>div:not(.explanation-icon-wrapper) {
-  flex: 1;
+  font-weight: 600;
 }
 
 .explanation-item {
-  border-radius: 10px;
   display: flex;
+  align-items: flex-start;
+  /* Align icon top with text */
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  /* Space between items */
+  text-align: left;
+}
+
+.explanation-item:last-child {
+  margin-bottom: 0;
 }
 
 .explanation-icon-wrapper {
   background-color: #e0e7ff;
+  /* Light blue background */
   border-radius: 50%;
-  padding: 0.75rem;
+  padding: 0.7rem;
+  /* Slightly smaller padding */
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  /* Prevent icon wrapper from shrinking */
 }
 
 .explanation-icon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   color: #3b82f6;
 }
 
 .explanation-item h4 {
   margin-top: 0;
-  margin-bottom: 0.4rem;
-  /* Reduced space */
+  margin-bottom: 0.3rem;
+  /* Tighter spacing */
   color: #1f2937;
   font-size: 1.0rem;
-  /* Slightly smaller */
   font-weight: 600;
 }
 
@@ -936,12 +1038,88 @@ body {
   line-height: 1.5;
 }
 
-/* --- Node Popup Styling --- */
+/* Specific Panel Layouts */
+.input-explanation-panel {
+  margin-bottom: 70px;
+  /* Ensure space above footer */
+}
+
+.output-explanation-panel {
+  /* Spanning handled by grid-column */
+  grid-column: 1 / -1;
+  /* Span all columns in the grid */
+}
+
+.explanation-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  /* Responsive columns */
+  gap: 1.5rem 2rem;
+  /* Row and column gap */
+  width: 100%;
+}
+
+
+/* Error Message Styling */
+.error {
+  margin: 1rem 0;
+  /* Position relative to container */
+  padding: 1rem 1.5rem;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  border-left: 5px solid #dc2626;
+  /* Accent border */
+  border-radius: 8px;
+  color: #b91c1c;
+  font-weight: 500;
+}
+
+/* --- Footer --- */
+.footer-banner {
+  position: fixed;
+  /* Stick to bottom */
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  /* Slightly taller footer */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  /* Match container padding */
+  background-color: rgba(255, 255, 255, 0.95);
+  /* Match tabs */
+  backdrop-filter: blur(5px);
+  border-top: 1px solid #e5e7eb;
+  z-index: 20;
+  /* Ensure footer is above other content */
+}
+
+/* Center logo positioning */
+.footer-banner img:nth-child(2) {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: 70%;
+  /* Adjust size if needed */
+}
+
+.footer-logo {
+  height: 65%;
+  /* Adjust size */
+  max-height: 40px;
+  /* Max height */
+  margin: 0 0.5rem;
+  /* Reduced margin */
+}
+
+
+/* --- Node Popup Styling (from previous CSS) --- */
 .node-popup {
   background-color: rgba(40, 42, 54, 0.95);
-  /* Dark semi-transparent */
   color: #f8f8f2;
-  /* Light text */
   border-radius: 8px;
   padding: 12px 16px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -949,12 +1127,13 @@ body {
   line-height: 1.6;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   min-width: 180px;
-  /* Ensure it has some width */
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(3px);
-  /* Frosted glass effect (if supported) */
   opacity: 0;
-  /* Start hidden for transition */
+  transition: opacity 0.2s ease-in-out; /* Add transition */
+  pointer-events: none; /* Ignore mouse events when hidden */
+  position: absolute; /* Needed for positioning */
+  z-index: 100; /* Ensure it's above graph elements */
 }
 
 /* Style the popup title */
@@ -963,7 +1142,6 @@ body {
   font-size: 15px;
   font-weight: 600;
   color: #8be9fd;
-  /* Cyan accent */
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   padding-bottom: 6px;
 }
@@ -973,8 +1151,19 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  /* Spacing between stat lines */
-  padding: 12px 15px
+}
+/* Individual stat line */
+.stat-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.stat-label {
+  color: #bd93f9; /* Purple accent for labels */
+  margin-right: 8px;
+}
+.stat-value {
+  font-weight: 500;
 }
 
 /* Divider line */
@@ -983,5 +1172,175 @@ body {
   height: 1px;
   background-color: rgba(255, 255, 255, 0.15);
   margin: 8px 0;
-  /* Spacing around divider */
+}
+
+
+/* --- Responsive Adjustments --- */
+
+/* Larger Tablets / Smaller Desktops */
+@media (max-width: 1200px) {
+  .results-container {
+    /* Adjust grid for slightly smaller screens if needed */
+    /* Example: force 2 columns max */
+    /* grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); */
+    /* grid-template-columns: repeat(2, 1fr); */
+  }
+
+  .trading-network-tab {
+    grid-column: span 1; /* Don't span on smaller screens */
+    /* Adjust min-height if needed */
+    min-height: 350px;
+  }
+
+  .explanation-items-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    /* Adjust basis */
+  }
+
+  .input-column {
+     flex-basis: 340px; /* Slightly narrower */
+     max-width: 380px;
+  }
+
+   .container {
+     padding: 1rem 1.5rem; /* Reduce side padding */
+   }
+
+   .footer-banner {
+      padding: 0 1.5rem;
+   }
+}
+
+
+/* Tablets and below */
+@media (max-width: 992px) {
+  body {
+     background-image: none; /* Remove background image on smaller screens */
+  }
+
+  .flex-container {
+    flex-direction: column;
+    align-items: stretch;
+    /* Stretch items to full width */
+  }
+
+  .input-column {
+    position: static;
+    /* Remove sticky positioning */
+    height: auto;
+    /* Reset height */
+    overflow-y: visible;
+    /* Reset overflow */
+    flex-basis: auto;
+    max-width: none;
+    /* Allow full width */
+    width: 100%;
+    padding-right: 0; /* Remove scrollbar padding */
+    margin-bottom: 1.5rem; /* Add space below when stacked */
+  }
+
+  .results-area {
+    width: 100%;
+  }
+
+  .results-container {
+    /* Already responsive with auto-fit, might become 1 column */
+    grid-template-columns: 1fr; /* Force single column */
+  }
+
+  /* Ensure output explanation spans correctly in single column */
+  .output-explanation-panel {
+     grid-column: 1 / -1; /* Still necessary even if 1 column */
+  }
+
+  .explanation-items-grid {
+    grid-template-columns: 1fr; /* Stack items */
+  }
+
+  .footer-banner img:nth-child(2) {
+     /* Adjust position or hide middle logo if layout breaks */
+     display: none; /* Example: hide middle logo */
+  }
+
+   .footer-banner {
+      justify-content: space-around; /* Adjust logo spacing */
+   }
+}
+
+/* Mobile Phones */
+@media (max-width: 576px) {
+  .container {
+    padding: 0.5rem 1rem;
+    /* Further reduce padding */
+  }
+
+  .input-form,
+  .input-explanation-panel,
+  .result-tab,
+  .output-explanation-panel,
+  .result-selector-container,
+  .no-results-yet,
+  .loading-indicator p,
+  .error {
+    padding: 1rem;
+    /* Reduce padding inside elements */
+    border-radius: 8px; /* Smaller radius */
+  }
+
+  .form-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .circles-row {
+    gap: 1rem;
+    flex-wrap: wrap; /* Allow circles to wrap */
+  }
+
+  .circle-container {
+      max-width: none; /* Allow full width when wrapped */
+      flex-basis: 45%; /* Roughly two per row */
+  }
+
+  .button-group {
+    flex-direction: column; /* Stack buttons */
+    align-items: stretch; /* Stretch buttons full width */
+  }
+
+  .run-simulation-button {
+    order: -1; /* Put simulate button first */
+  }
+
+  .result-selector-container {
+    gap: 0.5rem;
+  }
+  .result-selector-container select {
+     min-width: 150px;
+  }
+
+  .footer-banner {
+    height: auto; /* Allow footer to adjust height */
+    flex-direction: column;
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .footer-logo {
+    height: 25px; /* Smaller logos */
+    max-height: 25px;
+  }
+
+  .savings-metric {
+    flex-direction: column; /* Stack icon and text */
+    align-items: center;
+    text-align: center;
+  }
+  .savings-text-area {
+     align-items: center; /* Center text */
+  }
+
+  .market-details {
+     flex-direction: column; /* Stack market stats */
+     align-items: center;
+     gap: 0.75rem;
+  }
 }

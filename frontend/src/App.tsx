@@ -14,7 +14,7 @@ import { VscGraphLine } from 'react-icons/vsc';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import TradingNetworkForceGraph from './components/TradingNetworkForceGraph';
 import './App.css';
-import explanationAudio from './assets/explanation.mp3'; // Example path, adjust as needed
+import explanationAudio from './assets/explanation.mp3';
 
 // --- Constants ---
 const API_ENDPOINT = 'http://localhost:8000/api/simulate';
@@ -31,6 +31,12 @@ const PIE_CHART_COLORS = {
     fromMarket: '#82ca9d',   // Same as toMarket
     fromGrid: '#9ca3af',     // Same as toGrid
 };
+const SEASON_DISPLAY_NAMES: { [key: string]: string } = {
+    sum: "Summer",
+    win: "Winter",
+    aut: "Autumn",
+    spr: "Spring"
+};
 const SEASON_ICONS: Record<string, React.ComponentType<any>> = {
     'sum': FaRegSun,
     'win': FaRegSnowflake,
@@ -39,7 +45,8 @@ const SEASON_ICONS: Record<string, React.ComponentType<any>> = {
 };
 const CHART_HEIGHT = 300; // Consistent height for Pie charts
 const PROFILE_CHART_HEIGHT = 300; // Height for Load/Gen profile chart
-const VALUE_TOLERANCE = 0.01; // Threshold for ignoring small values in charts/calcs
+const VALUE_TOLERANCE = 0.1; // Threshold for ignoring small values in charts/calcs
+const MAX_SAVINGS_PER_HH = 30; // Max expected savings in CHF for scaling visualization
 
 // --- Interfaces ---
 interface SimulationParams {
@@ -48,6 +55,11 @@ interface SimulationParams {
     pv_percentage: number;
     sd_percentage: number;
     with_battery: boolean;
+}
+
+interface MarketMetricsData {
+    supply_sold: number;
+    demand_covered: number;
 }
 
 interface EnergyMetricsData {
@@ -99,6 +111,7 @@ export interface TradingNetworkData {
 
 interface SimulationResult {
     energy_metrics: EnergyMetricsData;
+    market_metrics:MarketMetricsData;
     individual_metrics: IndividualMetricsData;
     cost_metrics: CostMetricsData;
     profiles: ProfileData;
@@ -215,13 +228,6 @@ const ResultSelector: React.FC<ResultSelectorProps> = ({ history, selectedIndex,
         </div>
     );
 };
-
-/** Simple SVG icon for the battery toggle button. */
-const BatteryIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M20 10V8A2 2 0 0 0 18 6H4A2 2 0 0 0 2 8V16A2 2 0 0 0 4 18H18A2 2 0 0 0 20 16V14H22V10H20M18 16H4V8H18V16M6 10V14H16V10H6Z" />
-    </svg>
-);
 
 interface EnergyPieChartProps {
     type: 'production' | 'consumption';
@@ -344,79 +350,7 @@ const EnergyPieChart: React.FC<EnergyPieChartProps> = ({ type, metrics }) => {
     );
 };
 
-interface CostComparisonProps {
-    withLec: number | null;
-    withoutLec: number | null;
-}
-
-/** Displays comparison bars for costs with and without the energy community. */
-const CostComparison: React.FC<CostComparisonProps> = ({ withLec, withoutLec }) => {
-    const t = useTranslation().t;
-
-    if (withLec === null || withoutLec === null) {
-        return <p>{t('costComparison.notAvailable')}</p>;
-    }
-
-    // Calculate width percentage based on positive cost values relative to max cost
-    const calculateWidth = (cost: number) => {
-        if (cost <= 0) return 0; // No bar width for zero or negative cost
-        // Scale width based on the maximum positive cost only
-        const positiveMax = Math.max(withLec, withoutLec, VALUE_TOLERANCE);
-        return Math.max(0, Math.min(100, (cost / positiveMax) * 100));
-    }
-
-    const withLecWidthPercent = calculateWidth(withLec);
-    const withoutLecWidthPercent = calculateWidth(withoutLec);
-
-    const savings = withoutLec - withLec;
-    let savingsText = '';
-
-    if (Math.abs(savings) < VALUE_TOLERANCE) {
-        savingsText = t('costComparison.costsSame');
-    } else if (savings > 0) { // withLec cost is lower than withoutLec cost
-        const percentageSavings = Math.abs(withoutLec) > VALUE_TOLERANCE ? (savings / Math.abs(withoutLec)) * 100 : 0;
-        savingsText = `${t('costComparison.savingsWithCommunity')}: ${formatNumber(savings)} CHF`;
-        if (percentageSavings > 0) {
-            savingsText += ` (${percentageSavings.toFixed(1)}%)`;
-        }
-    } else { // withLec cost is higher than withoutLec cost
-        const percentageIncrease = Math.abs(withoutLec) > VALUE_TOLERANCE ? (Math.abs(savings) / Math.abs(withoutLec)) * 100 : 0;
-        savingsText = `${t('costComparison.increasedCostCommunity')}: ${formatNumber(Math.abs(savings))} CHF`;
-        if (percentageIncrease > 0) {
-            savingsText += ` (${percentageIncrease.toFixed(1)}%)`;
-        }
-    }
-    // Add note about profits if applicable
-    if (withLec < 0 || withoutLec < 0) {
-        savingsText += t('costComparison.negativeProfitNote');
-    }
-
-    return (
-        <div className="cost-comparison">
-            <div className="bar-container">
-                <div className="bar-label">{t('costComparison.withCommunity')} {formatNumber(withLec)} CHF</div>
-                <div className="bar-wrapper">
-                    {withLec > 0 && (
-                        <div className="bar lec-bar" style={{ width: `${withLecWidthPercent}%` }} />
-                    )}
-                </div>
-            </div>
-            <div className="bar-container">
-                <div className="bar-label">{t('costComparison.withoutCommunity')}  {formatNumber(withoutLec)} CHF</div>
-                <div className="bar-wrapper">
-                    {withoutLec > 0 && (
-                        <div className="bar no-lec-bar" style={{ width: `${withoutLecWidthPercent}%` }} />
-                    )}
-                </div>
-            </div>
-            {savingsText && (
-                <div className="savings-info">
-                    <span>{savingsText}</span>
-                </div>
-            )}
-        </div>
-    );
-};
+// REMOVED the old CostComparison component as it's being replaced by CommunityOutcomes
 
 interface LoadGenProfileProps {
     profiles: ProfileData | null;
@@ -437,7 +371,9 @@ const LoadGenProfile: React.FC<LoadGenProfileProps> = ({ profiles }) => {
     }, [profiles]);
 
     if (chartData.length === 0) {
-        return <p>Load and Generation profile data not available.</p>;
+        // Use translation key if available, otherwise fallback text
+        const { t } = useTranslation();
+        return <p>{t('results.loadGenProfile.notAvailable', 'Load and Generation profile data not available.')}</p>;
     }
 
     return (
@@ -461,6 +397,149 @@ const LoadGenProfile: React.FC<LoadGenProfileProps> = ({ profiles }) => {
         </ResponsiveContainer>
     );
 };
+
+
+// --- New Component: CommunityOutcomes ---
+interface CommunityOutcomesProps {
+    costMetrics: CostMetricsData | null;
+    energyMetrics: EnergyMetricsData | null;
+    marketMetrics: MarketMetricsData | null;
+    communitySize: number;
+    season: string;
+}
+
+/** Displays key outcomes: savings, autarky, and market activity. */
+const CommunityOutcomes: React.FC<CommunityOutcomesProps> = ({ costMetrics, energyMetrics, marketMetrics, communitySize, season }) => {
+    const { t } = useTranslation();
+
+    const outcomeData = useMemo(() => {
+        // Ensure all necessary data is present and valid
+        if (!costMetrics || !energyMetrics || !marketMetrics || communitySize <= 0 ||
+            costMetrics.cost_with_lec == null || costMetrics.cost_without_lec == null ||
+            energyMetrics.total_consumption == null || energyMetrics.self_consumption_volume == null ||
+            energyMetrics.total_discharging_volume == null || energyMetrics.trading_volume == null ||
+            energyMetrics.total_production == null || marketMetrics.supply_sold == null ||
+            marketMetrics.demand_covered == null) {
+            return null;
+        }
+
+        const { cost_with_lec, cost_without_lec } = costMetrics;
+        const {
+            total_consumption,
+            total_grid_import,
+            total_production,
+            total_grid_export,
+        } = energyMetrics;
+        const {
+            supply_sold,
+            demand_covered,
+        } = marketMetrics;
+
+        // --- Savings Calculation ---
+        const avgSavingsChf = cost_without_lec - cost_with_lec;
+        const avgSavingsPercent = (Math.abs(cost_without_lec) < VALUE_TOLERANCE)
+            ? 0 // Avoid division by zero or near-zero
+            : (avgSavingsChf / cost_without_lec) * 100;
+
+        // Clamp savings for visualization scaling (0 to 1), but display actual number
+        const savingsScale = Math.max(0, Math.min(1, avgSavingsChf / MAX_SAVINGS_PER_HH));
+
+        // --- Autarky Calculation ---
+        const autarkyPercent = (1 - (total_grid_import + total_grid_export) / (total_consumption + total_production)) * 100;
+
+        return {
+            avgSavingsChf,
+            avgSavingsPercent,
+            savingsScale, // Value between 0 and 1 for visualization
+            autarkyPercent,
+            supply_sold,
+            demand_covered
+        };
+
+    }, [costMetrics, energyMetrics, communitySize]);
+
+    if (!outcomeData) {
+        // Use translation key if available, otherwise fallback text
+        return <div className="community-outcomes-loading">{t('results.loadingData', 'Calculating outcomes...')}</div>;
+    }
+
+    const {
+        avgSavingsChf,
+        avgSavingsPercent,
+        savingsScale,
+        autarkyPercent,
+        supply_sold,
+        demand_covered
+    } = outcomeData;
+
+    // Simple scaling for icon size and opacity based on savings magnitude
+    const coinIconSize = 24 + savingsScale * 24; // Scale from 24px up to 48px
+    const coinIconOpacity = 0.6 + savingsScale * 0.4; // Scale opacity from 0.6 to 1.0
+
+    const season_placeholder = SEASON_DISPLAY_NAMES[season] || season; // t(`seasons.${season}`, season);
+
+    return (
+        <div className="community-outcomes-container">
+            {/* 1. Savings Section */}
+            <div className="outcome-metric savings-metric">
+                <div className="savings-icon-area" title={`${t('results.outcomes.avgSavingsTooltip', 'Average savings per household compared to no LEC')}`}>
+                    <FaCoins
+                        className="savings-icon"
+                        style={{ fontSize: `${coinIconSize}px`, opacity: coinIconOpacity }}
+                        aria-hidden="true"
+                    />
+                    {/* Optional: Add a subtle background glow that scales */}
+                    <div className="savings-glow" style={{ transform: `scale(${savingsScale})`, opacity: savingsScale * 0.5 }}></div>
+                </div>
+                <div className="savings-text-area">
+                    <span className="savings-label">
+                        {`Savings per Household over one ${season_placeholder} (vs no community)`}
+                    </span>
+                    <span className="savings-value-chf">
+                        {formatNumber(avgSavingsChf, 2)} CHF
+                    </span>
+                    <span className={`savings-value-percent ${avgSavingsChf >= -VALUE_TOLERANCE ? 'positive' : 'negative'}`}>
+                        ({avgSavingsChf >= -VALUE_TOLERANCE ? '' : ''}{formatNumber(avgSavingsPercent, 1)}%)
+                    </span>
+                </div>
+            </div>
+
+            {/* 2. Autarky Section */}
+            <div className="outcome-metric autarky-metric" title={t('results.outcomes.autarkyTooltip', 'Percentage of total consumption covered locally (PV, Battery, Market)')}>
+                 <span className="autarky-label">{t('results.outcomes.autarkyLabel', 'Community Autarky')}</span>
+                <div className="autarky-bar-container">
+                    <div className="autarky-bar-background">
+                        <div
+                            className="autarky-bar-fill"
+                            style={{ width: `${autarkyPercent}%` }}
+                            role="progressbar"
+                            aria-valuenow={autarkyPercent}
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                        ></div>
+                    </div>
+                    <span className="autarky-value">{formatNumber(autarkyPercent, 1)}%</span>
+                </div>
+            </div>
+
+            {/* 3. Market Activity Section */}
+            <div className="outcome-metric market-metric" title={t('results.outcomes.marketActivityTooltip', 'Internal market performance metrics')}>
+                <span className="market-label">{t('results.outcomes.marketActivityLabel', 'Market Effectiveness')}</span>
+                <div className="market-details">
+                    <div className="market-consumption-share">
+                        <span className="detail-label">{t('results.outcomes.marketConsumptionShareLabel', 'Demand Covered')}:</span>
+                        <span className="detail-value">{formatNumber(demand_covered, 1)}%</span>
+                    </div>
+                    <div className="market-production-share">
+                        <span className="detail-label">{t('results.outcomes.marketProductionShareLabel', 'Supply Sold')}:</span>
+                        <span className="detail-value">{formatNumber(supply_sold, 1)}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 // --- Main Application Component ---
 function App() {
@@ -506,49 +585,65 @@ function App() {
             const paddingTop = parseFloat(styles.paddingTop);
             const paddingBottom = parseFloat(styles.paddingBottom);
 
+            // Basic check for valid padding values
             if (!isNaN(paddingLeft) && !isNaN(paddingRight) && !isNaN(paddingTop) && !isNaN(paddingBottom)) {
-            
+
                 const containerWidth = element.offsetWidth;
                 const graphContentWidth = Math.max(0, containerWidth - (paddingLeft + paddingRight));
 
                 const containerHeight = element.offsetHeight;
+                // Adjust height calculation considering potential title height
                 const graphContentHeight = Math.max(0, containerHeight - (paddingTop + paddingBottom + TITLE_APPROX_HEIGHT));
-            
+
                 const finalWidth = graphContentWidth;
+                // Ensure a minimum height for the graph
                 const finalHeight = Math.max(150, graphContentHeight);
 
 
-                // Update state only if dimensions actually changed
+                // Update state only if dimensions actually changed to prevent infinite loops
                 if (graphDimensions.width !== finalWidth || graphDimensions.height !== finalHeight) {
                      setGraphDimensions({ width: finalWidth, height: finalHeight });
                 }
             } else {
-                console.warn("Could not parse padding for network container. Graph dimensions might be incorrect.");
+                // Fallback or warning if padding couldn't be parsed
+                 console.warn("Could not parse padding for network container. Using offsetWidth/Height directly.");
+                 const fallbackWidth = Math.max(0, element.offsetWidth - 20); // Guess padding
+                 const fallbackHeight = Math.max(150, element.offsetHeight - TITLE_APPROX_HEIGHT - 20);
+                  if (graphDimensions.width !== fallbackWidth || graphDimensions.height !== fallbackHeight) {
+                    setGraphDimensions({ width: fallbackWidth, height: fallbackHeight });
+                  }
             }
         }
-    }, [graphDimensions.width, graphDimensions.height]); 
+    }, [graphDimensions.width, graphDimensions.height]); // Dependencies
 
     useEffect(() => {
         const currentContainer = networkContainerRef.current;
-        
+
+        // Only run if the container exists and we have network data to display
         if (!currentContainer || !currentResult?.trading_network) {
-            return; 
+             // If network data disappears, reset dimensions? Or leave as is?
+             // Let's reset to avoid showing an old graph in an empty container potentially
+             if (graphDimensions.width !== 0 || graphDimensions.height !== 0) {
+                setGraphDimensions({ width: 0, height: 0 });
+             }
+            return;
         }
 
+        // Initial calculation
         updateGraphDimensions();
 
+        // Observe resizing
         const resizeObserver = new ResizeObserver(updateGraphDimensions);
         resizeObserver.observe(currentContainer);
 
         // Cleanup
         return () => {
-            // Check currentContainer again in cleanup in case it was removed before cleanup runs
-            if (currentContainer) { 
+            if (currentContainer) {
                 resizeObserver.unobserve(currentContainer);
             }
             resizeObserver.disconnect();
         };
-    }, [updateGraphDimensions, currentResult?.trading_network]);
+    }, [updateGraphDimensions, currentResult?.trading_network]); // Re-run if data or callback changes
 
     // --- Event Handlers  ---
 
@@ -558,12 +653,14 @@ function App() {
             // 1. Update the selected index state
             setSelectedResultIndex(index);
             // 2. Update the params state based on the selected history item
-            setParams(selectedEntry.params);
+            // Check if params actually changed to avoid unnecessary re-renders
+            if (JSON.stringify(params) !== JSON.stringify(selectedEntry.params)) {
+                 setParams(selectedEntry.params);
+            }
         } else {
-            // Handle potential invalid index if necessary (e.g., reset selection)
-            setSelectedResultIndex(null);
+            setSelectedResultIndex(null); // Reset if index is invalid
         }
-    }, [resultsHistory]); // Dependency: resultsHistory array
+    }, [resultsHistory, params]); // Include params in dependency array
 
     const handleParamChange = useCallback((key: keyof SimulationParams, value: any) => {
         setParams(prev => ({ ...prev, [key]: value }));
@@ -572,10 +669,11 @@ function App() {
     const handleSliderChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         const numValue = Number(value);
+        // Check if the key exists in SimulationParams before updating
         if (!isNaN(numValue) && name in params) {
             handleParamChange(name as keyof SimulationParams, numValue);
         }
-    }, [handleParamChange, params]); // Include params if validation depends on it
+    }, [handleParamChange, params]);
 
     const handleCircleSliderInteraction = useCallback((e: React.MouseEvent<HTMLDivElement>, name: keyof SimulationParams) => {
         const circle = e.currentTarget;
@@ -588,9 +686,15 @@ function App() {
             // Map angle (-PI to PI) to percentage (0 to 100), starting from top (approx -PI/2)
             let percentage = ((angle + Math.PI / 2 + 2 * Math.PI) % (2 * Math.PI)) / (2 * Math.PI) * 100;
             const roundedPercentage = Math.max(0, Math.min(100, Math.round(percentage)));
-            // Use requestAnimationFrame to potentially batch updates
+            // Use requestAnimationFrame to potentially batch updates and improve performance
             requestAnimationFrame(() => {
-                handleParamChange(name, roundedPercentage);
+                // Check if value actually changed before updating state
+                 setParams(prev => {
+                    if (prev[name] !== roundedPercentage) {
+                        return { ...prev, [name]: roundedPercentage };
+                    }
+                    return prev; // No change
+                });
             });
         };
 
@@ -604,14 +708,14 @@ function App() {
 
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
-    }, [handleParamChange]);
+    }, [handleParamChange]); // handleParamChange itself is stable due to useCallback
 
     const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError(null);
         setIsLoading(true);
-        const currentParams = { ...params };
-        console.log('Submitting simulation params:', params);
+        const currentParams = { ...params }; // Capture params at submission time
+        console.log('Submitting simulation params:', currentParams);
 
         try {
             const response = await fetch(API_ENDPOINT, {
@@ -620,28 +724,30 @@ function App() {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify(params)
+                body: JSON.stringify(currentParams) // Use captured params
             });
 
-            const responseBody = await response.text();
+            const responseBody = await response.text(); // Read body once
 
             if (!response.ok) {
                 let errorMessage = `Error ${response.status}: ${response.statusText}`;
                 try {
                     const errorJson = JSON.parse(responseBody);
+                    // Handle structured FastAPI errors
                     if (errorJson.detail) {
-                        if (Array.isArray(errorJson.detail)) { // Handle Pydantic validation errors
+                        if (Array.isArray(errorJson.detail)) { // Pydantic validation errors
                             errorMessage = errorJson.detail.map((err: any) => `${err.loc.join('.')} - ${err.msg}`).join('; ');
-                        } else {
-                            errorMessage = errorJson.detail;
+                        } else if (typeof errorJson.detail === 'string'){
+                            errorMessage = errorJson.detail; // Simple string error
                         }
-                    } else if (errorJson.message) {
+                    } else if (errorJson.message) { // Handle other potential error structures
                         errorMessage = errorJson.message;
                     }
                 } catch (parseError) {
+                    // If parsing fails but body exists, include it
                     if (responseBody) errorMessage += ` - ${responseBody}`;
                 }
-                console.error("API Error Response:", responseBody);
+                console.error("API Error Response:", responseBody); // Log raw response on error
                 throw new Error(errorMessage);
             }
 
@@ -650,39 +756,42 @@ function App() {
                 const data: SimulationResult = JSON.parse(responseBody);
                 console.log('Received simulation result:', data);
 
-                if (!data || !data.cost_metrics || !data.energy_metrics || !data.profiles) {
-                    throw new Error('Received incomplete or invalid data structure from server.');
+                // Basic validation of received data structure
+                if (!data || !data.cost_metrics || !data.energy_metrics || !data.profiles || !data.individual_metrics || !data.trading_network) {
+                    console.error("Incomplete data received:", data);
+                    throw new Error(t('errors.incompleteData', 'Received incomplete or invalid data structure from server.'));
                 }
 
                 setResultsHistory(prevHistory => {
                     const newEntry: SimulationHistoryEntry = {
-                        params: currentParams,
+                        params: currentParams, // Use the params captured at submission
                         result: data,
-                        index: Date.now()
+                        index: Date.now() // Simple timestamp index
                     }
                     const newHistory = [...prevHistory, newEntry];
-                    // Select the newly added result
+                    // Automatically select the newly added result
                     setSelectedResultIndex(newHistory.length - 1);
                     return newHistory;
                 });
 
             } catch (parseError: any) {
                 console.error('Failed to parse successful response:', parseError, "Response Body:", responseBody);
-                throw new Error(`Failed to process server response: ${parseError.message}`);
+                throw new Error(t('errors.parsingError', `Failed to process server response: ${parseError.message}`));
             }
 
         } catch (error: any) {
             console.error('Simulation request failed:', error);
-            setError(error instanceof Error ? error.message : 'An unexpected error occurred.');
+            // Set user-friendly error message
+            setError(error instanceof Error ? error.message : t('errors.unexpected', 'An unexpected error occurred.'));
         } finally {
             setIsLoading(false);
         }
-    }, [params]); // Depends on params for submission
+    }, [params, t]); // Depends on params for submission and t for error messages
 
     // Calculate clip-path percentage for the size slider's visual fill
     const sizeSliderClipPercent = useMemo(() => {
         const range = MAX_COMMUNITY_SIZE - MIN_COMMUNITY_SIZE;
-        if (range <= 0) return 0;
+        if (range <= 0) return 0; // Avoid division by zero
         const valuePercent = ((params.community_size - MIN_COMMUNITY_SIZE) / range) * 100;
         return 100 - valuePercent; // Inset from the right
     }, [params.community_size]);
@@ -692,7 +801,7 @@ function App() {
         <div className="container">
             <LanguageSwitcher />
 
-            {error && <div className="error">{t('errors.genericError')} {error}</div>}
+            {error && <div className="error">{t('errors.apiErrorPrefix', 'Simulation Error:')} {error}</div>}
 
             <div className="flex-container">
 
@@ -704,7 +813,14 @@ function App() {
                         <div className="form-header">
                             <h2>{t('app.title')}</h2>
                             <p>{t('app.subtitle')}</p>
-                            <audio src={explanationAudio} preload="auto" controls />
+                             {/* Simple Audio Player */}
+                            {explanationAudio && (
+                                <div className="audio-player-container">
+                                    <audio src={explanationAudio} controls preload="metadata">
+                                        {t('app.audioNotSupported', 'Your browser does not support the audio element.')}
+                                    </audio>
+                                </div>
+                            )}
                             <p>{t('app.description')}</p>
                         </div>
 
@@ -724,7 +840,8 @@ function App() {
                                     disabled={isLoading}
                                     aria-describedby="community-size-value"
                                 />
-                                <span id="community-size-value" aria-hidden="true">{params.community_size}</span>
+                                {/* Tooltip-like display for current value */}
+                                <span id="community-size-value" className="size-slider-value" aria-hidden="true">{params.community_size}</span>
                             </div>
                         </div>
 
@@ -736,11 +853,12 @@ function App() {
                                     <button
                                         type="button"
                                         key={key}
-                                        className={params.season === key ? 'active' : ''}
+                                        className={`season-button ${params.season === key ? 'active' : ''}`}
                                         onClick={() => handleParamChange('season', key)}
                                         disabled={isLoading}
                                         aria-pressed={params.season === key}
-                                        aria-label={`${t('form.seasonLabel')}: ${key}`}
+                                        aria-label={`${t('form.seasonLabel')}: ${t('seasons.'+key, key)}`} // Use translation for season name
+                                        title={t('seasons.'+key, key)} // Tooltip
                                     >
                                         <IconComponent aria-hidden="true" />
                                     </button>
@@ -753,13 +871,14 @@ function App() {
                             <div className="circle-container">
                                 <label id="sd-label">{t('form.smartDevicesLabel')}</label>
                                 <div
-                                    className="circle"
-                                    onMouseDown={(e) => handleCircleSliderInteraction(e, 'sd_percentage')}
+                                    className={`circle ${isLoading ? 'disabled' : ''}`}
+                                    onMouseDown={isLoading ? undefined : (e) => handleCircleSliderInteraction(e, 'sd_percentage')}
                                     role="slider"
                                     aria-valuemin={0} aria-valuemax={100}
                                     aria-valuenow={params.sd_percentage}
                                     aria-labelledby="sd-label"
-                                    tabIndex={isLoading ? -1 : 0}
+                                    aria-disabled={isLoading}
+                                    tabIndex={isLoading ? -1 : 0} // Make focusable only when enabled
                                 >
                                     <svg className="circle-fill" viewBox="0 0 80 80">
                                         <path d={getCircularPath(params.sd_percentage)} />
@@ -770,12 +889,13 @@ function App() {
                             <div className="circle-container">
                                 <label id="pv-label">{t('form.pvAdoptionLabel')}</label>
                                 <div
-                                    className="circle"
-                                    onMouseDown={(e) => handleCircleSliderInteraction(e, 'pv_percentage')}
+                                    className={`circle ${isLoading ? 'disabled' : ''}`}
+                                    onMouseDown={isLoading ? undefined : (e) => handleCircleSliderInteraction(e, 'pv_percentage')}
                                     role="slider"
                                     aria-valuemin={0} aria-valuemax={100}
                                     aria-valuenow={params.pv_percentage}
                                     aria-labelledby="pv-label"
+                                    aria-disabled={isLoading}
                                     tabIndex={isLoading ? -1 : 0}
                                 >
                                     <svg className="circle-fill" viewBox="0 0 80 80">
@@ -794,13 +914,13 @@ function App() {
                                 onClick={() => handleParamChange('with_battery', !params.with_battery)}
                                 disabled={isLoading}
                                 aria-pressed={params.with_battery}
-                                aria-label={t('buttons.toggleBatteryOff')}
+                                title={params.with_battery ? t('buttons.toggleBatteryAriaLabelOn', 'Disable community battery') : t('buttons.toggleBatteryAriaLabelOff', 'Enable community battery')}
                             >
-                                <BatteryIcon aria-hidden="true" />
-                                {params.with_battery ? t('buttons.toggleBatteryOn') : t('buttons.toggleBatteryOff')}
+                                <IoIosBatteryFull aria-hidden="true" /> {/* Updated Icon */}
+                                {/* Text removed for cleaner look, state indicated by style */}
                             </button>
-                            <button type="submit" disabled={isLoading}>
-                                {isLoading ? t('buttons.simulating') : t('buttons.runSimulation')}
+                            <button type="submit" className="run-simulation-button" disabled={isLoading}>
+                                {isLoading ? t('buttons.simulating', 'Simulating...') : t('buttons.runSimulation', 'Run Simulation')}
                             </button>
                         </div>
                     </form>
@@ -877,16 +997,20 @@ function App() {
                     />
 
                     {/* Display selected result or placeholder */}
-                    {currentResult ? (
+                    {currentHistoryEntry && currentResult ? (
                         <div className="current-result-display">
-                            <div className="results-container"> {/* This should be display: grid; grid-template-columns: repeat(3, 1fr); in CSS */}
+                            {/* Grid container for result tabs */}
+                            <div className="results-container">
 
-                                {/* --- Column 1 --- */}
-                                <div className="result-tab" key="cost-comparison">
-                                    <h3>{t('results.resultsContainer.avgCostHeading')}</h3>
-                                    <CostComparison
-                                        withLec={currentResult.cost_metrics?.cost_with_lec}
-                                        withoutLec={currentResult.cost_metrics?.cost_without_lec}
+                                 {/* --- Column 1 (or first items in flow) --- */}
+                                <div className="result-tab community-outcomes-tab" key="community-outcomes">
+                                    <h3>{t('results.resultsContainer.outcomesHeading', 'Outcomes')}</h3>
+                                    <CommunityOutcomes
+                                        costMetrics={currentResult.cost_metrics}
+                                        marketMetrics={currentResult.market_metrics}
+                                        energyMetrics={currentResult.energy_metrics}
+                                        communitySize={currentHistoryEntry.params.community_size}
+                                        season={currentHistoryEntry.params.season}
                                     />
                                 </div>
 
@@ -895,48 +1019,60 @@ function App() {
                                     <LoadGenProfile profiles={currentResult.profiles} />
                                 </div>
 
-                                {currentResult.trading_network && (
+                                {/* Trading Network - Spans across columns potentially or takes significant space */}
+                                {currentResult.trading_network && currentResult.trading_network.nodes?.length > 0 ? (
                                     <div
-                                        className="result-tab trading-network-tab-span"
+                                        className="result-tab trading-network-tab" // Adjust class if spanning needed
                                         key="trading-network"
                                         ref={networkContainerRef}
-                                        style={{ position: 'relative', width: '100%', minHeight: '250px', overflow: 'hidden' }}
+                                        style={{ position: 'relative', width: '100%', minHeight: '300px', overflow: 'hidden' }} // Ensure min height
                                     >
                                         <h3>{t('results.resultsContainer.tradingNetworkHeading')}</h3>
-                                        {graphDimensions.width > 0 && graphDimensions.height > 0 && ( // Conditional render
+                                        {graphDimensions.width > 0 && graphDimensions.height > 0 && currentResult.individual_metrics && ( // Conditional render & check for individual metrics
                                             <TradingNetworkForceGraph
                                                 tradingNetwork={currentResult.trading_network}
-                                                individualMetrics={currentResult.individual_metrics}
+                                                individualMetrics={currentResult.individual_metrics} // Pass individual metrics
                                                 width={graphDimensions.width} // Use dynamic width
                                                 height={graphDimensions.height} // Use dynamic height
                                             />
                                         )}
+                                        {(graphDimensions.width <= 0 || graphDimensions.height <=0) && <p>{t('results.calculatingLayout', 'Calculating layout...')}</p>}
                                     </div>
+                                ) : (
+                                    // Optional: Placeholder if no trading network data
+                                     <div className="result-tab trading-network-tab placeholder" key="trading-network-placeholder">
+                                         <h3>{t('results.resultsContainer.tradingNetworkHeading')}</h3>
+                                         <p>{t('results.tradingNetworkNotAvailable', 'Trading network data not available for this simulation.')}</p>
+                                     </div>
                                 )}
 
-                                <div className="result-tab pie-chart-tab" key="production-allocation">
-                                    <h3>{t('results.resultsContainer.consumptionSourcesHeading')}</h3>
-                                    <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
-                                </div>
 
+                                {/* Pie Charts */}
                                 <div className="result-tab pie-chart-tab" key="consumption-sources">
+                                     <h3>{t('results.resultsContainer.consumptionSourcesHeading')}</h3>
+                                     <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
+                                 </div>
+
+                                <div className="result-tab pie-chart-tab" key="production-allocation">
                                     <h3>{t('results.resultsContainer.productionAllocationHeading')}</h3>
                                     <EnergyPieChart type="production" metrics={currentResult.energy_metrics} />
                                 </div>
 
-                                {/* --- Output Explanation Panel (Spanning all columns) --- */}
+
+                                {/* --- Output Explanation Panel (Spanning potentially) --- */}
                                 <section className="output-explanation-panel" aria-labelledby="output-explanation-title">
                                     <h3 id="output-explanation-title">{t('results.resultsExplanationTitle')}</h3>
                                     {/* Use the grid container for explanation items */}
                                     <div className="explanation-items-grid">
 
+                                        {/* Explanation for Community Outcomes */}
                                         <div className="explanation-item">
                                             <div className="explanation-icon-wrapper">
                                                 <FaCoins className="explanation-icon" aria-hidden="true" />
                                             </div>
                                             <div>
-                                                <h4>{t('explanations.costComparisonTitle')}</h4>
-                                                <p>{t('explanations.costComparisonText')}</p>
+                                                <h4>{t('explanations.outcomesTitle', 'Key Outcomes')}</h4>
+                                                <p>{t('explanations.outcomesText', 'Shows average household savings, community self-sufficiency (autarky), and internal market activity.')}</p>
                                             </div>
                                         </div>
 
@@ -974,20 +1110,20 @@ function App() {
                                 </section>
                                 {/* End output-explanation-panel */}
 
-                                {/* Warnings Tab (Optional - placed below explanation) */}
+                                {/* Warnings Tab (Optional) */}
                                 {currentResult.warnings && currentResult.warnings.length > 0 && (
                                     <div className="result-tab warnings-tab">
-                                        <h3>{t('explanations.energyFlowText')}</h3>
+                                        <h3>{t('results.warningsTitle', 'Warnings')}</h3>
                                         <ul>
                                             {currentResult.warnings.map((warning, index) => (<li key={`warn-${index}`}>{warning}</li>))}
                                         </ul>
                                     </div>
                                 )}
 
-                                {/* Errors Tab (Optional - might indicate partial success - placed below explanation) */}
+                                {/* Errors Tab (Optional - might indicate partial success) */}
                                 {currentResult.errors && currentResult.errors.length > 0 && (
                                     <div className="result-tab errors-tab">
-                                        <h3>{t('results.errorsTitle')}</h3>
+                                        <h3>{t('results.errorsTitle', 'Errors')}</h3>
                                         <ul>
                                             {currentResult.errors.map((errMsg, index) => (<li key={`err-${index}`}>{errMsg}</li>))}
                                         </ul>
@@ -997,13 +1133,16 @@ function App() {
                         </div> // End .current-result-display
                     ) : (
                         // Show loading state or initial prompt
-                        !isLoading && resultsHistory.length === 0 && !error && (
-                            <p className="no-results-yet">{t('results.noResultsYet')}</p>
-                        )
-                        || isLoading && ( // Show loading indicator within results area
+                        isLoading ? (
                             <div className="loading-indicator">
-                                <p>{t('results.loadingResults')}</p>
+                                <p>{t('results.loadingResults', 'Loading simulation results...')}</p>
+                                {/* Optional: Add a spinner */}
                             </div>
+                        ) : (
+                            resultsHistory.length === 0 && !error && (
+                                <p className="no-results-yet">{t('results.noResultsYet', 'Run a simulation to see the results here.')}</p>
+                            )
+                            // Handle case where error occurred before any results loaded - Error message displayed above
                         )
                     )}
                 </div> {/* End .results-area */}

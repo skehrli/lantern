@@ -602,7 +602,6 @@ const TradingNetworkForceGraph: React.FC<TradingNetworkGraphProps> = ({ tradingN
                     color: '#555',
                     fontSize: '11px',
                     position: 'relative',
-                    top: '-7px',
                 }}>
                     {label}:
                 </span>

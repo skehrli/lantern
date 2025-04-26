@@ -28,6 +28,11 @@ class MetricType(Enum):
     MARKET = "market"
 
 
+class MarketMetrics(BaseModel):
+    supply_sold: float
+    demand_covered: float
+
+
 class EnergyMetrics(BaseModel):
     total_consumption: float
     total_grid_import: float
@@ -137,6 +142,7 @@ class TradingNetwork(BaseModel):
 
 class SimulationResult(BaseModel):
     energy_metrics: EnergyMetrics
+    market_metrics: MarketMetrics
     individual_metrics: IndividualMetrics
     cost_metrics: CostMetrics
     profiles: Profiles
