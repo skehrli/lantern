@@ -5,7 +5,7 @@ body {
   font-family: sans-serif;
   margin: 0;
   /* Ensure full coverage, no default margin */
-  padding-bottom: 70px;
+  padding-bottom: 60px;
   /* Add padding to prevent footer overlap */
   background-image: url('./assets/MapImage.png');
   background-size: cover;
@@ -411,7 +411,7 @@ body {
 
 /* Battery Toggle Button */
 .battery-button {
-  width: 48px;
+  width: 80px;
   /* Square-ish */
   height: 48px;
   padding: 0;
@@ -465,22 +465,15 @@ body {
 /* --- Input Column Styling --- */
 .input-column {
   flex: 0 0 380px;
-  /* Slightly wider base */
   max-width: 420px;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  /* Reduced gap */
-  /* Add sticky positioning */
   position: sticky;
   top: 1.5rem;
-  /* Adjust based on desired spacing from top */
-  height: calc(100vh - 3rem - 70px);
-  /* Full height minus top offset and footer */
+  height: auto;
   overflow-y: auto;
-  /* Allow scrolling within the column if content overflows */
   padding-right: 0.5rem;
-  /* Add padding to avoid scrollbar overlap */
 }
 
 /* Customize scrollbar for input column (Webkit) */
@@ -568,10 +561,11 @@ body {
   line-height: 1;
   cursor: pointer;
   transition: background-color 0.2s;
-  display: inline-flex;  /* Treat button content as flex items */
-  align-items: center;    /* Vertically center the arrow */
-  justify-content: center;/* Horizontally center the arrow */
-  padding: 0;             /* Remove default padding that might interfere */}
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
 
 .result-selector-container button:hover:not(:disabled) {
   background: #d1d5db;
