@@ -572,7 +572,7 @@ function App() {
     const networkContainerRef = useRef(null);
     const [graphDimensions, setGraphDimensions] = useState({ width: 0, height: 0 });
 
-    const TITLE_APPROX_HEIGHT = 40;
+    const TITLE_APPROX_HEIGHT = 55;
 
     // Callback to update graph dimensions based on container size
     const updateGraphDimensions = useCallback(() => {
