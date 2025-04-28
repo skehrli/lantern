@@ -41,6 +41,17 @@
             "tradingNetworkHeading": "Trading Network",
             "consumptionSourcesHeading": "Energy Consumption Sources",
             "productionAllocationHeading": "PV Production Allocation"
+        },
+        "outcomes": {
+            "outcomesHeading": "Outcomes",
+            "avgSavingsTooltip": "Average savings per household compared to no LEC",
+            "savingOverSeason": "Savings per Household over the selcted season (vs no community)",
+            "autarkyLabel": "Community Autarky",
+            "marketActivityLabel": "Market Effectiveness",
+            "marketConsumptionShareLabel": "Demand Covered",
+            "marketProductionShareLabel": "Supply Sold",
+            "autarkyTooltip": "Percentage of total consumption covered locally (PV, Battery, Market)",
+            "marketActivityTooltip": "Internal market performance metrics"
         }
     },
     "costComparison": {
@@ -94,5 +105,11 @@
     },
     "lng": {
         "lng": "Language"
+    },
+    "seasons": {
+        "spr": "Spring",
+        "sum": "Summer",
+        "aut": "Autumn",
+        "win": "Winter"
     }
 }

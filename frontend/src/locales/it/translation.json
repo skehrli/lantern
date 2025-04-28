@@ -41,6 +41,17 @@
             "tradingNetworkHeading": "Rete di scambio",
             "consumptionSourcesHeading": "Fonti di consumo energetico",
             "productionAllocationHeading": "Ripartizione della produzione FV"
+        },
+        "outcomes": {
+            "outcomesHeading": "Risultati",
+            "avgSavingsTooltip": "Risparmio medio per famiglia rispetto a nessuna LEC",
+            "savingOverSeason": "Risparmio per famiglia durante la stagione selezionata (vs nessuna comunità)",
+            "autarkyLabel": "Autarchia della comunità",
+            "marketActivityLabel": "Efficacia del mercato",
+            "marketConsumptionShareLabel": "Domanda coperta",
+            "marketProductionShareLabel": "Offerta venduta",
+            "autarkyTooltip": "Percentuale del consumo totale coperta localmente (FV, batteria, mercato)",
+            "marketActivityTooltip": "Metriche di performance del mercato interno"
         }
     },
     "costComparison": {
@@ -94,5 +105,11 @@
     },
     "lng": {
         "lng": "Lingua"
+    },
+    "seasons": {
+        "spr": "Primavera",
+        "sum": "Estate",
+        "aut": "Autunno",
+        "win": "Inverno"
     }
 }

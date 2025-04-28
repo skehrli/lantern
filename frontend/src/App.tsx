@@ -111,7 +111,7 @@ export interface TradingNetworkData {
 
 interface SimulationResult {
     energy_metrics: EnergyMetricsData;
-    market_metrics:MarketMetricsData;
+    market_metrics: MarketMetricsData;
     individual_metrics: IndividualMetricsData;
     cost_metrics: CostMetricsData;
     profiles: ProfileData;
@@ -410,7 +410,7 @@ interface CommunityOutcomesProps {
 
 /** Displays key outcomes: savings, autarky, and market activity. */
 const CommunityOutcomes: React.FC<CommunityOutcomesProps> = ({ costMetrics, energyMetrics, marketMetrics, communitySize, season }) => {
-    const { t } = useTranslation();
+    const t = useTranslation().t;
 
     const outcomeData = useMemo(() => {
         // Ensure all necessary data is present and valid
@@ -476,7 +476,7 @@ const CommunityOutcomes: React.FC<CommunityOutcomesProps> = ({ costMetrics, ener
     const coinIconSize = 24 + savingsScale * 24; // Scale from 24px up to 48px
     const coinIconOpacity = 0.6 + savingsScale * 0.4; // Scale opacity from 0.6 to 1.0
 
-    const season_placeholder = SEASON_DISPLAY_NAMES[season] || season; // t(`seasons.${season}`, season);
+    const season_Translation = t(`seasons.${season}`);
 
     return (
         <div className="community-outcomes-container">
@@ -493,7 +493,7 @@ const CommunityOutcomes: React.FC<CommunityOutcomesProps> = ({ costMetrics, ener
                 </div>
                 <div className="savings-text-area">
                     <span className="savings-label">
-                        {`Savings per Household over one ${season_placeholder} (vs no community)`}
+                        {t('results.outcomes.savingOverSeason') + ': ' + season_Translation}
                     </span>
                     <span className="savings-value-chf">
                         {formatNumber(avgSavingsChf, 2)} CHF
@@ -506,7 +506,7 @@ const CommunityOutcomes: React.FC<CommunityOutcomesProps> = ({ costMetrics, ener
 
             {/* 2. Autarky Section */}
             <div className="outcome-metric autarky-metric" title={t('results.outcomes.autarkyTooltip', 'Percentage of total consumption covered locally (PV, Battery, Market)')}>
-                 <span className="autarky-label">{t('results.outcomes.autarkyLabel', 'Community Autarky')}</span>
+                <span className="autarky-label">{t('results.outcomes.autarkyLabel', 'Community Autarky')}</span>
                 <div className="autarky-bar-container">
                     <div className="autarky-bar-background">
                         <div
@@ -602,16 +602,16 @@ function App() {
 
                 // Update state only if dimensions actually changed to prevent infinite loops
                 if (graphDimensions.width !== finalWidth || graphDimensions.height !== finalHeight) {
-                     setGraphDimensions({ width: finalWidth, height: finalHeight });
+                    setGraphDimensions({ width: finalWidth, height: finalHeight });
                 }
             } else {
                 // Fallback or warning if padding couldn't be parsed
-                 console.warn("Could not parse padding for network container. Using offsetWidth/Height directly.");
-                 const fallbackWidth = Math.max(0, element.offsetWidth - 20); // Guess padding
-                 const fallbackHeight = Math.max(150, element.offsetHeight - TITLE_APPROX_HEIGHT - 20);
-                  if (graphDimensions.width !== fallbackWidth || graphDimensions.height !== fallbackHeight) {
+                console.warn("Could not parse padding for network container. Using offsetWidth/Height directly.");
+                const fallbackWidth = Math.max(0, element.offsetWidth - 20); // Guess padding
+                const fallbackHeight = Math.max(150, element.offsetHeight - TITLE_APPROX_HEIGHT - 20);
+                if (graphDimensions.width !== fallbackWidth || graphDimensions.height !== fallbackHeight) {
                     setGraphDimensions({ width: fallbackWidth, height: fallbackHeight });
-                  }
+                }
             }
         }
     }, [graphDimensions.width, graphDimensions.height]); // Dependencies
@@ -621,11 +621,11 @@ function App() {
 
         // Only run if the container exists and we have network data to display
         if (!currentContainer || !currentResult?.trading_network) {
-             // If network data disappears, reset dimensions? Or leave as is?
-             // Let's reset to avoid showing an old graph in an empty container potentially
-             if (graphDimensions.width !== 0 || graphDimensions.height !== 0) {
+            // If network data disappears, reset dimensions? Or leave as is?
+            // Let's reset to avoid showing an old graph in an empty container potentially
+            if (graphDimensions.width !== 0 || graphDimensions.height !== 0) {
                 setGraphDimensions({ width: 0, height: 0 });
-             }
+            }
             return;
         }
 
@@ -655,7 +655,7 @@ function App() {
             // 2. Update the params state based on the selected history item
             // Check if params actually changed to avoid unnecessary re-renders
             if (JSON.stringify(params) !== JSON.stringify(selectedEntry.params)) {
-                 setParams(selectedEntry.params);
+                setParams(selectedEntry.params);
             }
         } else {
             setSelectedResultIndex(null); // Reset if index is invalid
@@ -689,7 +689,7 @@ function App() {
             // Use requestAnimationFrame to potentially batch updates and improve performance
             requestAnimationFrame(() => {
                 // Check if value actually changed before updating state
-                 setParams(prev => {
+                setParams(prev => {
                     if (prev[name] !== roundedPercentage) {
                         return { ...prev, [name]: roundedPercentage };
                     }
@@ -737,7 +737,7 @@ function App() {
                     if (errorJson.detail) {
                         if (Array.isArray(errorJson.detail)) { // Pydantic validation errors
                             errorMessage = errorJson.detail.map((err: any) => `${err.loc.join('.')} - ${err.msg}`).join('; ');
-                        } else if (typeof errorJson.detail === 'string'){
+                        } else if (typeof errorJson.detail === 'string') {
                             errorMessage = errorJson.detail; // Simple string error
                         }
                     } else if (errorJson.message) { // Handle other potential error structures
@@ -797,7 +797,7 @@ function App() {
     }, [params.community_size]);
 
     // --- JSX Structure ---
-  return (
+    return (
         <div className="container">
             <LanguageSwitcher />
 
@@ -813,7 +813,7 @@ function App() {
                         <div className="form-header">
                             <h2>{t('app.title')}</h2>
                             <p>{t('app.subtitle')}</p>
-                             {/* Simple Audio Player */}
+                            {/* Simple Audio Player */}
                             {explanationAudio && (
                                 <div className="audio-player-container">
                                     <audio src={explanationAudio} controls preload="metadata">
@@ -857,8 +857,8 @@ function App() {
                                         onClick={() => handleParamChange('season', key)}
                                         disabled={isLoading}
                                         aria-pressed={params.season === key}
-                                        aria-label={`${t('form.seasonLabel')}: ${t('seasons.'+key, key)}`} // Use translation for season name
-                                        title={t('seasons.'+key, key)} // Tooltip
+                                        aria-label={`${t('form.seasonLabel')}: ${t('seasons.' + key, key)}`} // Use translation for season name
+                                        title={t('seasons.' + key, key)} // Tooltip
                                     >
                                         <IconComponent aria-hidden="true" />
                                     </button>
@@ -1002,9 +1002,9 @@ function App() {
                             {/* Grid container for result tabs */}
                             <div className="results-container">
 
-                                 {/* --- Column 1 (or first items in flow) --- */}
+                                {/* --- Column 1 (or first items in flow) --- */}
                                 <div className="result-tab community-outcomes-tab" key="community-outcomes">
-                                    <h3>{t('results.resultsContainer.outcomesHeading', 'Outcomes')}</h3>
+                                    <h3>{t('results.outcomes.outcomesHeading', 'Outcomes')}</h3>
                                     <CommunityOutcomes
                                         costMetrics={currentResult.cost_metrics}
                                         marketMetrics={currentResult.market_metrics}
@@ -1036,22 +1036,22 @@ function App() {
                                                 height={graphDimensions.height} // Use dynamic height
                                             />
                                         )}
-                                        {(graphDimensions.width <= 0 || graphDimensions.height <=0) && <p>{t('results.calculatingLayout', 'Calculating layout...')}</p>}
+                                        {(graphDimensions.width <= 0 || graphDimensions.height <= 0) && <p>{t('results.calculatingLayout', 'Calculating layout...')}</p>}
                                     </div>
                                 ) : (
                                     // Optional: Placeholder if no trading network data
-                                     <div className="result-tab trading-network-tab placeholder" key="trading-network-placeholder">
-                                         <h3>{t('results.resultsContainer.tradingNetworkHeading')}</h3>
-                                         <p>{t('results.tradingNetworkNotAvailable', 'Trading network data not available for this simulation.')}</p>
-                                     </div>
+                                    <div className="result-tab trading-network-tab placeholder" key="trading-network-placeholder">
+                                        <h3>{t('results.resultsContainer.tradingNetworkHeading')}</h3>
+                                        <p>{t('results.tradingNetworkNotAvailable', 'Trading network data not available for this simulation.')}</p>
+                                    </div>
                                 )}
 
 
                                 {/* Pie Charts */}
                                 <div className="result-tab pie-chart-tab" key="consumption-sources">
-                                     <h3>{t('results.resultsContainer.consumptionSourcesHeading')}</h3>
-                                     <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
-                                 </div>
+                                    <h3>{t('results.resultsContainer.consumptionSourcesHeading')}</h3>
+                                    <EnergyPieChart type="consumption" metrics={currentResult.energy_metrics} />
+                                </div>
 
                                 <div className="result-tab pie-chart-tab" key="production-allocation">
                                     <h3>{t('results.resultsContainer.productionAllocationHeading')}</h3>
