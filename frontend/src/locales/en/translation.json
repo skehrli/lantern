@@ -2,13 +2,15 @@
     "app": {
         "title": "Energy Community Simulator",
         "subtitle": "Configure and simulate the performance of a local energy community.",
-        "description": "A local energy community is a group of people (usually neighbors) who share and manage energy together in a small area. In Switzerland, they often use solar panels to produce their own electricity. This helps them save money, use cleaner energy, and rely less on big power companies."
+        "description": "A local energy community is a group of people (usually neighbors) who share and manage energy together in a small area. In Switzerland, they often use solar panels to produce their own electricity. This helps them save money, use cleaner energy, and rely less on big power companies.",
+        "audioNotSupported": "Your browser does not support the audio element."
     },
     "buttons": {
         "runSimulation": "Run Simulation",
         "simulating": "Simulating...",
         "toggleBatteryOn": "Battery: On",
-        "toggleBatteryOff": "Battery: Off"
+        "toggleBatteryOff": "Battery: Off",
+        "toggleBatteryAriaLabelOn": "Disable community battery"
     },
     "form": {
         "communitySizeLabel": "Community Size (Buildings)",
@@ -92,7 +94,9 @@
         "tradingNetworkTitle": "Trading Network",
         "tradingNetworkText": "Visualizes energy flows between buildings and the grid. Thicker lines indicate more energy traded (log scale).",
         "energyFlowTitle": "Energy Flow",
-        "energyFlowText": "Shows how generated solar energy is used (Production Allocation) and where consumed energy comes from (Consumption Sources)."
+        "energyFlowText": "Shows how generated solar energy is used (Production Allocation) and where consumed energy comes from (Consumption Sources).",
+        "outcomesTitle": "Key Outcomes",
+        "outcomesText": "Shows average household savings, community self-sufficiency (autarky), and internal market activity."
     },
     "footer": {
         "hsluAlt": "HSLU Logo",

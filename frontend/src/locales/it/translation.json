@@ -2,13 +2,15 @@
     "app": {
         "title": "Simulatore di Comunità Energetica",
         "subtitle": "Configura e simula le prestazioni di una comunità energetica locale.",
-        "description": "Una comunità energetica locale è un gruppo di persone (di solito vicini di casa) che condividono e gestiscono insieme l'energia in una piccola area. In Svizzera, spesso utilizzano pannelli solari per produrre la propria elettricità. Questo li aiuta a risparmiare denaro, a utilizzare energia più pulita e a dipendere meno dalle grandi compagnie elettriche."
+        "description": "Una comunità energetica locale è un gruppo di persone (di solito vicini di casa) che condividono e gestiscono insieme l'energia in una piccola area. In Svizzera, spesso utilizzano pannelli solari per produrre la propria elettricità. Questo li aiuta a risparmiare denaro, a utilizzare energia più pulita e a dipendere meno dalle grandi compagnie elettriche.",
+        "audioNotSupported": "Il tuo browser non supporta l'elemento audio."
     },
     "buttons": {
         "runSimulation": "Avvia Simulazione",
         "simulating": "Simulazione in corso...",
         "toggleBatteryOn": "Batteria: Accesa",
-        "toggleBatteryOff": "Batteria: Spenta"
+        "toggleBatteryOff": "Batteria: Spenta",
+        "toggleBatteryAriaLabelOn": "Disabilita batteria della comunità"
     },
     "form": {
         "communitySizeLabel": "Dimensione della comunità (edifici)",
@@ -92,7 +94,9 @@
         "tradingNetworkTitle": "Rete di scambio",
         "tradingNetworkText": "Visualizza i flussi di energia tra gli edifici e la rete. Le linee più spesse indicano volumi di energia maggiori (scala logaritmica).",
         "energyFlowTitle": "Flusso di energia",
-        "energyFlowText": "Mostra come viene utilizzata l'energia solare generata (ripartizione della produzione) e da dove proviene l'energia consumata (fonti di consumo)."
+        "energyFlowText": "Mostra come viene utilizzata l'energia solare generata (ripartizione della produzione) e da dove proviene l'energia consumata (fonti di consumo).",
+        "outcomesTitle": "Risultati chiave",
+        "outcomesText": "Mostra i risultati chiave della simulazione, come l'autarchia della comunità e l'efficacia del mercato. Questi risultati aiutano a comprendere le prestazioni della comunità energetica."
     },
     "footer": {
         "hsluAlt": "Logo HSLU",

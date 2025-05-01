@@ -2,13 +2,15 @@
     "app": {
         "title": "Energiegemeinschaft-Simulator",
         "subtitle": "Konfigurieren und simulieren Sie die Leistung einer lokalen Energiegemeinschaft.",
-        "description": "Eine lokale Energiegemeinschaft ist eine Gruppe von Menschen (in der Regel Nachbarn), die in einem kleinen Gebiet Energie gemeinsam nutzen und verwalten. In der Schweiz nutzen sie oft Sonnenkollektoren, um ihren eigenen Strom zu produzieren. Das hilft ihnen, Geld zu sparen, saubere Energie zu nutzen und sich weniger von grossen Energieversorgern abhängig zu machen."
+        "description": "Eine lokale Energiegemeinschaft ist eine Gruppe von Menschen (in der Regel Nachbarn), die in einem kleinen Gebiet Energie gemeinsam nutzen und verwalten. In der Schweiz nutzen sie oft Sonnenkollektoren, um ihren eigenen Strom zu produzieren. Das hilft ihnen, Geld zu sparen, saubere Energie zu nutzen und sich weniger von grossen Energieversorgern abhängig zu machen.",
+        "audioNotSupported": "Ihr Browser unterstützt das Audioelement nicht."
     },
     "buttons": {
         "runSimulation": "Simulation starten",
         "simulating": "Simulation läuft...",
         "toggleBatteryOn": "Batterie: Ein",
-        "toggleBatteryOff": "Batterie: Aus"
+        "toggleBatteryOff": "Batterie: Aus",
+        "toggleBatteryAriaLabelOn": "Batterie der Gemeinschaft deaktivieren"
     },
     "form": {
         "communitySizeLabel": "Gemeinschaftsgrösse (Gebäude)",
@@ -92,7 +94,9 @@
         "tradingNetworkTitle": "Handelsnetzwerk",
         "tradingNetworkText": "Visualisiert Energieflüsse zwischen Gebäuden und dem Netz. Dickere Linien kennzeichnen grössere Energiemengen (logarithmische Skala).",
         "energyFlowTitle": "Energiefluss",
-        "energyFlowText": "Zeigt die Nutzung der erzeugten Solarenergie (Aufteilung der Erzeugung) und die Herkunft des verbrauchten Stroms (Herkunft des Energiebedarfs)."
+        "energyFlowText": "Zeigt die Nutzung der erzeugten Solarenergie (Aufteilung der Erzeugung) und die Herkunft des verbrauchten Stroms (Herkunft des Energiebedarfs).",
+        "outcomesTitle": "Haupt Ergebnisse",
+        "outcomesText": "Zeigt die wichtigsten Ergebnisse der Simulation, darunter Einsparungen, Autarkie und Markteffizienz."
     },
     "footer": {
         "hsluAlt": "HSLU Logo",
